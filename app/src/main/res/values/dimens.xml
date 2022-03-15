@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="default_margin">24dp</dimen>
+    <dimen name="default_half_margin">12dp</dimen>
+    <dimen name="defaultDivMargin">150dp</dimen>
+
+    <dimen name="pagoLetter">24sp</dimen>
+
+    <dimen name="cardView6dp">6dp</dimen>
+    <dimen name="cardViewHeight">200dp</dimen>
+</resources>

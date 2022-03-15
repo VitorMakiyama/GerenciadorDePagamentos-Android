@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_navigation"
+    app:startDestination="@id/pagamentosMainFragment">
+
+    <fragment
+        android:id="@+id/pagamentosMainFragment"
+        android:name="com.makiyamasoftware.gerenciadordepagamentos.telas.inicio.PagamentosMainFragment"
+        android:label="@string/app_name">
+        <action
+            android:id="@+id/action_pagamentosMainFragment_to_criarPagamentoFragment"
+            app:destination="@id/criarPagamentoFragment"
+            app:enterAnim="@anim/slide_in_bottom"
+            app:exitAnim="@anim/slide_out_top"
+            app:popEnterAnim="@anim/slide_in_top"
+            app:popExitAnim="@anim/slide_out_bottom"
+            app:popUpTo="@id/pagamentosMainFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/criarPagamentoFragment"
+        android:name="com.makiyamasoftware.gerenciadordepagamentos.telas.criarpagamento.CriarPagamentoFragment"
+        android:label="@string/CriarPagamentoFragment_fragment_name"
+        tools:layout="@layout/fragment_criar_pagamento" >
+        <action
+            android:id="@+id/action_criarPagamentoFragment_to_pagamentosMainFragment"
+            app:destination="@id/pagamentosMainFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim"
+            app:popUpTo="@id/pagamentosMainFragment" />
+    </fragment>
+</navigation>

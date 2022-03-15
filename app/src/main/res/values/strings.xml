@@ -1,0 +1,38 @@
+<resources>
+    <!-- Strings genericos. -->
+    <string name="app_name">Gerenciador de Pagamentos</string>
+    <string name="generic_Ok">OK</string>
+    <string name="generic_caps_null">NULL</string>
+
+    <!-- Strings usadas no Inicio - PagamentosMain. -->
+    <string name="fragment_pagamentos_main_provisorio">Seus futuros pagamentos serão\nlistados aqui! \o/</string>
+    <string name="clear_button_apagar_tudo">Apagar tudo</string>
+    <string name="blocoEstaPago_status_pago">Pago</string>
+    <string name="blocoEstaPago_status_naoPago">Não\nPago</string>
+
+    <!-- Strings usadas no Criar Pagamentos. -->
+    <string name="CriarPagamentoFragment_nome_hint">Nome do Pagamento</string>
+    <string name="CriarPagamentoFragment_preco_hint">Preco inicial do pagamento</string>
+    <string name="CriarPagamentoFragment_fragment_name">Criar novo Pagamento</string>
+    <string name="CriarPagamentoFragment_hint_participante">º Participante</string>
+    <string name="criarParticipantesHeader_escolha_a_data">Escolha a data de inicio</string>
+    <string name="criarParticipantesHeader_escolha_a_frequencia">Escolha a frequência</string>
+    <string name="fragment_criar_pagamento_criar">Criar</string>
+    <string name="criarPagamentosFragment_erro_campos_vazios_title">Campos vazios!</string>
+    <string name="criarPagamentosFragment_erro_campos_vazios_message_header">Você não preencheu:\n</string>
+    <string name="criarPagamentosFragment_erro_campos_vazios_message_nomePagamento">\t•Nome do pagamento\n</string>
+    <string name="criarPagamentosFragment_erro_campos_vazios_message_data">\t•Data incial\n</string>
+    <string name="criarPagamentosFragment_erro_campos_vazios_message_frequencia">\t•Frequência do pagamento\n</string>
+    <string name="criarPagamentosFragment_erro_campos_vazios_message_preco">\t•Preco do Pagamento\n</string>
+    <string name="criarPagamentosFragment_erro_campos_vazios_message_participante">\t•Nome do participante\n</string>
+
+    <string-array name="frequencias_pagamentos">
+        <item>Escolha a frequência do pagamento</item>
+        <item>Diário</item>
+        <item>Mensal</item>
+        <item>Semestral</item>
+        <item>Anual</item>
+    </string-array>
+
+
+</resources>
