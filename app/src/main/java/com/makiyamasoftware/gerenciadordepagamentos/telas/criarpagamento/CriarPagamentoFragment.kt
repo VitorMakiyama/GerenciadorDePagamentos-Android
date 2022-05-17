@@ -19,6 +19,7 @@ import com.makiyamasoftware.gerenciadordepagamentos.R
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabase
 import com.makiyamasoftware.gerenciadordepagamentos.databinding.FragmentCriarPagamentoBinding
 
+private const val TAG = "CriarPagamentoFragment"
 /**
  *  Fragmento responsavel por criar um novo pagamento
  */
@@ -72,6 +73,7 @@ class CriarPagamentoFragment : Fragment() {
             it?.let {
                 adapter.addHeaderESubmit(it)
             }
+            Log.i(TAG,"Enviou a lista")
             binding.criarList.smoothScrollToPosition(adapter.itemCount)
         })
 
@@ -89,6 +91,11 @@ class CriarPagamentoFragment : Fragment() {
                 viewModel.onCamposVaziosDone()
             }
         }
+
+        /**
+         * Observer do spinner (para alterar a lista de acordo com o tipo de frequencia (ou não frequencia)
+         */
+
 
         Log.i("TestCriar","Datainicial: ${viewModel.dataInicialString.value}")
         return binding.root

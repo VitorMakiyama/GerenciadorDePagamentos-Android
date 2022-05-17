@@ -87,6 +87,7 @@
             android:contentDescription="@string/criarParticipantesHeader_escolha_a_frequencia"
             android:minHeight="48dp"
             android:spinnerMode="dropdown"
+            android:onItemSelected="@{() -> criarPagamentoViewModel.onSelectSpinnerItem()}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/div2" />

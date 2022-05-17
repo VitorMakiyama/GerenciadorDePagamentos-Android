@@ -174,11 +174,43 @@ class CriarPagamentoViewModel(val database:PagamentosDatabaseDao, application: A
         }
     }
 
+    /**
+     * selectListener do spinner - verifica o tipo de frequencia, e se for 'Sem frequência'
+     *   ele irá atualizar o parcelaAparece de todos os participantes para true
+     *   se não, atualiza para false
+     */
+    fun onSelectSpinnerItem () {
+        val lista = mutableListOf<ParticipanteAux>()
+        // se o item selecionado for 'Sem frequência', verifica se o primeiro participante já não tem parcelaAparece == false,
+        //  se nao, o atribui em todos (necessário copiar os participantes antes de altera-los)
+        if (spinnerEscolhaFrequencia.selectedItem == getApplication<Application?>().resources.getStringArray(R.array.frequencias_pagamentos).last()) {
+            if (!(participantes.value!!.first().parcelaAparece)) {
+                ParticipanteAux().resetParticipanteId()
+                for (i in participantes.value!!.indices) {
+                    lista.add(participantes.value!![i].copy(parcelaAparece = true))
+                }
+                participantes.value = lista
+            }
+        } else if (spinnerEscolhaFrequencia.selectedItem == getApplication<Application?>().resources.getStringArray(R.array.frequencias_pagamentos).first()) {
+        } else {
+            if (participantes.value!!.first().parcelaAparece) {
+                ParticipanteAux().resetParticipanteId()
+                for (i in participantes.value!!.indices) {
+                    lista.add(participantes.value!![i].copy(parcelaAparece = false))
+                }
+                participantes.value = lista
+            }
+        }
+        Log.i(TAG,"participantes: ${participantes.value}")
+    }
 }
 
 data class ParticipanteAux(
     var dica: String = "",
+    var dicaPreco: String = "",
+    var parcelaAparece: Boolean = false,
     val nome: MutableLiveData<String> = MutableLiveData<String>(),
+    val preco: MutableLiveData<String> = MutableLiveData<String>(),
     var id: Long = 0L
 ) {
     fun resetParticipanteId(){
@@ -186,11 +218,14 @@ data class ParticipanteAux(
     }
     companion object {
         private const val DICA_PARTICIPANTE = "º Participante"
+        private const val DICA_PARTICIPANTE_PARCELA = "Parcela "
+        private const val DICA_PARTICIPANTE_PRECO = "º Participante"
         var participanteId = 1L
     }
     init {
         id = participanteId
         dica = "$id" + DICA_PARTICIPANTE
+        dicaPreco = DICA_PARTICIPANTE_PARCELA + "$id" + DICA_PARTICIPANTE_PRECO
         participanteId++
     }
 }

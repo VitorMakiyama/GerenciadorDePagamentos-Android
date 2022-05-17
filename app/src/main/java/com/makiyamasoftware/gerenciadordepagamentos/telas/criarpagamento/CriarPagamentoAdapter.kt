@@ -1,6 +1,8 @@
 package com.makiyamasoftware.gerenciadordepagamentos.telas.criarpagamento
 
 import android.app.Activity
+import android.provider.ContactsContract
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,6 +25,8 @@ import kotlinx.coroutines.withContext
 private const val TIPO_ITEM_HEADER = 0
 private const val TIPO_ITEM_PARTICIPANTE = 1
 private const val TIPO_ITEM_TAIL = 2
+
+private const val TAG = "CriarPagamentosAdapter"
 
 class CriarPagamentoAdapter(private val criarPagamentoViewModel: CriarPagamentoViewModel, private val lifeCycleOwner: LifecycleOwner) : ListAdapter<DataItem, RecyclerView.ViewHolder>(CriarPagamentoDiffCallback()) {
 
@@ -76,13 +80,18 @@ class CriarPagamentoAdapter(private val criarPagamentoViewModel: CriarPagamentoV
 
         }
 
-
     /**
      * Os ViewHolders utilizados
      */
     class ParticipantesViewHolder private  constructor(private val editBinding: CriarParticipantesEdittextBinding): RecyclerView.ViewHolder(editBinding.root) {
         fun bind(participante: ParticipanteAux) {
             editBinding.editTextParticipante.hint = participante.dica
+            editBinding.editTextParcelaParticipante.hint = participante.dicaPreco
+            if (participante.parcelaAparece) {
+                 editBinding.editTextParcelaParticipante.visibility = View.VISIBLE
+            } else {
+                editBinding.editTextParcelaParticipante.visibility = View.GONE
+            }
             editBinding.participanteAux = participante
             editBinding.executePendingBindings()
         }
@@ -174,7 +183,13 @@ class  CriarPagamentoDiffCallback : DiffUtil.ItemCallback<DataItem>() {
     }
 
     override fun areContentsTheSame(oldItem: DataItem, newItem: DataItem): Boolean {
-        return oldItem == newItem
+        var equal: Boolean = true
+        if (oldItem is DataItem.ParticipanteItem && newItem is DataItem.ParticipanteItem) {
+            equal = (oldItem.participante.parcelaAparece == newItem.participante.parcelaAparece)
+            Log.i(TAG,"equal: ${equal}\nold: ${oldItem.participante.parcelaAparece}\n" +
+                    "new: ${oldItem.participante.parcelaAparece}")
+        }
+        return oldItem == newItem && equal
     }
 
 }
