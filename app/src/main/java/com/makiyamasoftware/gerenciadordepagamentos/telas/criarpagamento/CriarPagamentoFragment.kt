@@ -74,6 +74,24 @@ class CriarPagamentoFragment : Fragment() {
                 adapter.addHeaderESubmit(it)
             }
             Log.i(TAG,"Enviou a lista")
+            // setar o observer do novo participante (mesma lógica dos observer das parcelas)
+            if (!(it.last().preco.hasObservers())) {
+                Log.i(TAG,"Setou o observer do preco ${viewModel.participantes.value!!.last().id}")
+                it.last().preco.observe(viewLifecycleOwner) {
+                    Log.i(TAG,"Observer do preco ${viewModel.participantes.value!!.last().id}")
+                    var soma = 0.0
+                    if (viewModel.participantes.value!!.first().parcelaAparece) {
+                        for (i in viewModel.participantes.value!!) {
+                            if (i.preco.value?.toDoubleOrNull() != null) {
+                                Log.i(TAG, "entrou aqui")
+                                soma += i.preco.value!!.toDouble()
+                                Log.i(TAG, "passou daqui")
+                            }
+                        }
+                        viewModel.preco.value = soma.toString()
+                    }
+                }
+            }
             binding.criarList.smoothScrollToPosition(adapter.itemCount)
         })
 
@@ -93,9 +111,25 @@ class CriarPagamentoFragment : Fragment() {
         }
 
         /**
-         * Observer do spinner (para alterar a lista de acordo com o tipo de frequencia (ou não frequencia)
+         * Observer das parcelas dos participantes iniciais (para alterar o preco do Pagamento de forma live)
+         *  para isso, para cada detecção de alteraçao da LiveData fazemos a soma de todos as parcelas
+         *  de participantes, que foram preenchidas.
          */
-
+        for (i in viewModel.participantes.value!!) {
+            i.preco.observe(viewLifecycleOwner) {
+                var soma = 0.0
+                if (viewModel.participantes.value!!.first().parcelaAparece) {
+                    for (j in viewModel.participantes.value!!) {
+                        if (j.preco.value?.toDoubleOrNull() != null) {
+                            Log.i(TAG, "Preco parcial: ${j.preco.value}\n")
+                            soma += j.preco.value!!.toDouble()
+                        }
+                    }
+                    Log.i(TAG, "Soma Parcelas: ${soma}")
+                    viewModel.preco.value = soma.toString()
+                }
+            }
+        }
 
         Log.i("TestCriar","Datainicial: ${viewModel.dataInicialString.value}")
         return binding.root
@@ -114,5 +148,4 @@ class CriarPagamentoFragment : Fragment() {
         val newFragment = DatePickerFragment(viewModel)
         newFragment.show(parentFragmentManager, "datePicker")
     }
-
 }

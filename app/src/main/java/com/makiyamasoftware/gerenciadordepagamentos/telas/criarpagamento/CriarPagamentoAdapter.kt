@@ -116,6 +116,7 @@ class CriarPagamentoAdapter(private val criarPagamentoViewModel: CriarPagamentoV
             criarPagamentoViewModel.spinnerEscolhaFrequencia = headerBinding.spinnerEscolhaFrequencia
 
             headerBinding.lifecycleOwner = lifeCycleOwner
+            criarPagamentoViewModel.precoEnabled = headerBinding
             headerBinding.executePendingBindings()
         }
         companion object {
@@ -186,8 +187,8 @@ class  CriarPagamentoDiffCallback : DiffUtil.ItemCallback<DataItem>() {
         var equal: Boolean = true
         if (oldItem is DataItem.ParticipanteItem && newItem is DataItem.ParticipanteItem) {
             equal = (oldItem.participante.parcelaAparece == newItem.participante.parcelaAparece)
-            Log.i(TAG,"equal: ${equal}\nold: ${oldItem.participante.parcelaAparece}\n" +
-                    "new: ${oldItem.participante.parcelaAparece}")
+            Log.i(TAG,"equal: ${equal}\nold ${oldItem.participante.id}: ${oldItem.participante.parcelaAparece}\n" +
+                    "new ${newItem.participante.id}: ${oldItem.participante.parcelaAparece}")
         }
         return oldItem == newItem && equal
     }

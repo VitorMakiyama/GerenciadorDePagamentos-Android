@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "pessoas_table")
 data class Pessoa(
         @PrimaryKey(autoGenerate = true)
-        val pessoaId: Long = 0L,
+        val pessoaID: Long = 0L,
 
         @ColumnInfo(name = "nome")
         val nome: String,
@@ -16,5 +16,5 @@ data class Pessoa(
         val ordem: Int,
 
         @ColumnInfo(name = "pagamento_id")
-        val pagamentoId: Long
+        val pagamentoID: Long
 )

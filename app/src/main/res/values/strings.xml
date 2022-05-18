@@ -25,6 +25,7 @@
     <string name="criarPagamentosFragment_erro_campos_vazios_message_frequencia">\t•Frequência do pagamento\n</string>
     <string name="criarPagamentosFragment_erro_campos_vazios_message_preco">\t•Preco do Pagamento\n</string>
     <string name="criarPagamentosFragment_erro_campos_vazios_message_participante">\t•Nome do participante\n</string>
+    <string name="criarPagamentosFragment_erro_campos_vazios_message_parcela_participante">\t•Parcela do valor de algum participante\n</string>
 
     <string-array name="frequencias_pagamentos">
         <item>Escolha a frequência do pagamento</item>

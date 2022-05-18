@@ -18,6 +18,7 @@ import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
 import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 import java.util.*
+import com.makiyamasoftware.gerenciadordepagamentos.databinding.CriarParticipantesHeaderBinding
 
 private const val TAG = "CriarPagamentoViewModel"
 
@@ -28,6 +29,7 @@ class CriarPagamentoViewModel(val database:PagamentosDatabaseDao, application: A
     var dataDB = String()
 
     val preco = MutableLiveData<String>()
+    lateinit var precoEnabled: CriarParticipantesHeaderBinding
 
     lateinit var spinnerEscolhaFrequencia: Spinner
 
@@ -78,10 +80,8 @@ class CriarPagamentoViewModel(val database:PagamentosDatabaseDao, application: A
             _criarNovoPagamentoEvent.value = true
             var precoDouble: Double = preco.value?.toDouble() ?: 0.00
             uiScope.launch {
-                salvarNoDataBase(Pagamento(nome = nomePagamento.value!!, dataDeInicio = dataDB,
-                                            numPessoas = participantes.value!!.size, freqDoPag = spinnerEscolhaFrequencia.selectedItem as String
-                ),
-                                 participantes.value!!, precoDouble)
+                salvarNoDataBase(Pagamento(nome = nomePagamento.value!!, dataDeInicio = dataDB, numPessoas = participantes.value!!.size,
+                                            freqDoPag = spinnerEscolhaFrequencia.selectedItem as String), participantes.value!!, precoDouble)
             }
         }
     }
@@ -105,10 +105,13 @@ class CriarPagamentoViewModel(val database:PagamentosDatabaseDao, application: A
         }
 
         var algumParticipanteVazio = false
+        var algumaParcelaDeParticipanteVazia = false
         for (pessoa in participantes.value!!) {
             if (pessoa.nome.value == null) algumParticipanteVazio = true
+            if (pessoa.parcelaAparece) if (pessoa.preco.value == null) algumaParcelaDeParticipanteVazia = true
         }
         if (algumParticipanteVazio) naoPreenchidos += getApplication<Application?>().getString(R.string.criarPagamentosFragment_erro_campos_vazios_message_participante)
+        if (algumaParcelaDeParticipanteVazia) naoPreenchidos += getApplication<Application?>().getString(R.string.criarPagamentosFragment_erro_campos_vazios_message_parcela_participante)
         return naoPreenchidos
     }
     // variavel de evento para acionar o AlertDialog para preencher os campos
@@ -131,9 +134,16 @@ class CriarPagamentoViewModel(val database:PagamentosDatabaseDao, application: A
             var ordem = 1
             for (i in participantes.indices) {
                 participantes[i].nome.value?.let {
-                    database.inserirPessoa(Pessoa(nome = it, ordem = ordem, pagamentoId = pagId))
-                    val pessId = database.getPessoasDoPagamento(pagId).first().pessoaId
-                    if (ordem == 1) database.inserirHistoricoDePagamento(HistoricoDePagamento(data = pagamento.dataDeInicio, preco = preco, pagadorID = pessId, pagamentoID = pagId))
+                    database.inserirPessoa(Pessoa(nome = it, ordem = ordem, pagamentoID = pagId))
+                    val pessId = database.getPessoasDoPagamento(pagId).last().pessoaID
+                    // Para registrar os historicos de pagamentos SEM periodicidade, nesse caso, cada pessoa gera um historico com o preco = parcela dele
+                    if (pagamento.freqDoPag == getApplication<Application?>().resources.getStringArray(R.array.frequencias_pagamentos).last()) {
+                        database.inserirHistoricoDePagamento(HistoricoDePagamento(data =pagamento.dataDeInicio, preco = participantes[i].preco.value!!.toDouble(), pagadorID = pessId,
+                                                                                    pagamentoID = pagId))
+                    } else if (ordem == 1) {
+                    // Para registrar apenas o primeiro histórico de pagamentos com periodicidade, para iniciar
+                        database.inserirHistoricoDePagamento(HistoricoDePagamento(data = pagamento.dataDeInicio, preco = preco, pagadorID = pessId, pagamentoID = pagId))
+                    }
                     ordem++
                 }
             }
@@ -169,19 +179,19 @@ class CriarPagamentoViewModel(val database:PagamentosDatabaseDao, application: A
     fun onAddNovoParticipante() {
         val lista = participantes.value
         lista?.let {
-            it.add( ParticipanteAux())
+            it.add(ParticipanteAux().apply { if (participantes.value!!.first().parcelaAparece) this.parcelaAparece = true})
             participantes.value = it
         }
     }
 
     /**
      * selectListener do spinner - verifica o tipo de frequencia, e se for 'Sem frequência'
-     *   ele irá atualizar o parcelaAparece de todos os participantes para true
-     *   se não, atualiza para false
+     *   ele irá atualizar o parcelaAparece de todos os participantes para 'true'
+     *   se não, atualiza para 'false'
      */
     fun onSelectSpinnerItem () {
         val lista = mutableListOf<ParticipanteAux>()
-        // se o item selecionado for 'Sem frequência', verifica se o primeiro participante já não tem parcelaAparece == false,
+        // Se o item selecionado for 'Sem frequência', verifica se o primeiro participante já não tem parcelaAparece == false,
         //  se nao, o atribui em todos (necessário copiar os participantes antes de altera-los)
         if (spinnerEscolhaFrequencia.selectedItem == getApplication<Application?>().resources.getStringArray(R.array.frequencias_pagamentos).last()) {
             if (!(participantes.value!!.first().parcelaAparece)) {
@@ -190,15 +200,25 @@ class CriarPagamentoViewModel(val database:PagamentosDatabaseDao, application: A
                     lista.add(participantes.value!![i].copy(parcelaAparece = true))
                 }
                 participantes.value = lista
+                // desabilita o EditText do preco, para não ser editável
+                precoEnabled.editTextPrecoPagamento.isEnabled = false
             }
+        // Se o item selecionado for 'Escolha a frequência do pagamento', se sim, não altera nada (não há necessidade!)
         } else if (spinnerEscolhaFrequencia.selectedItem == getApplication<Application?>().resources.getStringArray(R.array.frequencias_pagamentos).first()) {
         } else {
+            // Se qualquer outro item for selecionado, verificar se o primeiro participante já não tem parcelaAparece == true,
+            //  se nao, o atribui em todos (necessário copiar os participantes antes de altera-los, se não o participante que está
+            //  na lista do CriarPagamentoAdapter será alterado também)
             if (participantes.value!!.first().parcelaAparece) {
                 ParticipanteAux().resetParticipanteId()
                 for (i in participantes.value!!.indices) {
                     lista.add(participantes.value!![i].copy(parcelaAparece = false))
                 }
                 participantes.value = lista
+                // Reabilita o EditText do preco, para ser editável e esvazia o preco
+                preco.value = ""
+                precoEnabled.editTextPrecoPagamento.isEnabled = true
+                Log.i(TAG, "Pagamento preco: ${preco.value}")
             }
         }
         Log.i(TAG,"participantes: ${participantes.value}")

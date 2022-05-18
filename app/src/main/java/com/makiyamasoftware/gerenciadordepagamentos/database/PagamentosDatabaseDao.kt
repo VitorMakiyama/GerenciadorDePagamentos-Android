@@ -25,7 +25,7 @@ interface PagamentosDatabaseDao {
     fun inserirPessoa(pessoa: Pessoa)
     @Update
     fun updatePessoa(pessoa: Pessoa)
-    @Query("SELECT * FROM pessoas_table WHERE pessoaId = :id")
+    @Query("SELECT * FROM pessoas_table WHERE pessoaID = :id")
     fun getPessoa(id: Long): Pessoa
     @Query("SELECT * FROM pessoas_table WHERE pagamento_id = :pagamentoID ORDER BY ordem ASC")
     fun getPessoasDoPagamento(pagamentoID: Long): List<Pessoa>
