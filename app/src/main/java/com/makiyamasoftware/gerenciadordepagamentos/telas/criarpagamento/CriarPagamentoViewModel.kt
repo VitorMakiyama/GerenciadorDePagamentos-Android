@@ -88,6 +88,7 @@ class CriarPagamentoViewModel(val database:PagamentosDatabaseDao, application: A
     fun onCriarNovoPagamentoDone() {
         _criarNovoPagamentoEvent.value = false
     }
+
     // Funcao que retorna uma string com o nome dos campos que n foram preenchidos
     fun isAlgoNaoPreenchido(): String {
         var naoPreenchidos = ""
@@ -107,14 +108,14 @@ class CriarPagamentoViewModel(val database:PagamentosDatabaseDao, application: A
         var algumParticipanteVazio = false
         var algumaParcelaDeParticipanteVazia = false
         for (pessoa in participantes.value!!) {
-            if (pessoa.nome.value == null) algumParticipanteVazio = true
-            if (pessoa.parcelaAparece) if (pessoa.preco.value == null) algumaParcelaDeParticipanteVazia = true
+            if (pessoa.nome.value.isNullOrBlank() || pessoa.nome.value.isNullOrEmpty()) algumParticipanteVazio = true
+            if (pessoa.parcelaAparece) if (pessoa.preco.value.isNullOrBlank() || pessoa.preco.value.isNullOrEmpty()) algumaParcelaDeParticipanteVazia = true
         }
         if (algumParticipanteVazio) naoPreenchidos += getApplication<Application?>().getString(R.string.criarPagamentosFragment_erro_campos_vazios_message_participante)
         if (algumaParcelaDeParticipanteVazia) naoPreenchidos += getApplication<Application?>().getString(R.string.criarPagamentosFragment_erro_campos_vazios_message_parcela_participante)
         return naoPreenchidos
     }
-    // variavel de evento para acionar o AlertDialog para preencher os campos
+    // Variavel de evento para acionar o AlertDialog para preencher os campos
     private val _camposVazios = MutableLiveData<Boolean>(false)
     val camposVazios: LiveData<Boolean>
         get() = _camposVazios

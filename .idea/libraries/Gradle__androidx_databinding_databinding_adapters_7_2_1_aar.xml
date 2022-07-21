@@ -1,0 +1,16 @@
+<component name="libraryTable">
+  <library name="Gradle: androidx.databinding:databinding-adapters:7.2.1@aar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/3825c66181a147f44ab2d4db01646a9d/transformed/databinding-adapters-7.2.1/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/3825c66181a147f44ab2d4db01646a9d/transformed/databinding-adapters-7.2.1/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/3825c66181a147f44ab2d4db01646a9d/transformed/databinding-adapters-7.2.1/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/b54f15a7727a20f0f477084747a7d963/transformed/databinding-adapters-7.2.1/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/b54f15a7727a20f0f477084747a7d963/transformed/databinding-adapters-7.2.1/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/b54f15a7727a20f0f477084747a7d963/transformed/databinding-adapters-7.2.1/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/androidx.databinding/databinding-adapters/7.2.1/6cc7bb80e41d8e0a4809878f2c2194b29d924123/databinding-adapters-7.2.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

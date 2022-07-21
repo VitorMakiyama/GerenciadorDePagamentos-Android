@@ -91,7 +91,7 @@ class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val applicati
     }
 
     /**
-     * Funcao retorna o Historico correspondente ao id de pagamentro passado, dentro
+     * Funcao retorna o Historico correspondente ao id pagId de pagamento passado, dentro
      * dos historicos armazenados
      */
     fun getHistoricoCerto(pagId: Long): HistoricoDePagamento? {

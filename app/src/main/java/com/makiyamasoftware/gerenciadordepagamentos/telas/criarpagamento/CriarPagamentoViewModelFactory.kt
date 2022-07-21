@@ -10,7 +10,7 @@ import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabaseD
  * **/
 class CriarPagamentoViewModelFactory (private val dataSource: PagamentosDatabaseDao,
                                       private val application: Application ) : ViewModelProvider.Factory {
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(CriarPagamentoViewModel::class.java)) {
             return CriarPagamentoViewModel(dataSource, application) as T
         }
