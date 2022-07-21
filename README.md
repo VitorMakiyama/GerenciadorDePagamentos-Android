@@ -1,4 +1,4 @@
 # GerenciadorDePagamentos
 Projeto do Gerenciador de pagamentos - Android (Kotlin)
 
-Development of a personnal financial manager in Kotlin for Android
+Development of a personal debt and payment manager, using Kotlin for Android
