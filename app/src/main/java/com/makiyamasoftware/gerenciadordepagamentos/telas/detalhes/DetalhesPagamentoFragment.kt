@@ -60,8 +60,8 @@ class DetalhesPagamentoFragment: Fragment() {
         viewModel.verTodoOHistorico.observe(viewLifecycleOwner) {
             if (it) {
                 Toast.makeText(context, "Clicou em ver todo o Historico!", Toast.LENGTH_LONG).show()
+                viewModel.onVerTodoOHistoricoDone()
             }
-            viewModel.onVerTodoOHistoricoDone()
         }
 
         return binding.root
