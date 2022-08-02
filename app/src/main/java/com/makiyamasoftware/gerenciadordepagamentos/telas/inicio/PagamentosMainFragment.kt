@@ -56,7 +56,12 @@ class PagamentosMainFragment : Fragment() {
                 viewModel.textoVazioVisivel()
             } else viewModel.textoVazioInvisivel()
         })
-        // Observer
+        // Observer do historico (para que os historicos sejam atualizados quando forem obtidos)
+        viewModel.historicoDosPagamentos.observe(viewLifecycleOwner) {
+            it?.let {
+                adapter.addESubmit(viewModel.pagamentos.value, it)
+            }
+        }
 
         //setando a navegacao do FAB
         viewModel.navigateToCriarPagamento.observe(viewLifecycleOwner, Observer { //trocou this por ViewLifecycleOwner
@@ -66,11 +71,11 @@ class PagamentosMainFragment : Fragment() {
                 viewModel.doneNavigating()
             }
         })
-        // setando a navegacçao do card do pagamento
-        //TODO fazer a navegacao
+        // Setando a navegaçao do card do pagamento
         viewModel.clickNoPagamento.observe(viewLifecycleOwner) {
             if (it) {
                 Toast.makeText(context, "${viewModel.getPagamentoCerto(viewModel.selectedPag)}\n\n${viewModel.getHistoricoCerto(viewModel.selectedPag)}", Toast.LENGTH_SHORT).show()
+                findNavController().navigate(PagamentosMainFragmentDirections.actionPagamentosMainFragmentToDetalhesPagamentoFragment(viewModel.getPagamentoCerto(viewModel.selectedPag)!!))
                 viewModel.onClickPagamentoDone()
             }
         }

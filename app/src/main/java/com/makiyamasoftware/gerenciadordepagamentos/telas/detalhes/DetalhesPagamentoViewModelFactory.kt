@@ -1,18 +1,20 @@
-package com.makiyamasoftware.gerenciadordepagamentos.telas.inicio
+package com.makiyamasoftware.gerenciadordepagamentos.telas.detalhes
 
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabaseDao
 
+
 /**
  * Provém o PagamentosDatabaseDao e o context para o o ViewModel
  * **/
-class PagamentosMainViewModelFactory (private val dataSource: PagamentosDatabaseDao,
-                                      private val application: Application) : ViewModelProvider.Factory {
+class DetalhesPagamentoViewModelFactory (private val dataSource: PagamentosDatabaseDao,
+                                      private val application: Application
+) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(PagamentosMainViewModel::class.java)) {
-            return PagamentosMainViewModel(dataSource, application) as T
+        if (modelClass.isAssignableFrom(DetalhesPagamentoViewModel::class.java)) {
+            return DetalhesPagamentoViewModel(dataSource, application) as T
         }
         throw IllegalArgumentException("ViewModel class desconhecida")
     }

@@ -75,15 +75,9 @@ class PagamentosMainAdapter(private val viewModel: PagamentosMainViewModel, priv
                 editBinding.textMesPagamento.text = viewModel.application.getString(R.string.generic_caps_null)
                 editBinding.textStatusPagamento.text = viewModel.application.getString(R.string.generic_caps_null)
             } else {
-                editBinding.textMesPagamento.text = convertStringDateToStringMonth(historico.data)
-                if (historico.estaPago) {
-                    editBinding.textStatusPagamento.text = viewModel.application.getString(R.string.blocoEstaPago_status_pago)
-                    editBinding.backgroungPagamentoListas.setBackgroundColor(viewModel.application.resources.getColor(R.color.colorPagoBackground))
-                }
-                else {
-                    editBinding.textStatusPagamento.text = viewModel.application.getString(R.string.blocoEstaPago_status_naoPago)
-                    editBinding.backgroungPagamentoListas.setBackgroundColor(viewModel.application.resources.getColor(R.color.colorNaoPagoBackground))
-                }
+                editBinding.textMesPagamento.text = historico.getDataString(viewModel.application, pagamento.freqDoPag)
+                editBinding.textStatusPagamento.text = historico.getEstaPagoString(viewModel.application)
+                editBinding.backgroungPagamentoListas.setBackgroundColor(historico.getBackgroundColorInt(viewModel.application))
             }
             editBinding.pagamentosListaCardView.setOnClickListener { viewModel.onClickPagamento(pagamento.pagamentoID) }
         }

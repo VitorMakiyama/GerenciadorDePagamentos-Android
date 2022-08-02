@@ -17,6 +17,14 @@
             app:popEnterAnim="@anim/slide_in_top"
             app:popExitAnim="@anim/slide_out_bottom"
             app:popUpTo="@id/pagamentosMainFragment" />
+        <action
+            android:id="@+id/action_pagamentosMainFragment_to_detalhesPagamentoFragment"
+            app:destination="@id/detalhesPagamentoFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim"
+            app:popUpTo="@id/pagamentosMainFragment" />
     </fragment>
     <fragment
         android:id="@+id/criarPagamentoFragment"
@@ -31,5 +39,13 @@
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim"
             app:popUpTo="@id/pagamentosMainFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/detalhesPagamentoFragment"
+        android:name="com.makiyamasoftware.gerenciadordepagamentos.telas.detalhes.DetalhesPagamentoFragment"
+        android:label="DetalhesPagamentoFragment" >
+        <argument
+            android:name="pagamentoEscolhido"
+            app:argType="com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento" />
     </fragment>
 </navigation>
