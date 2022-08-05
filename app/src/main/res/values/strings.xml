@@ -2,13 +2,16 @@
     <!-- Strings genericos. -->
     <string name="app_name">Gerenciador de Pagamentos</string>
     <string name="generic_Ok">OK</string>
+    <string name="generic_Sim">Sim</string>
+    <string name="generic_Nao">Não</string>
     <string name="generic_caps_null">NULL</string>
+    <string name="simbolo_BRL">R$</string>
 
     <!-- Strings usadas no Inicio - PagamentosMain. -->
     <string name="fragment_pagamentos_main_provisorio">Seus futuros pagamentos serão\nlistados aqui! \o/</string>
     <string name="clear_button_apagar_tudo">Apagar tudo</string>
     <string name="blocoEstaPago_status_pago">Pago</string>
-    <string name="blocoEstaPago_status_naoPago">Não\nPago</string>
+    <string name="blocoEstaPago_status_naoPago">Não Pago</string>
 
     <!-- Strings usadas no Criar Pagamentos. -->
     <string name="CriarPagamentoFragment_nome_hint">Nome do Pagamento</string>
@@ -26,7 +29,15 @@
     <string name="criarPagamentosFragment_erro_campos_vazios_message_preco">\t•Preco do Pagamento\n</string>
     <string name="criarPagamentosFragment_erro_campos_vazios_message_participante">\t•Nome do participante\n</string>
     <string name="criarPagamentosFragment_erro_campos_vazios_message_parcela_participante">\t•Parcela do valor de algum participante\n</string>
-    <string name="fragment_detalhes_pagamento_ver_todo_o_historicos">"Ver todo o histórico"</string>
+
+    <!-- Strings usadas no Detalhes Pagamento-->
+    <string name="detalhesPagamentoFragment_ver_todo_o_historicos">"Ver todo o histórico"</string>
+    <string name="detalhesPagamentoFragment_descricao_nome">Nome:</string>
+    <string name="detalhesPagamentoFragment_descricao_data">Data:</string>
+    <string name="detalhesPagamentoFragment_descricao_frequencia">Frequência:</string>
+    <string name="detalhesPagamentoFragment_descricao_preco">Preço (R$):</string>
+    <string name="detalhesPagamentoFragment_status_alertTitle">Mudar o status</string>
+    <string name="detalhesPagamentoFragment_status_alertMessage">Deseja alterar o status deste histórico para: \n</string>
 
     <string-array name="frequencias_pagamentos">
         <item>Escolha a frequência do pagamento</item>

@@ -122,7 +122,9 @@ class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val applicati
      */
     fun getHistoricoNaoPagoAntigoOuUltimo(pagId: Long) {
         uiScope.launch {
-            historicoDosPagamentos.value?.add(_getHistoricoNaoPagoAntigoOuUltimo(pagId))
+            val historicoNovo: MutableList<HistoricoDePagamento> = historicoDosPagamentos.value!!
+            historicoNovo.add(_getHistoricoNaoPagoAntigoOuUltimo(pagId))
+            historicoDosPagamentos.value = historicoNovo
         }
        //Log.i("TestHistorico", "Historico: ${historico.value?.historicoID} e estaPago: ${historico.value?.estaPago}\n")
     }

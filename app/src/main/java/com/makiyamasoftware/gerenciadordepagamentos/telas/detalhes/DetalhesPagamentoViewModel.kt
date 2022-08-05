@@ -30,6 +30,9 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
     val pagamentoSelecionado: LiveData<Pagamento>
         get() = _pagamentoSelecionado
     var historicoDePagamento = MutableLiveData<List<HistoricoDePagamento>>()
+    val histRecente: HistoricoDePagamento
+        get() = historicoDePagamento.value!!.first()
+
     var pessoas = MutableLiveData<List<Pessoa>>()
     private var editavel: Boolean = false
 
@@ -46,6 +49,9 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
     private val _ultHistNomePessoa = MutableLiveData<String>()
     val ultHistNomePessoa: LiveData<String>
         get() = _ultHistNomePessoa
+    private val _ultHistPrecoPessoa = MutableLiveData<String>()
+    val ultHistPrecoPessoa: LiveData<String>
+        get() = _ultHistPrecoPessoa
 
 
     val nomePagamentoEditado = MutableLiveData<String>()
@@ -82,15 +88,37 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
         Log.i(TAG, "Click Data: paggId:${pagamentoSelecionado.value!!.pagamentoID} e o historico e \n${historicoDePagamento.value!!.size}")
     }
     fun atualizarHistorico() {
-        val histRecente = historicoDePagamento.value!!.first()
         _ultHistNomePessoa.value = pessoaCerta(pessoas.value!!, histRecente.pagadorID).nome
+        _ultHistPrecoPessoa.value = app.getString(R.string.simbolo_BRL) + " " + histRecente.preco.toString()
     }
 
     fun bindHistRecente(binding: FragmentDetalhesPagamentoBinding) {
-        val histRecente = historicoDePagamento.value!!.first()
         binding.textDataHist.text = histRecente.getDataString(getApplication(), pagamentoSelecionado.value!!.freqDoPag)
         binding.textStatusHist.text = histRecente.getEstaPagoString(getApplication())
         binding.backgroungHist.setBackgroundColor(histRecente.getBackgroundColorInt(getApplication()))
+    }
+    // Atributos e funcoes auxiliares para controlar o click do status do Historico
+    private val _onMudarStatus = MutableLiveData<Boolean>()
+    val onMudarStatus: LiveData<Boolean>
+        get() = _onMudarStatus
+    fun onClickStatusHistorico() {
+        _onMudarStatus.value = true
+    }
+    fun onClickStatusHistoricoDone() {
+        _onMudarStatus.value = false
+    }
+    fun onMudarStatus() {
+        histRecente.toogleStatus()
+        uiScope.launch {
+            saveNovoHistoricoOnDB()
+            historicoDePagamento.value = getAllHistorico()
+        }
+    }
+    suspend fun saveNovoHistoricoOnDB() {
+        withContext(Dispatchers.IO) {
+            dataSource.updateHistoricoDePagamento(histRecente)
+            Log.i(TAG, "Terminou de salvar o status do historico")
+        }
     }
 
     fun setPagamento(pagamento: Pagamento) {

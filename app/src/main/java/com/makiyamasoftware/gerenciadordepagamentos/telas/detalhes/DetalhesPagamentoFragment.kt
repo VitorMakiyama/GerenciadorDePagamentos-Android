@@ -1,5 +1,6 @@
 package com.makiyamasoftware.gerenciadordepagamentos.telas.detalhes
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -53,6 +54,23 @@ class DetalhesPagamentoFragment: Fragment() {
         viewModel.pessoas.observe(viewLifecycleOwner) {
             if (!it.isNullOrEmpty()) {
                 viewModel.atualizarHistorico()
+            }
+        }
+        // Observer do click listener do status do Pagamento, habilitando o evento para atualiza-lo
+        viewModel.onMudarStatus.observe(viewLifecycleOwner) {
+            if (it) {
+                // Criar um AlertDialog, definindo os botões, clickLiseteners e os textos
+                val builder = AlertDialog.Builder(context)
+                builder.setTitle(getString(R.string.detalhesPagamentoFragment_status_alertTitle))
+                builder.setMessage(getString(R.string.detalhesPagamentoFragment_status_alertMessage) +
+                        when (viewModel.histRecente.estaPago) {
+                            true -> getString(R.string.blocoEstaPago_status_naoPago)
+                            else -> getString(R.string.blocoEstaPago_status_pago)
+                })
+                builder.setPositiveButton(getText(R.string.generic_Ok)) { _, wich -> viewModel.onMudarStatus()}
+                builder.setNegativeButton(getText(R.string.generic_Nao)) { _, wich -> }
+                builder.show()
+                viewModel.onClickStatusHistoricoDone()
             }
         }
 

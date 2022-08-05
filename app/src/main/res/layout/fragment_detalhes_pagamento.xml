@@ -14,6 +14,16 @@
         android:layout_height="match_parent" >
 
         <TextView
+            android:id="@+id/descNome"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="1dp"
+            android:text="@string/detalhesPagamentoFragment_descricao_nome"
+            android:textSize="24sp"
+            app:layout_constraintBottom_toBottomOf="@+id/div11"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+        <TextView
             android:id="@+id/nomePagamento"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -22,7 +32,7 @@
             android:textSize="30sp"
             android:layout_marginTop="@dimen/default_margin"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toEndOf="@id/descNome"
             app:layout_constraintTop_toTopOf="parent" />
 
         <EditText
@@ -37,7 +47,7 @@
             android:text="@={viewModel.nomePagamentoEditado}"
             android:textSize="30sp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toEndOf="@id/descNome"
             app:layout_constraintTop_toTopOf="parent" />
         <View
             android:id="@+id/div1"
@@ -108,10 +118,19 @@
             app:layout_constraintTop_toBottomOf="@+id/frequencia" />
 
         <TextView
+            android:id="@+id/descData"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="1dp"
+            android:text="@string/detalhesPagamentoFragment_descricao_data"
+            android:textSize="24sp"
+            app:layout_constraintBottom_toBottomOf="@+id/div21"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/div11" />
+        <TextView
             android:id="@+id/dataInicial"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/default_margin"
             android:layout_marginTop="@dimen/default_margin"
             android:layout_marginEnd="@dimen/default_margin"
             android:gravity="center_horizontal|center_vertical"
@@ -122,22 +141,31 @@
             android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toEndOf="@id/descData"
             app:layout_constraintTop_toBottomOf="@+id/div11"
             tools:text="@string/criarParticipantesHeader_escolha_a_data" />
 
         <TextView
+            android:id="@+id/descFreq"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="1dp"
+            android:text="@string/detalhesPagamentoFragment_descricao_frequencia"
+            android:textSize="24sp"
+            app:layout_constraintBottom_toBottomOf="@+id/div31"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/div21" />
+        <TextView
             android:id="@+id/frequencia"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/default_margin"
             android:layout_marginTop="@dimen/default_margin"
             android:layout_marginEnd="@dimen/default_margin"
             android:gravity="center_horizontal|center_vertical"
             android:text="@{viewModel.pagamentoSelecionado.freqDoPag}"
             android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toEndOf="@id/descFreq"
             app:layout_constraintTop_toBottomOf="@+id/div21"
             />
 
@@ -152,21 +180,30 @@
             android:spinnerMode="dropdown"
             android:onItemSelected="@{() -> viewModel.onSelectSpinnerItem()}"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toEndOf="@id/descFreq"
             app:layout_constraintTop_toBottomOf="@+id/div2" />
 
+        <TextView
+            android:id="@+id/descPreco"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="1dp"
+            android:text="@string/detalhesPagamentoFragment_descricao_preco"
+            android:textSize="24sp"
+            app:layout_constraintBottom_toBottomOf="@+id/div41"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/div31" />
         <TextView
             android:id="@+id/precoPagamento"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/default_margin"
             android:layout_marginTop="@dimen/default_margin"
             android:layout_marginEnd="@dimen/default_margin"
             android:text="@{viewModel.preco}"
             android:textSize="18sp"
             android:textAlignment="center"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toEndOf="@id/descPreco"
             app:layout_constraintTop_toTopOf="@+id/div31"
             />
 
@@ -196,7 +233,7 @@
             android:text="@={viewModel.precoEditado}"
             android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/descPreco"
             app:layout_constraintTop_toTopOf="@+id/div3" />
         <View
             android:id="@+id/div41"
@@ -238,11 +275,22 @@
                     app:layout_constraintStart_toEndOf="@+id/divHist1"
                     app:layout_constraintTop_toTopOf="parent"
                     tools:text="Nome" />
+                <TextView
+                    android:id="@+id/textPrecoHist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/blocoEstaPago"
+                    android:text="@{viewModel.ultHistPrecoPessoa}"
+                    app:layout_constraintStart_toEndOf="@+id/divHist1"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/textNomeHist"
+                    tools:text="$$" />
 
                 <TextView
                     android:id="@+id/backgroungHist"
                     android:layout_width="@dimen/defaultDivMargin"
                     android:layout_height="@dimen/cardViewHeight"
+                    android:onClickListener="@{() -> viewModel.onClickStatusHistorico()}"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@+id/divHist1"
                     app:layout_constraintStart_toStartOf="parent"
@@ -306,7 +354,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/default_margin"
             android:onClick="@{() -> viewModel.onVerTodoOHistorico()}"
-            android:text="@string/fragment_detalhes_pagamento_ver_todo_o_historicos"
+            android:text="@string/detalhesPagamentoFragment_ver_todo_o_historicos"
             android:background="?attr/selectableItemBackground"
             android:elevation="0dp"
             android:textColor="@color/colorAccent"
