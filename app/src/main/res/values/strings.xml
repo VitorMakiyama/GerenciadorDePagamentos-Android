@@ -16,7 +16,7 @@
     <!-- Strings usadas no Criar Pagamentos. -->
     <string name="CriarPagamentoFragment_nome_hint">Nome do Pagamento</string>
     <string name="CriarPagamentoFragment_preco_hint">Preco inicial do pagamento</string>
-    <string name="CriarPagamentoFragment_fragment_name">Criar novo Pagamento</string>
+    <string name="Label_CriarPagamentoFragment_fragment_name">Criar novo Pagamento</string>
     <string name="CriarPagamentoFragment_hint_participante">º Participante</string>
     <string name="criarParticipantesHeader_escolha_a_data">Escolha a data de inicio</string>
     <string name="criarParticipantesHeader_escolha_a_frequencia">Escolha a frequência</string>

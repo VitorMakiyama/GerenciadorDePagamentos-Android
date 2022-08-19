@@ -6,12 +6,12 @@ import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.navigation.fragment.findNavController
 import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabaseDao
+import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
 import kotlinx.coroutines.*
-import kotlinx.coroutines.android.awaitFrame
+import kotlin.properties.Delegates
 
 class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val application: Application) : ViewModel() {
     /**
@@ -41,12 +41,43 @@ class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val applicati
     private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
 
     // Lista de Pagamentos, deve ser atualizada conforme o DB
-    val pagamentos: LiveData<List<Pagamento>> = database.getAllPagamentos()
+    var pagamentos: LiveData<List<Pagamento>>
 
-    //
-    var historicoDosPagamentos = MutableLiveData<MutableList<HistoricoDePagamento>>()
+    // MutableList dos ultimos históricos dos pagamentos
+    lateinit var historicoDosPagamentos : MutableList<LiveData<HistoricoDePagamento>>
+    private val _historicoDosPagamentosState = MutableLiveData<Boolean>(false)
+    val historicoDosPagamentosState: LiveData<Boolean>
+        get() = _historicoDosPagamentosState
+    var sizeHistorico: Int = 0
+    fun reloadHistoricos() {
+        uiScope.launch {
+            val new = _getHistoricoNaoPagoAntigoOuUltimo(selectedPag)
+            for (i in pagamentos.value!!) {
+                if (i.pagamentoID == selectedPag) {
+                    historicoDosPagamentos[pagamentos.value!!.indexOf(i)] = new
+                    _historicoDosPagamentosState.value = true
+                }
+            }
+        }
+
+    }
+    fun historicoStateDone() {
+        _historicoDosPagamentosState.value = false
+    }
+    // MutableList das pessoas relativas aos ultimos historicos
+    lateinit var pessoasRecentes: MutableList<LiveData<Pessoa>>
+    private val _pessoasRecentesState = MutableLiveData<Boolean>(false)
+    val pessoasRecentesState: LiveData<Boolean>
+        get() =  _pessoasRecentesState
+    var sizePessoas: Int = 0
+    fun pessoasStateDone() {
+        _pessoasRecentesState.value = false
+    }
+
     init {
-        historicoDosPagamentos.value = mutableListOf<HistoricoDePagamento>()
+        pagamentos = database.getAllPagamentos()
+        historicoDosPagamentos = mutableListOf<LiveData<HistoricoDePagamento>>()
+        pessoasRecentes = mutableListOf<LiveData<Pessoa>>()
     }
     /**
      * Atributo para controlar o texto para lista vazia
@@ -95,10 +126,10 @@ class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val applicati
      * dos historicos armazenados
      */
     fun getHistoricoCerto(pagId: Long): HistoricoDePagamento? {
-        if (historicoDosPagamentos.value != null) {
-            for (i in historicoDosPagamentos.value!!)
+        if (!historicoDosPagamentos.isNullOrEmpty()) {
+            for (i in historicoDosPagamentos)
                 if (i == null)
-                else if (pagId == i.pagamentoID) return i
+                else if (pagId == i.value?.pagamentoID) return i.value
         }
         return null
     }
@@ -115,29 +146,56 @@ class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val applicati
         }
         return null
     }
+    /**
+     * Funcao retorna a Pessoa correspondente ao id de pagamento passado,
+     *  dentro das pessoas armazenadas
+     */
+    fun getPessoaCerta(pagId: Long): Pessoa? {
+        if (!pessoasRecentes.isNullOrEmpty()) {
+            for (i in pessoasRecentes) {
+                if (pagId == i.value?.pagamentoID) return i.value
+            }
+        }
+        return null
+    }
 
     /**
-     * Funcao q retorna o historico nao pago mais antigo, e se nao tiver
+     * Funcao que retorna o historico nao pago mais antigo, e se nao tiver
      * o historico mais recente
      */
     fun getHistoricoNaoPagoAntigoOuUltimo(pagId: Long) {
         uiScope.launch {
-            val historicoNovo: MutableList<HistoricoDePagamento> = historicoDosPagamentos.value!!
-            historicoNovo.add(_getHistoricoNaoPagoAntigoOuUltimo(pagId))
-            historicoDosPagamentos.value = historicoNovo
+            historicoDosPagamentos.add(_getHistoricoNaoPagoAntigoOuUltimo(pagId))
+            sizeHistorico++
+            Log.i(TAG, "${historicoDosPagamentos.size} historicos no final\npagId = ${pagId} ${historicoDosPagamentos.last()}")
+            if (historicoDosPagamentos.size == pagamentos.value?.size) _historicoDosPagamentosState.value = true
         }
        //Log.i("TestHistorico", "Historico: ${historico.value?.historicoID} e estaPago: ${historico.value?.estaPago}\n")
     }
-    private suspend fun _getHistoricoNaoPagoAntigoOuUltimo(pagId: Long) : HistoricoDePagamento {
+    private suspend fun _getHistoricoNaoPagoAntigoOuUltimo(pagId: Long) : LiveData<HistoricoDePagamento> {
         return withContext(Dispatchers.IO) {
-            var historico = database.getHistoricoDePagamentoNaoPago(pagId)
-            if (historico == null) {
-                historico = database.getUltimoHistoricoDePagamento(pagId)
-            }
+            val historico : LiveData<HistoricoDePagamento> = database.getUltimoHistoricoDePagamento(pagId)
             historico
         }
     }
 
+    /**
+     * Funcao que retorna a pessoa respectiva do historico, identificado
+     *  pelo pessoaId (parametro)
+     */
+    fun getPessoaDoHistorico(pessoaId: Long) {
+        uiScope.launch {
+            if (sizePessoas < sizeHistorico)
+            pessoasRecentes.add(_getPessoaDoHistorico(pessoaId))
+            sizePessoas++
+            _pessoasRecentesState.value = true
+        }
+    }
+    private suspend fun _getPessoaDoHistorico(pessoaId: Long) : LiveData<Pessoa> {
+        return withContext(Dispatchers.IO) {
+            database.getPessoa(pessoaId)
+        }
+    }
     /**
      * Click listener è evento para o click nos cards, ele aciona a navegaçao atraves de um observer no Fragment
      */

@@ -34,7 +34,7 @@ class PagamentosMainAdapter(private val viewModel: PagamentosMainViewModel, priv
         when (holder) {
             is PagamentoViewHolder -> {
                 val item = getItem(position) as DataItem.PagamentoItem
-                holder.bind(item.pag, item.getUltimoParticipante(), item.viewModel)
+                holder.bind(item.pag, item.getUltimoParticipante(), viewModel)
             }
         }
     }
@@ -49,11 +49,13 @@ class PagamentosMainAdapter(private val viewModel: PagamentosMainViewModel, priv
      * Para criar o Header ou aumentar a dicasParticipantes
      */
     private val adapterScope = CoroutineScope(Dispatchers.Default)
-    fun addESubmit(pagamentos: List<Pagamento>?, historico: MutableList<HistoricoDePagamento>?) {
+    fun addESubmit(pagamentos: List<Pagamento>?) {
         adapterScope.launch {
             val itens = when (pagamentos) {
                 null -> null
-                else -> pagamentos.map { DataItem.PagamentoItem(it, viewModel, historico) }
+                else -> pagamentos.map { DataItem.PagamentoItem(it,
+                    viewModel.getHistoricoCerto(it.pagamentoID),
+                    viewModel.getPessoaCerta(it.pagamentoID)) }
             }
             withContext(Dispatchers.Main) {
                 submitList(itens)
@@ -97,16 +99,21 @@ class PagamentosMainAdapter(private val viewModel: PagamentosMainViewModel, priv
  */
 sealed class DataItem {
     abstract val id: Long
-    data class PagamentoItem(val pag: Pagamento, val viewModel: PagamentosMainViewModel, val historico: MutableList<HistoricoDePagamento>?): DataItem() {
+    abstract val pago: Boolean?
+    data class PagamentoItem(val pag: Pagamento, val historico: HistoricoDePagamento?, val pessoa: Pessoa?): DataItem() {
         override val id: Long = pag.pagamentoID
-        val pessoas: List<Pessoa> = viewModel.database.getPessoasDoPagamento(pag.pagamentoID)
+        override val pago: Boolean?
+            get() = historico?.estaPago
         /**
          * Atributo para colocar o nome do ultimo participante que deve/fez o pgmt
          */
         //TODO ATUALIZAR PARA PEGAR  A PESSOA CERTA (USANDO O HISTORICO DE PGMT)
         fun getUltimoParticipante(): String {
-            Log.i("PagamentosMainAdapter","Pessoa ${pessoas}")
-            return pessoas[0].nome
+            Log.i("PagamentosMainAdapter","Pessoa ${pessoa}")
+            if (pessoa == null){
+                return "NULL"
+            }
+            return pessoa.nome
         }
 
     }
@@ -120,7 +127,8 @@ sealed class DataItem {
  */
 class PagamentoDiffCallback: DiffUtil.ItemCallback<DataItem>() {
     override fun areItemsTheSame(oldItem: DataItem, newItem: DataItem): Boolean {
-        return oldItem.id == newItem.id
+        Log.i(TAG,"OLD=${oldItem.pago} e NEW=${newItem.pago}")
+        return oldItem.id == newItem.id && oldItem.pago == newItem.pago
     }
 
     override fun areContentsTheSame(oldItem: DataItem, newItem: DataItem): Boolean {

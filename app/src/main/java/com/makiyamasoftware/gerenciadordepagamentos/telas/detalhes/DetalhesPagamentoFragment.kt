@@ -7,12 +7,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import android.widget.Toolbar
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.makiyamasoftware.gerenciadordepagamentos.R
+import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabase
 import com.makiyamasoftware.gerenciadordepagamentos.databinding.FragmentDetalhesPagamentoBinding
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.pagamentos_lista.view.*
 
 private const val TAG: String = "DetalhesPagamentoFragment"
@@ -81,6 +84,9 @@ class DetalhesPagamentoFragment: Fragment() {
                 viewModel.onVerTodoOHistoricoDone()
             }
         }
+
+        activity?.actionBar?.setTitle(viewModel.pagamentoSelecionado.value?.nome)
+        Log.i(TAG, "${viewModel.pagamentoSelecionado.value?.nome}")
 
         return binding.root
     }

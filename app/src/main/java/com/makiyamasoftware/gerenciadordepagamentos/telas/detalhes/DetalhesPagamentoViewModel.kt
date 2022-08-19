@@ -31,7 +31,7 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
         get() = _pagamentoSelecionado
     var historicoDePagamento = MutableLiveData<List<HistoricoDePagamento>>()
     val histRecente: HistoricoDePagamento
-        get() = historicoDePagamento.value!!.first()
+        get() = getHistoricoRecente()
 
     var pessoas = MutableLiveData<List<Pessoa>>()
     private var editavel: Boolean = false
@@ -66,6 +66,15 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
             pessoas.value = pessoasTemp
             Log.i(TAG, "Atribuiu o historico")
         }
+    }
+    fun getHistoricoRecente(): HistoricoDePagamento {
+        var recente = historicoDePagamento.value?.first()
+        if (recente != null && recente.estaPago){
+            for (i in historicoDePagamento.value!!) {
+                if (!i.estaPago) recente = i
+            }
+        }
+        return recente!!
     }
     suspend fun getAllHistorico(): List<HistoricoDePagamento> {
         return withContext(Dispatchers.IO) {

@@ -7,14 +7,14 @@ import android.view.*
 import android.widget.Toast
 import androidx.core.view.size
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.*
 import androidx.navigation.fragment.findNavController
 import com.makiyamasoftware.gerenciadordepagamentos.R
+import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabase
 import com.makiyamasoftware.gerenciadordepagamentos.databinding.FragmentPagamentosMainBinding
 
+const val TAG = "PagamentosMainFragment"
 /**
  * O fragment inical, mostrará todos os pagamentos, na forma de CardViews, o
  * floating button serve para adicionar novos pagamentos
@@ -46,24 +46,51 @@ class PagamentosMainFragment : Fragment() {
         // Observer da lista de pagamentos
         viewModel.pagamentos.observe(viewLifecycleOwner, Observer {
             it?.let {
-                adapter.addESubmit(it, historico = viewModel.historicoDosPagamentos.value)
+                adapter.addESubmit(it)
             }
             for (i in it) {
-                viewModel.getHistoricoNaoPagoAntigoOuUltimo(i.pagamentoID)
+                if (it.indexOf(i) >= viewModel.sizeHistorico) {
+                    viewModel.getHistoricoNaoPagoAntigoOuUltimo(i.pagamentoID)
+                    Log.i(TAG, "${it.indexOf(i)}>=${viewModel.sizeHistorico} Pediu historico ${it.indexOf(i)}\n")
+                }
             }
-            Log.i("Test 5","pagamet vazio? ${it.isNullOrEmpty()}")
+            Log.i("Test 5","pagamento vazio? ${it.isNullOrEmpty()}")
             if (it.isNullOrEmpty()) {
                 viewModel.textoVazioVisivel()
             } else viewModel.textoVazioInvisivel()
         })
         // Observer do historico (para que os historicos sejam atualizados quando forem obtidos)
-        viewModel.historicoDosPagamentos.observe(viewLifecycleOwner) {
-            it?.let {
-                adapter.addESubmit(viewModel.pagamentos.value, it)
+        viewModel.historicoDosPagamentosState.observe(viewLifecycleOwner) { state ->
+            if (state) {
+                adapter.addESubmit(viewModel.pagamentos.value)
+                for (i in viewModel.historicoDosPagamentos) {
+                    i.observe(viewLifecycleOwner) {
+                        adapter.addESubmit(viewModel.pagamentos.value)
+                        if (viewModel.historicoDosPagamentos.indexOf(i) >= viewModel.sizePessoas) {
+                            it.pagadorID.let { it1 -> viewModel.getPessoaDoHistorico(it1) }
+                        }
+                        Log.i(TAG, "historico ${viewModel.historicoDosPagamentos.indexOf(i)} ou ${viewModel.sizeHistorico - 1} == ${i} e size == ${viewModel.sizeHistorico}\n")
+                        Log.i(TAG, "historicos ${viewModel.historicoDosPagamentos}")
+                    }
+                }
+                viewModel.historicoStateDone()
+            }
+        }
+        //
+        viewModel.pessoasRecentesState.observe(viewLifecycleOwner) {
+            if (it) {
+                Log.i(TAG, "pessoas.size == ${viewModel.pessoasRecentes} e historicos.size == ${viewModel.historicoDosPagamentos.size}\n")
+                for (i in viewModel.pessoasRecentes) {
+                    i.observe(viewLifecycleOwner) {
+                        adapter.addESubmit(viewModel.pagamentos.value)
+                    }
+                }
+                Log.i(TAG, "entrou - pessoas.size != historicos.size")
+                viewModel.pessoasStateDone()
             }
         }
 
-        //setando a navegacao do FAB
+        // setando a navegacao do FAB
         viewModel.navigateToCriarPagamento.observe(viewLifecycleOwner, Observer { //trocou this por ViewLifecycleOwner
             if (it) {
                 this.findNavController().navigate(PagamentosMainFragmentDirections.actionPagamentosMainFragmentToCriarPagamentoFragment())
@@ -100,5 +127,12 @@ class PagamentosMainFragment : Fragment() {
         builder.setPositiveButton("Sim") {_, wich -> viewModel.onClearAll()}
         builder.setNegativeButton("Não") {_, wich ->}
         builder.show()
+        Log.i(TAG, "HISTORICOS ${viewModel.historicoDosPagamentos}\n" +
+                "${viewModel.historicoDosPagamentos.first()?.value}\n${viewModel.historicoDosPagamentos.last()?.value}")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.reloadHistoricos()
     }
 }
