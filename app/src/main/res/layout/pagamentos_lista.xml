@@ -24,13 +24,14 @@
 
             <TextView
                 android:id="@+id/textNomePagamento"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/default_margin"
-                android:layout_marginBottom="@dimen/default_margin"
+                android:layout_marginTop="@dimen/default_half_margin"
+                android:layout_marginBottom="@dimen/default_half_margin"
                 android:text="@{pagamentos.nome}"
+                android:textAlignment="center"
                 android:textAppearance="@style/TextAppearance.AppCompat.Display2"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/textUltimoParticipante"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/div1"
                 app:layout_constraintTop_toTopOf="parent"
@@ -40,11 +41,11 @@
                 android:id="@+id/textUltimoParticipante"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/default_half_margin"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body2"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/div1"
-                app:layout_constraintTop_toBottomOf="@+id/textNomePagamento"
                 tools:text="Pessoa" />
 
             <TextView

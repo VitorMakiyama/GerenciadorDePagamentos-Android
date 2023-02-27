@@ -5,14 +5,14 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'androidx.navigation.safeargs'
 
 android {
-    compileSdkVersion 32
+    compileSdkVersion 33
 
     defaultConfig {
         applicationId "com.makiyamasoftware.gerenciadordepagamentos"
         minSdkVersion 22
-        targetSdkVersion 32
+        targetSdkVersion 33
         versionCode 1
-        versionName "0.6.3"
+        versionName "0.6.4"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 

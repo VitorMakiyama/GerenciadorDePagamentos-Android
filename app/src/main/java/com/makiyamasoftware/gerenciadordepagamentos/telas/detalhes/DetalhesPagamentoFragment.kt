@@ -18,7 +18,7 @@ import com.makiyamasoftware.gerenciadordepagamentos.databinding.FragmentDetalhes
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.pagamentos_lista.view.*
 
-private const val TAG: String = "DetalhesPagamentoFragment"
+private const val TAG: String = "DetalhesPagamentoFrag"
 /**
  * O fragment de detalhes, mostrará todas as informações do pagamento selecionado (clicado), através dos
  *  botões no menu é possível alterar os seus detalhes e salvar as alterações
@@ -45,7 +45,7 @@ class DetalhesPagamentoFragment: Fragment() {
         // Usamos o !! (null-asserted) pq, caso nao haja um PagamentoSelecionado, algo esta muito errado e queremos ver um erro, embora em producao seja ideal tratar esse erro
         viewModel.setPagamento(DetalhesPagamentoFragmentArgs.fromBundle(arguments!!).pagamentoEscolhido)
         binding.viewModel = viewModel
-        binding.lifecycleOwner = this
+        binding.lifecycleOwner = viewLifecycleOwner
 
         viewModel.historicoDePagamento.observe(viewLifecycleOwner) {
             if (it.isNotEmpty()) {
@@ -85,8 +85,8 @@ class DetalhesPagamentoFragment: Fragment() {
             }
         }
 
-        activity?.actionBar?.setTitle(viewModel.pagamentoSelecionado.value?.nome)
-        Log.i(TAG, "${viewModel.pagamentoSelecionado.value?.nome}")
+        activity?.toolbar?.title = viewModel.pagamentoSelecionado.value?.nome
+        Log.i(TAG, "Titulo da actionbar depois: ${activity?.toolbar?.title}")
 
         return binding.root
     }
