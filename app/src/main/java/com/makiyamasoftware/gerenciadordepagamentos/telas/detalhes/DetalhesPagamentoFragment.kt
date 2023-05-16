@@ -7,16 +7,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import android.widget.Toolbar
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.makiyamasoftware.gerenciadordepagamentos.R
-import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabase
 import com.makiyamasoftware.gerenciadordepagamentos.databinding.FragmentDetalhesPagamentoBinding
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.pagamentos_lista.view.*
 
 private const val TAG: String = "DetalhesPagamentoFrag"
 /**
@@ -30,7 +26,7 @@ class DetalhesPagamentoFragment: Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding : FragmentDetalhesPagamentoBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_detalhes_pagamento, container, false)
 
         // instanciar uma application p/ usar no ViewModelFactory
@@ -43,7 +39,7 @@ class DetalhesPagamentoFragment: Fragment() {
 
         // Puxar do Bundle o Parcel e transformar ele de volta em um Pagamento
         // Usamos o !! (null-asserted) pq, caso nao haja um PagamentoSelecionado, algo esta muito errado e queremos ver um erro, embora em producao seja ideal tratar esse erro
-        viewModel.setPagamento(DetalhesPagamentoFragmentArgs.fromBundle(arguments!!).pagamentoEscolhido)
+        viewModel.setPagamento(DetalhesPagamentoFragmentArgs.fromBundle(requireArguments()).pagamentoEscolhido)
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
@@ -70,8 +66,8 @@ class DetalhesPagamentoFragment: Fragment() {
                             true -> getString(R.string.blocoEstaPago_status_naoPago)
                             else -> getString(R.string.blocoEstaPago_status_pago)
                 })
-                builder.setPositiveButton(getText(R.string.generic_Ok)) { _, wich -> viewModel.onMudarStatus()}
-                builder.setNegativeButton(getText(R.string.generic_Nao)) { _, wich -> }
+                builder.setPositiveButton(getText(R.string.generic_Ok)) { _, _ -> viewModel.onMudarStatus()}
+                builder.setNegativeButton(getText(R.string.generic_Nao)) { _, _ -> }
                 builder.show()
                 viewModel.onClickStatusHistoricoDone()
             }
@@ -85,8 +81,8 @@ class DetalhesPagamentoFragment: Fragment() {
             }
         }
 
-        activity?.toolbar?.title = viewModel.pagamentoSelecionado.value?.nome
-        Log.i(TAG, "Titulo da actionbar depois: ${activity?.toolbar?.title}")
+        activity?.actionBar?.title = viewModel.pagamentoSelecionado.value?.nome
+        Log.i(TAG, "Titulo da actionbar depois: ${activity?.actionBar?.title}")
 
         return binding.root
     }

@@ -41,8 +41,10 @@ interface PagamentosDatabaseDao {
     fun getHistoricosDePagamento(pagamentoID: Long): List<HistoricoDePagamento>
     @Query("SELECT * FROM historico_de_pagamento_table WHERE pagamento_id = :pagamentoID ORDER BY esta_pago,historicoID DESC LIMIT 1")
     fun getUltimoHistoricoDePagamento(pagamentoID: Long): LiveData<HistoricoDePagamento>
-    //@Query("SELECT * FROM historico_de_pagamento_table WHERE pagamento_id = :pagamentoID AND esta_pago = 0 ORDER BY historicoID ASC LIMIT 1")
-    //fun getHistoricoDePagamentoNaoPago(pagamentoID: Long): LiveData<HistoricoDePagamento>?
+    @Query("SELECT * FROM (SELECT * FROM historico_de_pagamento_table " +
+            "ORDER BY esta_pago, CASE WHEN esta_pago = 1 THEN historicoID END DESC, " +
+            "CASE WHEN esta_pago = 0 THEN historicoID END ASC) GROUP BY pagamento_id ")
+    fun getListaInicialHistoricoDePagamento(): LiveData<List<HistoricoDePagamento>>
     @Query("DELETE FROM historico_de_pagamento_table")
     fun clearHistoricoDePagamentos()
 }

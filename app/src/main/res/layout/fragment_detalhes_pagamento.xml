@@ -11,7 +11,8 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_height="match_parent"
+        android:padding="@dimen/cardView6dp">
 
         <TextView
             android:id="@+id/descNome"
@@ -23,14 +24,15 @@
             app:layout_constraintBottom_toBottomOf="@+id/div11"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
         <TextView
             android:id="@+id/nomePagamento"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_margin"
             android:text="@{viewModel.pagamentoSelecionado.nome}"
             android:textAlignment="center"
             android:textSize="30sp"
-            android:layout_marginTop="@dimen/default_margin"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/descNome"
             app:layout_constraintTop_toTopOf="parent" />
@@ -39,23 +41,24 @@
             android:id="@+id/editNomePagamento"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:visibility="gone"
             android:layout_marginStart="@dimen/default_margin"
             android:layout_marginEnd="@dimen/default_margin"
             android:hint="@string/CriarPagamentoFragment_nome_hint"
             android:inputType="textPersonName|textCapSentences"
             android:text="@={viewModel.nomePagamentoEditado}"
             android:textSize="30sp"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/descNome"
             app:layout_constraintTop_toTopOf="parent" />
+
         <View
             android:id="@+id/div1"
             android:layout_width="0dp"
             android:layout_height="1dp"
-            android:visibility="gone"
             android:layout_marginTop="@dimen/default_margin"
             android:background="?attr/dividerHorizontal"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/editNomePagamento" />
@@ -64,9 +67,9 @@
             android:id="@+id/div2"
             android:layout_width="0dp"
             android:layout_height="1dp"
-            android:visibility="gone"
             android:layout_marginTop="@dimen/default_margin"
             android:background="?attr/dividerHorizontal"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
@@ -76,9 +79,9 @@
             android:id="@+id/div3"
             android:layout_width="0dp"
             android:layout_height="1dp"
-            android:visibility="gone"
             android:layout_marginTop="@dimen/default_margin"
             android:background="?attr/dividerHorizontal"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
@@ -127,6 +130,7 @@
             app:layout_constraintBottom_toBottomOf="@+id/div21"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@id/div11" />
+
         <TextView
             android:id="@+id/dataInicial"
             android:layout_width="0dp"
@@ -155,6 +159,7 @@
             app:layout_constraintBottom_toBottomOf="@+id/div31"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@id/div21" />
+
         <TextView
             android:id="@+id/frequencia"
             android:layout_width="0dp"
@@ -166,19 +171,18 @@
             android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/descFreq"
-            app:layout_constraintTop_toBottomOf="@+id/div21"
-            />
+            app:layout_constraintTop_toBottomOf="@+id/div21" />
 
         <Spinner
             android:id="@+id/spinnerEscolhaFrequencia"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="gone"
             android:layout_marginTop="@dimen/default_margin"
             android:contentDescription="@string/criarParticipantesHeader_escolha_a_frequencia"
             android:minHeight="48dp"
-            android:spinnerMode="dropdown"
             android:onItemSelected="@{() -> viewModel.onSelectSpinnerItem()}"
+            android:spinnerMode="dropdown"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/descFreq"
             app:layout_constraintTop_toBottomOf="@+id/div2" />
@@ -193,6 +197,7 @@
             app:layout_constraintBottom_toBottomOf="@+id/div41"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@id/div31" />
+
         <TextView
             android:id="@+id/precoPagamento"
             android:layout_width="0dp"
@@ -200,20 +205,19 @@
             android:layout_marginTop="@dimen/default_margin"
             android:layout_marginEnd="@dimen/default_margin"
             android:text="@{viewModel.preco}"
-            android:textSize="18sp"
             android:textAlignment="center"
+            android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/descPreco"
-            app:layout_constraintTop_toTopOf="@+id/div31"
-            />
+            app:layout_constraintTop_toTopOf="@+id/div31" />
 
         <View
             android:id="@+id/div4"
             android:layout_width="0dp"
             android:layout_height="1dp"
-            android:visibility="gone"
-            android:background="?attr/dividerHorizontal"
             android:layout_marginTop="@dimen/default_margin"
+            android:background="?attr/dividerHorizontal"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
@@ -223,24 +227,25 @@
             android:id="@+id/editPrecoPagamento"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:visibility="gone"
             android:layout_marginStart="@dimen/default_margin"
             android:layout_marginTop="@dimen/default_margin"
             android:layout_marginEnd="@dimen/default_margin"
             android:hint="@string/CriarPagamentoFragment_preco_hint"
-            android:textAlignment="center"
             android:inputType="numberDecimal"
             android:text="@={viewModel.precoEditado}"
+            android:textAlignment="center"
             android:textSize="18sp"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/descPreco"
             app:layout_constraintTop_toTopOf="@+id/div3" />
+
         <View
             android:id="@+id/div41"
             android:layout_width="0dp"
             android:layout_height="1dp"
-            android:background="?attr/dividerHorizontal"
             android:layout_marginTop="@dimen/default_margin"
+            android:background="?attr/dividerHorizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
@@ -250,8 +255,8 @@
             android:id="@+id/histRecenteCardView"
             android:layout_width="match_parent"
             android:layout_height="@dimen/cardViewHeight"
-            android:layout_marginTop="@dimen/default_margin"
             android:layout_marginStart="@dimen/cardView6dp"
+            android:layout_marginTop="@dimen/default_margin"
             android:layout_marginEnd="@dimen/cardView6dp"
             android:foregroundGravity="center"
             app:cardCornerRadius="@dimen/cardView6dp"
@@ -268,21 +273,22 @@
                     android:layout_marginTop="@dimen/default_margin"
                     android:layout_marginBottom="@dimen/default_margin"
                     android:text="@{viewModel.ultHistNomePessoa}"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Display2"
                     android:textAlignment="center"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Display2"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/divHist1"
                     app:layout_constraintTop_toTopOf="parent"
                     tools:text="Nome" />
+
                 <TextView
                     android:id="@+id/textPrecoHist"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="@style/blocoEstaPago"
                     android:text="@{viewModel.ultHistPrecoPessoa}"
-                    app:layout_constraintStart_toEndOf="@+id/divHist1"
+                    android:textAppearance="@style/blocoEstaPago"
                     app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/divHist1"
                     app:layout_constraintTop_toBottomOf="@id/textNomeHist"
                     tools:text="$$" />
 
@@ -353,13 +359,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/default_margin"
-            android:onClick="@{() -> viewModel.onVerTodoOHistorico()}"
-            android:text="@string/detalhesPagamentoFragment_ver_todo_o_historicos"
             android:background="?attr/selectableItemBackground"
             android:elevation="0dp"
+            android:onClick="@{() -> viewModel.onVerTodoOHistorico()}"
+            android:text="@string/detalhesPagamentoFragment_ver_todo_o_historicos"
             android:textColor="@color/colorAccent"
-            app:layout_constraintTop_toBottomOf="@id/histRecenteCardView"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/histRecenteCardView" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

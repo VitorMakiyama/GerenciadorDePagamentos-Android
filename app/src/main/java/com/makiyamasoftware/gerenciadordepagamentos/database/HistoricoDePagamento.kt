@@ -53,7 +53,7 @@ data class HistoricoDePagamento(
     }
     fun getBackgroundColorInt(application: Application): Int {
             if (estaPago) {
-                    return application.resources.getColor(R.color.colorPagoBackground)
-            } else return application.resources.getColor(R.color.colorNaoPagoBackground)
+                    return application.resources.getColor(R.color.colorPagoBackground, null)
+            } else return application.resources.getColor(R.color.colorNaoPagoBackground, null)
     }
 }
