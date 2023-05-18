@@ -11,7 +11,6 @@ import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabaseDao
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
 import kotlinx.coroutines.*
-import kotlin.properties.Delegates
 
 class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val application: Application) : ViewModel() {
     /**
@@ -41,31 +40,15 @@ class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val applicati
     private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
 
     // Lista de Pagamentos, deve ser atualizada conforme o DB
-    var pagamentos: LiveData<List<Pagamento>>
+    var pagamentos: LiveData<List<Pagamento>> = database.getAllPagamentos()
 
-    // MutableList dos ultimos históricos dos pagamentos
-    lateinit var historicoDosPagamentos : MutableList<LiveData<HistoricoDePagamento>>
-    private val _historicoDosPagamentosState = MutableLiveData<Boolean>(false)
-    val historicoDosPagamentosState: LiveData<Boolean>
-        get() = _historicoDosPagamentosState
+    // LiveData List dos ultimos históricos dos pagamentos (historicos atuais)
+    var historicoDosPagamentos : LiveData<List<HistoricoDePagamento>> = database.getListaInicialHistoricoDePagamento()
     var sizeHistorico: Int = 0
-    fun reloadHistoricos() {
-        uiScope.launch {
-            val new = _getHistoricoNaoPagoAntigoOuUltimo(selectedPag)
-            for (i in pagamentos.value!!) {
-                if (i.pagamentoID == selectedPag) {
-                    historicoDosPagamentos[pagamentos.value!!.indexOf(i)] = new
-                    _historicoDosPagamentosState.value = true
-                }
-            }
-        }
 
-    }
-    fun historicoStateDone() {
-        _historicoDosPagamentosState.value = false
-    }
+
     // MutableList das pessoas relativas aos ultimos historicos
-    lateinit var pessoasRecentes: MutableList<LiveData<Pessoa>>
+    var pessoasRecentes: MutableList<LiveData<Pessoa>> = mutableListOf<LiveData<Pessoa>>()
     private val _pessoasRecentesState = MutableLiveData<Boolean>(false)
     val pessoasRecentesState: LiveData<Boolean>
         get() =  _pessoasRecentesState
@@ -74,11 +57,6 @@ class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val applicati
         _pessoasRecentesState.value = false
     }
 
-    init {
-        pagamentos = database.getAllPagamentos()
-        historicoDosPagamentos = mutableListOf<LiveData<HistoricoDePagamento>>()
-        pessoasRecentes = mutableListOf<LiveData<Pessoa>>()
-    }
     /**
      * Atributo para controlar o texto para lista vazia
      */
@@ -113,7 +91,7 @@ class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val applicati
             zerarODB()
         }
     }
-    suspend fun zerarODB() {
+    private suspend fun zerarODB() {
         withContext(Dispatchers.IO) {
             database.clearHistoricoDePagamentos()
             database.clearPagamentos()
@@ -126,10 +104,10 @@ class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val applicati
      * dos historicos armazenados
      */
     fun getHistoricoCerto(pagId: Long): HistoricoDePagamento? {
-        if (!historicoDosPagamentos.isNullOrEmpty()) {
-            for (i in historicoDosPagamentos)
-                if (i == null)
-                else if (pagId == i.value?.pagamentoID) return i.value
+        Log.i(TAG, "entrou no getHistorico HISTORICO${historicoDosPagamentos.value}")
+        if (!historicoDosPagamentos.value.isNullOrEmpty()) {
+            Log.i(TAG, "getHistorico historicos nao null")
+            for (i in historicoDosPagamentos.value!!) if (pagId == i.pagamentoID) return i
         }
         return null
     }
@@ -140,8 +118,7 @@ class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val applicati
     fun getPagamentoCerto(pagId: Long): Pagamento? {
         if (pagamentos.value != null) {
             for (i in pagamentos.value!!) {
-                if (i == null)
-                else if (pagId == i.pagamentoID) return i
+                if (pagId == i.pagamentoID) return i
             }
         }
         return null
@@ -160,34 +137,15 @@ class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val applicati
     }
 
     /**
-     * Funcao que retorna o historico nao pago mais antigo, e se nao tiver
-     * o historico mais recente
-     */
-    fun getHistoricoNaoPagoAntigoOuUltimo(pagId: Long) {
-        uiScope.launch {
-            historicoDosPagamentos.add(_getHistoricoNaoPagoAntigoOuUltimo(pagId))
-            sizeHistorico++
-            Log.i(TAG, "${historicoDosPagamentos.size} historicos no final\npagId = ${pagId} ${historicoDosPagamentos.last()}")
-            if (historicoDosPagamentos.size == pagamentos.value?.size) _historicoDosPagamentosState.value = true
-        }
-       //Log.i("TestHistorico", "Historico: ${historico.value?.historicoID} e estaPago: ${historico.value?.estaPago}\n")
-    }
-    private suspend fun _getHistoricoNaoPagoAntigoOuUltimo(pagId: Long) : LiveData<HistoricoDePagamento> {
-        return withContext(Dispatchers.IO) {
-            val historico : LiveData<HistoricoDePagamento> = database.getUltimoHistoricoDePagamento(pagId)
-            historico
-        }
-    }
-
-    /**
      * Funcao que retorna a pessoa respectiva do historico, identificado
      *  pelo pessoaId (parametro)
      */
-    fun getPessoaDoHistorico(pessoaId: Long) {
+    fun getPessoaDoHistoricoFromDB(pessoaId: Long) {
         uiScope.launch {
-            if (sizePessoas < sizeHistorico)
-            pessoasRecentes.add(_getPessoaDoHistorico(pessoaId))
-            sizePessoas++
+            if (sizePessoas < sizeHistorico) {
+                pessoasRecentes.add(_getPessoaDoHistorico(pessoaId))
+                sizePessoas++
+            }
             _pessoasRecentesState.value = true
         }
     }

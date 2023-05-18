@@ -3,14 +3,18 @@ package com.makiyamasoftware.gerenciadordepagamentos.telas.inicio
 import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.view.size
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.*
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.makiyamasoftware.gerenciadordepagamentos.R
-import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabase
 import com.makiyamasoftware.gerenciadordepagamentos.databinding.FragmentPagamentosMainBinding
 
@@ -23,7 +27,7 @@ class PagamentosMainFragment : Fragment() {
     lateinit var viewModel: PagamentosMainViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                                savedInstanceState: Bundle?): View? {
+                                savedInstanceState: Bundle?): View {
         val binding = FragmentPagamentosMainBinding.inflate(inflater, container, false)
 
         // instanciar uma application p/ usar no ViewModelFactory
@@ -40,55 +44,49 @@ class PagamentosMainFragment : Fragment() {
         binding.pagamentosMainViewModel = viewModel
 
         // criando e setando o adapter
-        val adapter = PagamentosMainAdapter(viewModel, this.viewLifecycleOwner)
+        val adapter = PagamentosMainAdapter(viewModel)
         binding.listaPagamentos.adapter = adapter
 
         // Observer da lista de pagamentos
-        viewModel.pagamentos.observe(viewLifecycleOwner, Observer {
+        viewModel.pagamentos.observe(viewLifecycleOwner) {
+            // Se houver uma lista (not null) dentro do livedata, faça:
             it?.let {
                 adapter.addESubmit(it)
             }
-            for (i in it) {
-                if (it.indexOf(i) >= viewModel.sizeHistorico) {
-                    viewModel.getHistoricoNaoPagoAntigoOuUltimo(i.pagamentoID)
-                    Log.i(TAG, "${it.indexOf(i)}>=${viewModel.sizeHistorico} Pediu historico ${it.indexOf(i)}\n")
-                }
-            }
-            Log.i("Test 5","pagamento vazio? ${it.isNullOrEmpty()}")
+            // Se a lista for null, mostre o texto de nenhum pagamento
             if (it.isNullOrEmpty()) {
                 viewModel.textoVazioVisivel()
             } else viewModel.textoVazioInvisivel()
-        })
-        // Observer do historico (para que os historicos sejam atualizados quando forem obtidos)
-        viewModel.historicoDosPagamentosState.observe(viewLifecycleOwner) { state ->
-            if (state) {
-                adapter.addESubmit(viewModel.pagamentos.value)
-                for (i in viewModel.historicoDosPagamentos) {
-                    i.observe(viewLifecycleOwner) {
-                        adapter.addESubmit(viewModel.pagamentos.value)
-                        if (viewModel.historicoDosPagamentos.indexOf(i) >= viewModel.sizePessoas) {
-                            it.pagadorID.let { it1 -> viewModel.getPessoaDoHistorico(it1) }
-                        }
-                        Log.i(TAG, "historico ${viewModel.historicoDosPagamentos.indexOf(i)} ou ${viewModel.sizeHistorico - 1} == ${i} e size == ${viewModel.sizeHistorico}\n")
-                        Log.i(TAG, "historicos ${viewModel.historicoDosPagamentos}")
-                    }
-                }
-                viewModel.historicoStateDone()
-            }
         }
+        // Observer do historico (para que os historicos sejam atualizados quando forem obtidos)
+        viewModel.historicoDosPagamentos.observe(viewLifecycleOwner, Observer {
+            // Tudo com o historico so sera realizado caso a lista NAO SEJA NULL
+            it?.let {
+                viewModel.sizeHistorico = it.size
+
+                // atualiza os dados no adapter, reenviando a lista de pagamentos
+                adapter.addESubmit(viewModel.pagamentos.value)
+                for (historico in it) {
+                    historico.pagadorID.let { it1 -> viewModel.getPessoaDoHistoricoFromDB(it1) }
+                    Log.i(TAG, "historico ${it.indexOf(historico)} de ${it.size} == ${historico} e size == ${viewModel.sizeHistorico}\n")
+                }
+                Log.i(TAG, "historicos ${it}")
+            }
+        })
+
         //
-        viewModel.pessoasRecentesState.observe(viewLifecycleOwner) {
+        viewModel.pessoasRecentesState.observe(viewLifecycleOwner, Observer {
             if (it) {
-                Log.i(TAG, "pessoas.size == ${viewModel.pessoasRecentes} e historicos.size == ${viewModel.historicoDosPagamentos.size}\n")
+                Log.i(TAG, "pessoas.size == ${viewModel.pessoasRecentes} e historicos.size == ${viewModel.historicoDosPagamentos.value?.size}\n")
                 for (i in viewModel.pessoasRecentes) {
-                    i.observe(viewLifecycleOwner) {
+                    i.observe(viewLifecycleOwner, Observer {
                         adapter.addESubmit(viewModel.pagamentos.value)
-                    }
+                    })
                 }
                 Log.i(TAG, "entrou - pessoas.size != historicos.size")
                 viewModel.pessoasStateDone()
             }
-        }
+        })
 
         // setando a navegacao do FAB
         viewModel.navigateToCriarPagamento.observe(viewLifecycleOwner, Observer { //trocou this por ViewLifecycleOwner
@@ -99,13 +97,13 @@ class PagamentosMainFragment : Fragment() {
             }
         })
         // Setando a navegaçao do card do pagamento
-        viewModel.clickNoPagamento.observe(viewLifecycleOwner) {
+        viewModel.clickNoPagamento.observe(viewLifecycleOwner, Observer {
             if (it) {
-                Toast.makeText(context, "${viewModel.getPagamentoCerto(viewModel.selectedPag)}\n\n${viewModel.getHistoricoCerto(viewModel.selectedPag)}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "${viewModel.getPagamentoCerto(viewModel.selectedPag)?.nome}  ${viewModel.getHistoricoCerto(viewModel.selectedPag)}", Toast.LENGTH_SHORT).show()
                 findNavController().navigate(PagamentosMainFragmentDirections.actionPagamentosMainFragmentToDetalhesPagamentoFragment(viewModel.getPagamentoCerto(viewModel.selectedPag)!!))
                 viewModel.onClickPagamentoDone()
             }
-        }
+        })
         setHasOptionsMenu(true)
         return binding.root
     }
@@ -114,8 +112,10 @@ class PagamentosMainFragment : Fragment() {
         inflater.inflate(R.menu.fragment_pagamentos_main_menu, menu)
     }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        Log.i(TAG, "pessoas = ${viewModel.pessoasRecentes.size}")
         return when (item.itemId) {
             R.id.clearButton -> {onClearButton(); true}
+
             else -> false
         }
     }
@@ -128,11 +128,6 @@ class PagamentosMainFragment : Fragment() {
         builder.setNegativeButton("Não") {_, wich ->}
         builder.show()
         Log.i(TAG, "HISTORICOS ${viewModel.historicoDosPagamentos}\n" +
-                "${viewModel.historicoDosPagamentos.first()?.value}\n${viewModel.historicoDosPagamentos.last()?.value}")
-    }
-
-    override fun onResume() {
-        super.onResume()
-        viewModel.reloadHistoricos()
+                "${viewModel.historicoDosPagamentos.value?.first()}\n${viewModel.historicoDosPagamentos.value?.last()}")
     }
 }
