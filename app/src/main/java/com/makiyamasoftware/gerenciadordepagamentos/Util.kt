@@ -53,6 +53,8 @@ fun atualizarNovosHistoricosDePagamento(ultimoHistorico: HistoricoDePagamento, h
 
     // inicia a lista
     val novosHistoricos = mutableListOf<HistoricoDePagamento>()
+    // variavel que guarda o ID do ultimo pagador
+    var ultimoPagadorId: Long = ultimoHistorico.pagadorID
 
     when (pag.freqDoPag) {
         // Diário
@@ -68,12 +70,13 @@ fun atualizarNovosHistoricosDePagamento(ultimoHistorico: HistoricoDePagamento, h
                 dias += anos*365
             }
             // cria os historicos
-            for (i in 0..dias) {
+            for (i in 1..dias) {
                 ultimaDataHist.add(Calendar.DAY_OF_YEAR, 1)
                 val h = HistoricoDePagamento(data = convertCalendarToString(ultimaDataHist),
                                                 pagamentoID = pag.pagamentoID,
-                                                pagadorID = getProximaPessoa(ultimoHistorico.pagadorID, pessoas).pessoaID, preco = ultimoHistorico.preco)
+                                                pagadorID = getProximaPessoa(ultimoPagadorId, pessoas).pessoaID, preco = ultimoHistorico.preco)
                 novosHistoricos.add(h)
+                ultimoPagadorId = h.pagadorID
             }
             return novosHistoricos
         }
@@ -84,12 +87,13 @@ fun atualizarNovosHistoricosDePagamento(ultimoHistorico: HistoricoDePagamento, h
                 meses += anos*12
             }
             // cria os historicos
-            for (n in 0..meses) {
+            for (n in 1..meses) {
                 ultimaDataHist.add(Calendar.MONTH, 1)
                 val h = HistoricoDePagamento(data = convertCalendarToString(ultimaDataHist), pagamentoID = pag.pagamentoID,
-                                                pagadorID = getProximaPessoa(ultimoHistorico.pagadorID, pessoas).pessoaID,
+                                                pagadorID = getProximaPessoa(ultimoPagadorId, pessoas).pessoaID,
                                                 preco = ultimoHistorico.preco)
                 novosHistoricos.add(h)
+                ultimoPagadorId = h.pagadorID
             }
             return novosHistoricos
         }
@@ -102,26 +106,28 @@ fun atualizarNovosHistoricosDePagamento(ultimoHistorico: HistoricoDePagamento, h
                 meses += anos*2
             }
             // cria os historicos
-            for (n in 0..meses) {
+            for (n in 1..meses) {
                 ultimaDataHist.add(Calendar.MONTH, 6)
                 val h = HistoricoDePagamento(data = convertCalendarToString(ultimaDataHist), pagamentoID = pag.pagamentoID,
-                    pagadorID = getProximaPessoa(ultimoHistorico.pagadorID, pessoas).pessoaID,
+                    pagadorID = getProximaPessoa(ultimoPagadorId, pessoas).pessoaID,
                     preco = ultimoHistorico.preco)
                 novosHistoricos.add(h)
+                ultimoPagadorId = h.pagadorID
             }
             return novosHistoricos
         }
         // Anual
         freqs[4] -> {
             // cria os historicos
-            for (n in 0..anos) {
+            for (n in 1..anos) {
                 ultimaDataHist.add(Calendar.YEAR, 1)
                 val h = HistoricoDePagamento(
                     data = convertCalendarToString(ultimaDataHist), pagamentoID = pag.pagamentoID,
-                    pagadorID = getProximaPessoa(ultimoHistorico.pagadorID, pessoas).pessoaID,
+                    pagadorID = getProximaPessoa(ultimoPagadorId, pessoas).pessoaID,
                     preco = ultimoHistorico.preco
                 )
                 novosHistoricos.add(h)
+                ultimoPagadorId = h.pagadorID
             }
             return novosHistoricos
         }
@@ -140,8 +146,8 @@ fun getProximaPessoa(idAtual: Long, pessoas: List<Pessoa>): Pessoa {
 
     // se é a pessoa atual é a ultima da ordem (a List<Pessoa> deve estar ordenada)
     if (pAtual!!.ordem == pessoas.size) {
-        // retorna a primeira
-        return pessoas.last()
+        // retorna a primeira pessoa para recomeçar
+        return pessoas.first()
     }
     for (p in pessoas) {
         // verifica se p é o próximo da ordem => n - (n-1) = 1

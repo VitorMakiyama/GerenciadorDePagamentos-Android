@@ -115,7 +115,6 @@ class PagamentosMainFragment : Fragment() {
         Log.i(TAG, "pessoas = ${viewModel.pessoasRecentes.size}")
         return when (item.itemId) {
             R.id.clearButton -> {onClearButton(); true}
-
             else -> false
         }
     }
@@ -124,8 +123,8 @@ class PagamentosMainFragment : Fragment() {
         val builder = AlertDialog.Builder(context)
         builder.setTitle("Apagar o banco de dados")
         builder.setMessage("Você tem certeza que deseja apagar TODOS os dados do banco de dados? (Não pode ser desfeito)")
-        builder.setPositiveButton("Sim") {_, wich -> viewModel.onClearAll()}
-        builder.setNegativeButton("Não") {_, wich ->}
+        builder.setPositiveButton("Sim") { _, _ -> viewModel.onClearAll()}
+        builder.setNegativeButton("Não") { _, _ ->}
         builder.show()
         Log.i(TAG, "HISTORICOS ${viewModel.historicoDosPagamentos}\n" +
                 "${viewModel.historicoDosPagamentos.value?.first()}\n${viewModel.historicoDosPagamentos.value?.last()}")

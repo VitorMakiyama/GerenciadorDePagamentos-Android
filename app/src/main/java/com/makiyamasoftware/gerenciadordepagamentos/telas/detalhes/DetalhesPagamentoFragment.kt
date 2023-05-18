@@ -7,12 +7,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.makiyamasoftware.gerenciadordepagamentos.R
+import com.makiyamasoftware.gerenciadordepagamentos.convertStringToCalendar
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabase
 import com.makiyamasoftware.gerenciadordepagamentos.databinding.FragmentDetalhesPagamentoBinding
+import com.makiyamasoftware.gerenciadordepagamentos.precisaDeNovoHistorico
+import java.util.Calendar
 
 private const val TAG: String = "DetalhesPagamentoFrag"
 /**
@@ -47,6 +51,7 @@ class DetalhesPagamentoFragment: Fragment() {
             if (it.isNotEmpty()) {
                 viewModel.atualizarPreco()
                 viewModel.bindHistRecente(binding)
+                verifyPagamentosUpdates()
             }
             Log.i(TAG, "LiveData mudou historico de paggId:${viewModel.pagamentoSelecionado.value!!.pagamentoID} e o historico e \n${viewModel.historicoDePagamento.value!!.size}")
         }
@@ -80,10 +85,34 @@ class DetalhesPagamentoFragment: Fragment() {
                 viewModel.onVerTodoOHistoricoDone()
             }
         }
-
-        activity?.actionBar?.title = viewModel.pagamentoSelecionado.value?.nome
+        // After the deprecation of toolbar and actionBar
+        (requireActivity() as AppCompatActivity).supportActionBar?.setDisplayShowTitleEnabled(true)
+        (requireActivity() as AppCompatActivity).supportActionBar?.title = viewModel.pagamentoSelecionado.value?.nome
         Log.i(TAG, "Titulo da actionbar depois: ${activity?.actionBar?.title}")
 
         return binding.root
+    }
+
+    /**
+     * Verifica se o Pagamento esta com os Historicos desatualizados. Se estiver,
+     *  gera um AlertDialogue perguntando para o usuario se ele quer atualiza-lo,
+     *  gerando novos Historicos
+     */
+    fun verifyPagamentosUpdates() {
+        // Verifica se e necessario atualziar e criar novos historicos de pagamento
+        if (precisaDeNovoHistorico(
+                viewModel.pagamentoSelecionado.value!!.freqDoPag,
+                convertStringToCalendar(viewModel.getHistoricoMaisRecente().data),
+                Calendar.getInstance(),
+                requireActivity().resources.getStringArray(R.array.frequencias_pagamentos))
+        ) {
+            // Criar um AlertDialog, definindo os botões, clickLiseteners e os textos
+            val builder = AlertDialog.Builder(context)
+            builder.setTitle(getString(R.string.detalhesPagamentoFragment_update_historicos_alertTitle))
+            builder.setMessage(getString(R.string.detalhesPagamentoFragment_update_historicos_alertMessage))
+            builder.setPositiveButton(getText(R.string.generic_Update)) { _, _ -> viewModel.onUpdateHistoricosDoPagamento() }
+            builder.setNegativeButton(getText(R.string.generic_Nao)) { _, _ -> }
+            builder.show()
+        }
     }
 }

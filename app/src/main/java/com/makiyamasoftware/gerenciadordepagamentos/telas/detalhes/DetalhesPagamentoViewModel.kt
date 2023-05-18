@@ -7,19 +7,25 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.makiyamasoftware.gerenciadordepagamentos.R
+import com.makiyamasoftware.gerenciadordepagamentos.atualizarNovosHistoricosDePagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabaseDao
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
 import com.makiyamasoftware.gerenciadordepagamentos.databinding.FragmentDetalhesPagamentoBinding
 import com.makiyamasoftware.gerenciadordepagamentos.pessoaCerta
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.Calendar
 
 private const val TAG = "DetalhesPagamentoViewModel"
 
 class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
                                  private val app: Application) : AndroidViewModel(app) {
-    val viewModelJob = Job()
+    private val viewModelJob = Job()
     override fun onCleared() {
         super.onCleared()
         viewModelJob.cancel()
@@ -67,14 +73,13 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
             Log.i(TAG, "Atribuiu o historico")
         }
     }
+    // Comeca do historico mais antigo (ultimo do vetor) buscando o historico NAO PAGO mais recente
     fun getHistoricoRecente(): HistoricoDePagamento {
-        var recente = historicoDePagamento.value?.first()
-        if (recente != null && recente.estaPago){
-            for (i in historicoDePagamento.value!!) {
-                if (!i.estaPago) recente = i
-            }
+        for (i in (historicoDePagamento.value!!.size - 1) downTo 1) {
+            val historico = historicoDePagamento.value!![i]
+            if (!(historico.estaPago)) return historico
         }
-        return recente!!
+        return historicoDePagamento.value!!.first()
     }
     suspend fun getAllHistorico(): List<HistoricoDePagamento> {
         return withContext(Dispatchers.IO) {
@@ -117,15 +122,16 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
         _onMudarStatus.value = false
     }
     fun onMudarStatus() {
-        histRecente.toogleStatus()
+        val historico = histRecente
+        historico.toogleStatus()
         uiScope.launch {
-            saveNovoHistoricoOnDB()
-            historicoDePagamento.value = getAllHistorico()
+            saveNovoHistoricoOnDB(historico)
+            historicoDePagamento.value = getAllHistorico()!!
         }
     }
-    suspend fun saveNovoHistoricoOnDB() {
+    suspend fun saveNovoHistoricoOnDB(historico: HistoricoDePagamento) {
         withContext(Dispatchers.IO) {
-            dataSource.updateHistoricoDePagamento(histRecente)
+            dataSource.updateHistoricoDePagamento(historico)
             Log.i(TAG, "Terminou de salvar o status do historico")
         }
     }
@@ -155,5 +161,33 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
     }
     fun onVerTodoOHistoricoDone() {
         _verTodoOHistorico.value = false
+    }
+
+    //
+    fun getHistoricoMaisRecente(): HistoricoDePagamento{
+        return historicoDePagamento.value!!.first()
+    }
+    /**
+     *  Funcao chamada quando, ao iniciar esse fragment, e' detectada a necessidade de
+     *      atualizar os Historicos do Pagamento, pois o ultimo esta com uma data menor que
+     *      hoje - periodo
+     */
+    fun onUpdateHistoricosDoPagamento() {
+        val novosHistoricos = atualizarNovosHistoricosDePagamento(getHistoricoRecente(),
+            Calendar.getInstance(),
+            pagamentoSelecionado.value!!,
+            app.resources.getStringArray(R.array.frequencias_pagamentos),
+            pessoas.value!!)
+        Log.i(TAG, "$novosHistoricos")
+
+        uiScope.launch {
+            salvarAtualizacoesHistorico(novosHistoricos)
+        }
+    }
+    // Funcao para salvar os Historicos atualizados no DataBase, no background sem interromper a Main thread (UI)
+    suspend fun salvarAtualizacoesHistorico(novosHistoricos: List<HistoricoDePagamento>) {
+        withContext(Dispatchers.IO) {
+            for (historico in novosHistoricos) dataSource.inserirHistoricoDePagamento(historico)
+        }
     }
 }
