@@ -48,13 +48,25 @@ class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val applicati
 
 
     // MutableList das pessoas relativas aos ultimos historicos
-    var pessoasRecentes: MutableList<LiveData<Pessoa>> = mutableListOf<LiveData<Pessoa>>()
+    var pessoasRecentes = MutableLiveData<List<Pessoa>>()
     private val _pessoasRecentesState = MutableLiveData<Boolean>(false)
     val pessoasRecentesState: LiveData<Boolean>
         get() =  _pessoasRecentesState
     var sizePessoas: Int = 0
     fun pessoasStateDone() {
         _pessoasRecentesState.value = false
+    }
+
+    init {
+        uiScope.launch {
+            pessoasRecentes.value = getAllPessoas()!!
+        }
+    }
+    // funcao para pegar todas as pessoas
+    suspend fun getAllPessoas(): List<Pessoa> {
+        return withContext(Dispatchers.IO) {
+            database.getAllPessoas()
+        }
     }
 
     /**
@@ -124,13 +136,13 @@ class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val applicati
         return null
     }
     /**
-     * Funcao retorna a Pessoa correspondente ao id de pagamento passado,
+     * Funcao retorna a Pessoa correspondente ao id de pessoa passado,
      *  dentro das pessoas armazenadas
      */
-    fun getPessoaCerta(pagId: Long): Pessoa? {
-        if (!pessoasRecentes.isNullOrEmpty()) {
-            for (i in pessoasRecentes) {
-                if (pagId == i.value?.pagamentoID) return i.value
+    fun getPessoaCerta(pessoaId: Long): Pessoa? {
+        if (!pessoasRecentes.value.isNullOrEmpty()) {
+            for (i in pessoasRecentes.value!!) {
+                if (pessoaId == i.pessoaID) return i
             }
         }
         return null
@@ -140,15 +152,16 @@ class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val applicati
      * Funcao que retorna a pessoa respectiva do historico, identificado
      *  pelo pessoaId (parametro)
      */
-    fun getPessoaDoHistoricoFromDB(pessoaId: Long) {
+    /*fun getPessoaDoHistoricoFromDB(pessoaId: Long, pagId: Long) {
         uiScope.launch {
             if (sizePessoas < sizeHistorico) {
+                // Se ainda nao houver uma pessoa desse pagamento, adiciona-la no vetor
                 pessoasRecentes.add(_getPessoaDoHistorico(pessoaId))
                 sizePessoas++
             }
             _pessoasRecentesState.value = true
         }
-    }
+    }*/
     private suspend fun _getPessoaDoHistorico(pessoaId: Long) : LiveData<Pessoa> {
         return withContext(Dispatchers.IO) {
             database.getPessoa(pessoaId)

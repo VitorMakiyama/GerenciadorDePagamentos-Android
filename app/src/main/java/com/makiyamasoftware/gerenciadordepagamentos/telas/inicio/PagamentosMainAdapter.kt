@@ -30,7 +30,7 @@ class PagamentosMainAdapter(private val viewModel: PagamentosMainViewModel): Lis
         when (holder) {
             is PagamentoViewHolder -> {
                 val item = getItem(position) as DataItem.PagamentoItem
-                holder.bind(item.pag, item.historico, item.getUltimoParticipante(), viewModel)
+                holder.bind(item.pag, item.historico, item.pessoa?.nome ?: "NUll", viewModel)
             }
         }
     }
@@ -51,7 +51,7 @@ class PagamentosMainAdapter(private val viewModel: PagamentosMainViewModel): Lis
                 null -> null
                 else -> pagamentos.map { DataItem.PagamentoItem(it,
                     viewModel.getHistoricoCerto(it.pagamentoID),
-                    viewModel.getPessoaCerta(it.pagamentoID)) }
+                    viewModel.getPessoaCerta(viewModel.getHistoricoCerto(it.pagamentoID)?.pagadorID ?: -1)) }
             }
             withContext(Dispatchers.Main) {
                 submitList(itens)
@@ -102,18 +102,6 @@ sealed class DataItem {
             get() = historico?.estaPago
         override val nomePagador: String?
             get() = pessoa?.nome
-        /**
-         * Atributo para colocar o nome do ultimo participante que deve/fez o pgmt
-         */
-        //TODO ATUALIZAR PARA PEGAR  A PESSOA CERTA (USANDO O HISTORICO DE PGMT)
-        fun getUltimoParticipante(): String {
-            Log.i("PagamentosMainAdapter","Pessoa ${pessoa}")
-            if (pessoa == null){
-                return "NULL"
-            }
-            return pessoa.nome
-        }
-
     }
 }
 

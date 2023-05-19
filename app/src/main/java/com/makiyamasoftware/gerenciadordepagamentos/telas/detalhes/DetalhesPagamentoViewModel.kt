@@ -30,7 +30,7 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
         super.onCleared()
         viewModelJob.cancel()
     }
-    val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
+    private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
 
     private var _pagamentoSelecionado  = MutableLiveData<Pagamento>()
     val pagamentoSelecionado: LiveData<Pagamento>
@@ -63,7 +63,7 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
     val nomePagamentoEditado = MutableLiveData<String>()
     val precoEditado = MutableLiveData<String>()
 
-    fun getHistoricoEPessoas() {
+    private fun getHistoricoEPessoas() {
         uiScope.launch {
             Log.i(TAG, "Entrou na coroutine de buscar o historico")
             val historico = getAllHistorico()
@@ -74,21 +74,21 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
         }
     }
     // Comeca do historico mais antigo (ultimo do vetor) buscando o historico NAO PAGO mais recente
-    fun getHistoricoRecente(): HistoricoDePagamento {
+    private fun getHistoricoRecente(): HistoricoDePagamento {
         for (i in (historicoDePagamento.value!!.size - 1) downTo 1) {
             val historico = historicoDePagamento.value!![i]
             if (!(historico.estaPago)) return historico
         }
         return historicoDePagamento.value!!.first()
     }
-    suspend fun getAllHistorico(): List<HistoricoDePagamento> {
+    private suspend fun getAllHistorico(): List<HistoricoDePagamento> {
         return withContext(Dispatchers.IO) {
             val historico = dataSource.getHistoricosDePagamento(pagamentoSelecionado.value!!.pagamentoID)
             //historico.value?: listOf()
             historico
         }
     }
-    suspend fun getAllPessoas(): List<Pessoa> {
+    private suspend fun getAllPessoas(): List<Pessoa> {
         return withContext(Dispatchers.IO) {
             val pessoas = dataSource.getPessoasDoPagamento(pagamentoSelecionado.value!!.pagamentoID)
             pessoas
@@ -102,7 +102,9 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
         Log.i(TAG, "Click Data: paggId:${pagamentoSelecionado.value!!.pagamentoID} e o historico e \n${historicoDePagamento.value!!.size}")
     }
     fun atualizarHistorico() {
-        _ultHistNomePessoa.value = pessoaCerta(pessoas.value!!, histRecente.pagadorID).nome
+        if (pessoas.value != null) {
+            _ultHistNomePessoa.value = pessoaCerta(pessoas.value!!, histRecente.pagadorID).nome
+        }
         _ultHistPrecoPessoa.value = app.getString(R.string.simbolo_BRL) + " " + histRecente.preco.toString()
     }
 
@@ -129,7 +131,7 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
             historicoDePagamento.value = getAllHistorico()!!
         }
     }
-    suspend fun saveNovoHistoricoOnDB(historico: HistoricoDePagamento) {
+    private suspend fun saveNovoHistoricoOnDB(historico: HistoricoDePagamento) {
         withContext(Dispatchers.IO) {
             dataSource.updateHistoricoDePagamento(historico)
             Log.i(TAG, "Terminou de salvar o status do historico")
@@ -185,7 +187,7 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
         }
     }
     // Funcao para salvar os Historicos atualizados no DataBase, no background sem interromper a Main thread (UI)
-    suspend fun salvarAtualizacoesHistorico(novosHistoricos: List<HistoricoDePagamento>) {
+    private suspend fun salvarAtualizacoesHistorico(novosHistoricos: List<HistoricoDePagamento>) {
         withContext(Dispatchers.IO) {
             for (historico in novosHistoricos) dataSource.inserirHistoricoDePagamento(historico)
         }

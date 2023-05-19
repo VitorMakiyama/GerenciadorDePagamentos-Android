@@ -50,6 +50,7 @@ class DetalhesPagamentoFragment: Fragment() {
         viewModel.historicoDePagamento.observe(viewLifecycleOwner) {
             if (it.isNotEmpty()) {
                 viewModel.atualizarPreco()
+                viewModel.atualizarHistorico()
                 viewModel.bindHistRecente(binding)
                 verifyPagamentosUpdates()
             }

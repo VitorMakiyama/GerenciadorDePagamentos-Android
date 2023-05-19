@@ -67,26 +67,30 @@ class PagamentosMainFragment : Fragment() {
                 // atualiza os dados no adapter, reenviando a lista de pagamentos
                 adapter.addESubmit(viewModel.pagamentos.value)
                 for (historico in it) {
-                    historico.pagadorID.let { it1 -> viewModel.getPessoaDoHistoricoFromDB(it1) }
+                    //historico.let { h -> viewModel.getPessoaDoHistoricoFromDB(h.pagadorID, h.pagamentoID) }
                     Log.i(TAG, "historico ${it.indexOf(historico)} de ${it.size} == ${historico} e size == ${viewModel.sizeHistorico}\n")
                 }
                 Log.i(TAG, "historicos ${it}")
             }
         })
 
-        //
+        viewModel.pessoasRecentes.observe(viewLifecycleOwner) {
+            it?.let {
+                viewModel.sizePessoas = it.size
+                adapter.addESubmit(viewModel.pagamentos.value)
+            }
+        }
+        /*
         viewModel.pessoasRecentesState.observe(viewLifecycleOwner, Observer {
             if (it) {
                 Log.i(TAG, "pessoas.size == ${viewModel.pessoasRecentes} e historicos.size == ${viewModel.historicoDosPagamentos.value?.size}\n")
-                for (i in viewModel.pessoasRecentes) {
-                    i.observe(viewLifecycleOwner, Observer {
-                        adapter.addESubmit(viewModel.pagamentos.value)
-                    })
-                }
+
+                viewModel.pessoasRecentes.last().observe(viewLifecycleOwner) {
+                    adapter.addESubmit(viewModel.pagamentos.value)}
                 Log.i(TAG, "entrou - pessoas.size != historicos.size")
                 viewModel.pessoasStateDone()
             }
-        })
+        })*/
 
         // setando a navegacao do FAB
         viewModel.navigateToCriarPagamento.observe(viewLifecycleOwner, Observer { //trocou this por ViewLifecycleOwner
@@ -112,7 +116,7 @@ class PagamentosMainFragment : Fragment() {
         inflater.inflate(R.menu.fragment_pagamentos_main_menu, menu)
     }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        Log.i(TAG, "pessoas = ${viewModel.pessoasRecentes.size}")
+        Log.i(TAG, "pessoas = ${viewModel.pessoasRecentes.value?.size}")
         return when (item.itemId) {
             R.id.clearButton -> {onClearButton(); true}
             else -> false
