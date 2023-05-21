@@ -182,8 +182,12 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
             pessoas.value!!)
         Log.i(TAG, "$novosHistoricos")
 
+        // Parte de interação com o DataBase
         uiScope.launch {
+            // Salva os novos historicos no DB
             salvarAtualizacoesHistorico(novosHistoricos)
+            // Chama a função de puxar os historicos do DB, para atualizar os dados e a UI
+            historicoDePagamento.value = getAllHistorico()
         }
     }
     // Funcao para salvar os Historicos atualizados no DataBase, no background sem interromper a Main thread (UI)
