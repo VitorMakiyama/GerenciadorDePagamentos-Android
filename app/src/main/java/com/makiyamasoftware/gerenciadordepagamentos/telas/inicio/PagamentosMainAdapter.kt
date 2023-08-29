@@ -10,7 +10,7 @@ import com.makiyamasoftware.gerenciadordepagamentos.R
 import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
-import com.makiyamasoftware.gerenciadordepagamentos.databinding.PagamentosListaBinding
+import com.makiyamasoftware.gerenciadordepagamentos.databinding.PagamentosItemListaBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -62,7 +62,7 @@ class PagamentosMainAdapter(private val viewModel: PagamentosMainViewModel): Lis
     /**
     * ViewHolder utilizado
     * */
-    class PagamentoViewHolder private constructor(private val editBinding: PagamentosListaBinding): RecyclerView.ViewHolder(editBinding.root){
+    class PagamentoViewHolder private constructor(private val editBinding: PagamentosItemListaBinding): RecyclerView.ViewHolder(editBinding.root){
         fun bind(pagamento: Pagamento, historico: HistoricoDePagamento?, ultimoParticipante: String, viewModel: PagamentosMainViewModel) {
             editBinding.pagamentos = pagamento
             editBinding.textUltimoParticipante.text = ultimoParticipante
@@ -81,7 +81,7 @@ class PagamentosMainAdapter(private val viewModel: PagamentosMainViewModel): Lis
         companion object {
             fun from(parent: ViewGroup): PagamentoViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
-                val editBinding = PagamentosListaBinding.inflate(layoutInflater, parent, false)
+                val editBinding = PagamentosItemListaBinding.inflate(layoutInflater, parent, false)
                 return PagamentoViewHolder(editBinding)
             }
         }

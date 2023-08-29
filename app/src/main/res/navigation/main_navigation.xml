@@ -47,5 +47,21 @@
         <argument
             android:name="pagamentoEscolhido"
             app:argType="com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento" />
+        <action
+            android:id="@+id/action_detalhesPagamentoFragment_to_historicosPagamentoFragment"
+            app:destination="@id/historicosPagamentoFragment"
+            app:enterAnim="@android:anim/fade_in"
+            app:exitAnim="@android:anim/fade_out"
+            app:popEnterAnim="@android:anim/fade_in"
+            app:popExitAnim="@android:anim/fade_out"
+            app:popUpTo="@id/detalhesPagamentoFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/historicosPagamentoFragment"
+        android:name="com.makiyamasoftware.gerenciadordepagamentos.telas.historicospagamento.HistoricosPagamentoFragment"
+        android:label="HistoricosPagamentoFragment" >
+        <argument
+            android:name="pagamentoEscolhido"
+            app:argType="com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento" />
     </fragment>
 </navigation>

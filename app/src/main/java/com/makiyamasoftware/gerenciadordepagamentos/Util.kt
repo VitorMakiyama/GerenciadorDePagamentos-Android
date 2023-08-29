@@ -30,7 +30,7 @@ fun convertStringDateToStringDay(data: String): String {
  * Retorna a pessoa identificada pelo iD dentre a lista de pessoas passada.
  *  Se não encontrar, retorna a primeira pessoa
  */
-fun pessoaCerta(pessoas: List<Pessoa>, iD: Long): Pessoa {
+fun getPessoaCerta(pessoas: List<Pessoa>, iD: Long): Pessoa {
     for (i in pessoas) {
         if (i.pessoaID == iD) {
             return i

@@ -40,7 +40,7 @@ interface PagamentosDatabaseDao {
     @Update
     fun updateHistoricoDePagamento(historicoDePagamento: HistoricoDePagamento)
     @Query("SELECT * FROM historico_de_pagamento_table WHERE pagamento_id = :pagamentoID ORDER BY historicoID DESC")
-    fun getHistoricosDePagamento(pagamentoID: Long): List<HistoricoDePagamento>
+    fun getHistoricosDePagamento(pagamentoID: Long): LiveData<List<HistoricoDePagamento>>
     @Query("SELECT * FROM historico_de_pagamento_table WHERE pagamento_id = :pagamentoID ORDER BY esta_pago,historicoID DESC LIMIT 1")
     fun getUltimoHistoricoDePagamento(pagamentoID: Long): LiveData<HistoricoDePagamento>
     @Query("SELECT * FROM (SELECT * FROM historico_de_pagamento_table " +

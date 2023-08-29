@@ -1,7 +1,6 @@
 package com.makiyamasoftware.gerenciadordepagamentos.telas.criarpagamento
 
 import android.annotation.SuppressLint
-import android.app.AlertDialog
 import android.app.Application
 import android.util.Log
 import android.widget.Spinner
@@ -22,7 +21,7 @@ import com.makiyamasoftware.gerenciadordepagamentos.databinding.CriarParticipant
 
 private const val TAG = "CriarPagamentoViewModel"
 
-class CriarPagamentoViewModel(val database:PagamentosDatabaseDao, application: Application) : AndroidViewModel(application) {
+class CriarPagamentoViewModel(val database:PagamentosDatabaseDao, val app: Application) : AndroidViewModel(app) {
     val nomePagamento = MutableLiveData<String>()
 
     val dataInicialString = MutableLiveData<String>()
@@ -58,7 +57,7 @@ class CriarPagamentoViewModel(val database:PagamentosDatabaseDao, application: A
     val participantes = MutableLiveData<MutableList<ParticipanteAux>>()
 
     init {
-        dataInicialString.value = application.getString(R.string.criarParticipantesHeader_escolha_a_data)
+        dataInicialString.value = app.getString(R.string.criarParticipantesHeader_escolha_a_data)
         ParticipanteAux().resetParticipanteId()
         val list = mutableListOf<ParticipanteAux>(ParticipanteAux())
         list.add(ParticipanteAux())
@@ -93,16 +92,16 @@ class CriarPagamentoViewModel(val database:PagamentosDatabaseDao, application: A
     fun isAlgoNaoPreenchido(): String {
         var naoPreenchidos = ""
         if (nomePagamento.value.isNullOrBlank() || nomePagamento.value.isNullOrEmpty()) {
-            naoPreenchidos += getApplication<Application?>().getString(R.string.criarPagamentosFragment_erro_campos_vazios_message_nomePagamento)
+            naoPreenchidos += app.getString(R.string.criarPagamentosFragment_erro_campos_vazios_message_nomePagamento)
         }
-        if (dataInicialString.value == getApplication<Application?>().getString(R.string.criarParticipantesHeader_escolha_a_data)) {
-            naoPreenchidos += getApplication<Application?>().getString(R.string.criarPagamentosFragment_erro_campos_vazios_message_data)
+        if (dataInicialString.value == app.getString(R.string.criarParticipantesHeader_escolha_a_data)) {
+            naoPreenchidos += app.getString(R.string.criarPagamentosFragment_erro_campos_vazios_message_data)
         }
-        if (spinnerEscolhaFrequencia.selectedItem == getApplication<Application?>().resources.getStringArray(R.array.frequencias_pagamentos)[0]) {
-            naoPreenchidos += getApplication<Application?>().getString(R.string.criarPagamentosFragment_erro_campos_vazios_message_frequencia)
+        if (spinnerEscolhaFrequencia.selectedItem == app.resources.getStringArray(R.array.frequencias_pagamentos)[0]) {
+            naoPreenchidos += app.getString(R.string.criarPagamentosFragment_erro_campos_vazios_message_frequencia)
         }
         if (preco.value.isNullOrBlank() || preco.value.isNullOrEmpty()) {
-            naoPreenchidos += getApplication<Application?>().getString(R.string.criarPagamentosFragment_erro_campos_vazios_message_preco)
+            naoPreenchidos += app.getString(R.string.criarPagamentosFragment_erro_campos_vazios_message_preco)
         }
 
         var algumParticipanteVazio = false
@@ -111,8 +110,8 @@ class CriarPagamentoViewModel(val database:PagamentosDatabaseDao, application: A
             if (pessoa.nome.value.isNullOrBlank() || pessoa.nome.value.isNullOrEmpty()) algumParticipanteVazio = true
             if (pessoa.parcelaAparece) if (pessoa.preco.value.isNullOrBlank() || pessoa.preco.value.isNullOrEmpty()) algumaParcelaDeParticipanteVazia = true
         }
-        if (algumParticipanteVazio) naoPreenchidos += getApplication<Application?>().getString(R.string.criarPagamentosFragment_erro_campos_vazios_message_participante)
-        if (algumaParcelaDeParticipanteVazia) naoPreenchidos += getApplication<Application?>().getString(R.string.criarPagamentosFragment_erro_campos_vazios_message_parcela_participante)
+        if (algumParticipanteVazio) naoPreenchidos += app.getString(R.string.criarPagamentosFragment_erro_campos_vazios_message_participante)
+        if (algumaParcelaDeParticipanteVazia) naoPreenchidos += app.getString(R.string.criarPagamentosFragment_erro_campos_vazios_message_parcela_participante)
         return naoPreenchidos
     }
     // Variavel de evento para acionar o AlertDialog para preencher os campos
@@ -138,7 +137,7 @@ class CriarPagamentoViewModel(val database:PagamentosDatabaseDao, application: A
                     database.inserirPessoa(Pessoa(nome = it, ordem = ordem, pagamentoID = pagId))
                     val pessId = database.getPessoasDoPagamento(pagId).last().pessoaID
                     // Para registrar os historicos de pagamentos SEM periodicidade, nesse caso, cada pessoa gera um historico com o preco = parcela dele
-                    if (pagamento.freqDoPag == getApplication<Application?>().resources.getStringArray(R.array.frequencias_pagamentos).last()) {
+                    if (pagamento.freqDoPag == app.resources.getStringArray(R.array.frequencias_pagamentos).last()) {
                         database.inserirHistoricoDePagamento(HistoricoDePagamento(data =pagamento.dataDeInicio, preco = participantes[i].preco.value!!.toDouble(), pagadorID = pessId,
                                                                                     pagamentoID = pagId))
                     } else if (ordem == 1) {
@@ -194,7 +193,7 @@ class CriarPagamentoViewModel(val database:PagamentosDatabaseDao, application: A
         val lista = mutableListOf<ParticipanteAux>()
         // Se o item selecionado for 'Sem frequência', verifica se o primeiro participante já não tem parcelaAparece == false,
         //  se nao, o atribui em todos (necessário copiar os participantes antes de altera-los)
-        if (spinnerEscolhaFrequencia.selectedItem == getApplication<Application?>().resources.getStringArray(R.array.frequencias_pagamentos).last()) {
+        if (spinnerEscolhaFrequencia.selectedItem == app.resources.getStringArray(R.array.frequencias_pagamentos).last()) {
             if (!(participantes.value!!.first().parcelaAparece)) {
                 ParticipanteAux().resetParticipanteId()
                 for (i in participantes.value!!.indices) {
@@ -205,7 +204,7 @@ class CriarPagamentoViewModel(val database:PagamentosDatabaseDao, application: A
                 precoEnabled.editTextPrecoPagamento.isEnabled = false
             }
         // Se o item selecionado for 'Escolha a frequência do pagamento', se sim, não altera nada (não há necessidade!)
-        } else if (spinnerEscolhaFrequencia.selectedItem == getApplication<Application?>().resources.getStringArray(R.array.frequencias_pagamentos).first()) {
+        } else if (spinnerEscolhaFrequencia.selectedItem == app.resources.getStringArray(R.array.frequencias_pagamentos).first()) {
         } else {
             // Se qualquer outro item for selecionado, verificar se o primeiro participante já não tem parcelaAparece == true,
             //  se nao, o atribui em todos (necessário copiar os participantes antes de altera-los, se não o participante que está

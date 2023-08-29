@@ -178,7 +178,7 @@ sealed class DataItem {
  * Usado pelo ListAdapter para calcular o minimo numero de mudancas entre a lista antiga e a
  * nova, passada pelo submitList
  */
-class  CriarPagamentoDiffCallback : DiffUtil.ItemCallback<DataItem>() {
+private class CriarPagamentoDiffCallback : DiffUtil.ItemCallback<DataItem>() {
     override fun areItemsTheSame(oldItem: DataItem, newItem: DataItem): Boolean {
         return oldItem.id == newItem.id
     }

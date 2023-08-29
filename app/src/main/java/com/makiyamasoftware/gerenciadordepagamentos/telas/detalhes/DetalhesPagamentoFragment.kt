@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.makiyamasoftware.gerenciadordepagamentos.R
 import com.makiyamasoftware.gerenciadordepagamentos.convertStringToCalendar
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabase
@@ -33,17 +34,24 @@ class DetalhesPagamentoFragment: Fragment() {
     ): View {
         val binding : FragmentDetalhesPagamentoBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_detalhes_pagamento, container, false)
 
+        // Puxar do Bundle o Parcel e transformar ele de volta em um Pagamento
+        // Usamos o !! (null-asserted) pq, caso nao haja um PagamentoSelecionado, algo esta muito errado e queremos ver um erro, embora em producao seja ideal tratar esse erro
+        val pagamentoSelecionado = DetalhesPagamentoFragmentArgs.fromBundle(requireArguments()).pagamentoEscolhido
+
+        // After the deprecation of toolbar and actionBar
+        val actionBar = (requireActivity() as AppCompatActivity).supportActionBar
+        actionBar?.setDisplayShowTitleEnabled(true)
+        actionBar?.title = pagamentoSelecionado.nome
+        Log.i(TAG, "Titulo da actionbar depois: ${activity?.actionBar?.title}")
+
         // instanciar uma application p/ usar no ViewModelFactory
         val application = requireNotNull(this.activity).application
         // instancia o DAO do database, para podermos acessa-lo e alterar os dados
         val dataSource = PagamentosDatabase.getInstance(application).pagamentosDatabaseDao
         // instancia uma viewModelFactory
-        val viewModelFactory = DetalhesPagamentoViewModelFactory(dataSource, application)
+        val viewModelFactory = DetalhesPagamentoViewModelFactory(dataSource, application, pagamentoSelecionado)
         viewModel = ViewModelProvider(this, viewModelFactory).get(DetalhesPagamentoViewModel::class.java)
 
-        // Puxar do Bundle o Parcel e transformar ele de volta em um Pagamento
-        // Usamos o !! (null-asserted) pq, caso nao haja um PagamentoSelecionado, algo esta muito errado e queremos ver um erro, embora em producao seja ideal tratar esse erro
-        viewModel.setPagamento(DetalhesPagamentoFragmentArgs.fromBundle(requireArguments()).pagamentoEscolhido)
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
@@ -83,13 +91,10 @@ class DetalhesPagamentoFragment: Fragment() {
         viewModel.verTodoOHistorico.observe(viewLifecycleOwner) {
             if (it) {
                 Toast.makeText(context, "Clicou em ver todo o Historico!", Toast.LENGTH_LONG).show()
+                findNavController().navigate(DetalhesPagamentoFragmentDirections.actionDetalhesPagamentoFragmentToHistoricosPagamentoFragment(viewModel.pagamentoSelecionado.value!!))
                 viewModel.onVerTodoOHistoricoDone()
             }
         }
-        // After the deprecation of toolbar and actionBar
-        (requireActivity() as AppCompatActivity).supportActionBar?.setDisplayShowTitleEnabled(true)
-        (requireActivity() as AppCompatActivity).supportActionBar?.title = viewModel.pagamentoSelecionado.value?.nome
-        Log.i(TAG, "Titulo da actionbar depois: ${activity?.actionBar?.title}")
 
         return binding.root
     }

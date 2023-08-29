@@ -13,7 +13,7 @@ import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabaseDao
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
 import com.makiyamasoftware.gerenciadordepagamentos.databinding.FragmentDetalhesPagamentoBinding
-import com.makiyamasoftware.gerenciadordepagamentos.pessoaCerta
+import com.makiyamasoftware.gerenciadordepagamentos.getPessoaCerta
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -24,7 +24,8 @@ import java.util.Calendar
 private const val TAG = "DetalhesPagamentoViewModel"
 
 class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
-                                 private val app: Application) : AndroidViewModel(app) {
+                                 private val app: Application,
+                                 pag: Pagamento) : AndroidViewModel(app) {
     private val viewModelJob = Job()
     override fun onCleared() {
         super.onCleared()
@@ -32,10 +33,10 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
     }
     private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
 
-    private var _pagamentoSelecionado  = MutableLiveData<Pagamento>()
+    private var _pagamentoSelecionado  = MutableLiveData<Pagamento>(pag)
     val pagamentoSelecionado: LiveData<Pagamento>
         get() = _pagamentoSelecionado
-    var historicoDePagamento = MutableLiveData<List<HistoricoDePagamento>>()
+    val historicoDePagamento = dataSource.getHistoricosDePagamento(pagamentoSelecionado.value!!.pagamentoID)
     val histRecente: HistoricoDePagamento
         get() = getHistoricoRecente()
 
@@ -43,7 +44,6 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
     private var editavel: Boolean = false
 
     init {
-        historicoDePagamento.value = listOf<HistoricoDePagamento>()
         getHistoricoEPessoas()
     }
 
@@ -66,9 +66,8 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
     private fun getHistoricoEPessoas() {
         uiScope.launch {
             Log.i(TAG, "Entrou na coroutine de buscar o historico")
-            val historico = getAllHistorico()
+            getAllHistorico()
             val pessoasTemp = getAllPessoas()
-            historicoDePagamento.value = historico
             pessoas.value = pessoasTemp
             Log.i(TAG, "Atribuiu o historico")
         }
@@ -81,11 +80,9 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
         }
         return historicoDePagamento.value!!.first()
     }
-    private suspend fun getAllHistorico(): List<HistoricoDePagamento> {
-        return withContext(Dispatchers.IO) {
-            val historico = dataSource.getHistoricosDePagamento(pagamentoSelecionado.value!!.pagamentoID)
+    private suspend fun getAllHistorico() {
+        withContext(Dispatchers.IO) {
             //historico.value?: listOf()
-            historico
         }
     }
     private suspend fun getAllPessoas(): List<Pessoa> {
@@ -103,7 +100,7 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
     }
     fun atualizarHistorico() {
         if (pessoas.value != null) {
-            _ultHistNomePessoa.value = pessoaCerta(pessoas.value!!, histRecente.pagadorID).nome
+            _ultHistNomePessoa.value = getPessoaCerta(pessoas.value!!, histRecente.pagadorID).nome
         }
         _ultHistPrecoPessoa.value = app.getString(R.string.simbolo_BRL) + " " + histRecente.preco.toString()
     }
@@ -128,7 +125,6 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
         historico.toogleStatus()
         uiScope.launch {
             saveNovoHistoricoOnDB(historico)
-            historicoDePagamento.value = getAllHistorico()!!
         }
     }
     private suspend fun saveNovoHistoricoOnDB(historico: HistoricoDePagamento) {
@@ -136,10 +132,6 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
             dataSource.updateHistoricoDePagamento(historico)
             Log.i(TAG, "Terminou de salvar o status do historico")
         }
-    }
-
-    fun setPagamento(pagamento: Pagamento) {
-        _pagamentoSelecionado.value = pagamento
     }
 
     //TODO refazer escolherDataInicial
@@ -153,7 +145,8 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
     fun onSelectSpinnerItem() {
 
     }
-    //TODO: fazer a navegação para a página de históricos
+
+
     private var _verTodoOHistorico = MutableLiveData<Boolean>()
     val verTodoOHistorico: LiveData<Boolean>
         get() = _verTodoOHistorico
@@ -187,7 +180,6 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
             // Salva os novos historicos no DB
             salvarAtualizacoesHistorico(novosHistoricos)
             // Chama a função de puxar os historicos do DB, para atualizar os dados e a UI
-            historicoDePagamento.value = getAllHistorico()
         }
     }
     // Funcao para salvar os Historicos atualizados no DataBase, no background sem interromper a Main thread (UI)
