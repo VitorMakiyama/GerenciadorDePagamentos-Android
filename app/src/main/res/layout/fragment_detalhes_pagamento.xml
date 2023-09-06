@@ -16,12 +16,13 @@
 
         <TextView
             android:id="@+id/descNome"
-            android:layout_width="100dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="1dp"
             android:text="@string/detalhesPagamentoFragment_descricao_nome"
             android:textSize="24sp"
             app:layout_constraintBottom_toBottomOf="@+id/div11"
+            app:layout_constraintEnd_toEndOf="@+id/descFreq"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -30,6 +31,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/default_margin"
+            android:layout_marginEnd="@dimen/default_margin"
             android:text="@{viewModel.pagamentoSelecionado.nome}"
             android:textAlignment="center"
             android:textSize="30sp"
@@ -122,12 +124,13 @@
 
         <TextView
             android:id="@+id/descData"
-            android:layout_width="100dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="1dp"
             android:text="@string/detalhesPagamentoFragment_descricao_data"
             android:textSize="24sp"
             app:layout_constraintBottom_toBottomOf="@+id/div21"
+            app:layout_constraintEnd_toEndOf="@+id/descFreq"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@id/div11" />
 
@@ -189,12 +192,13 @@
 
         <TextView
             android:id="@+id/descPreco"
-            android:layout_width="100dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="1dp"
             android:text="@string/detalhesPagamentoFragment_descricao_preco"
             android:textSize="24sp"
             app:layout_constraintBottom_toBottomOf="@+id/div41"
+            app:layout_constraintEnd_toEndOf="@+id/descFreq"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@id/div31" />
 

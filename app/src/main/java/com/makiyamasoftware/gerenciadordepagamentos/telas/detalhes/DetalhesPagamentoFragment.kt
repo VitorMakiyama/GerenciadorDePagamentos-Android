@@ -27,7 +27,7 @@ private const val TAG: String = "DetalhesPagamentoFrag"
 class DetalhesPagamentoFragment: Fragment() {
     lateinit var viewModel: DetalhesPagamentoViewModel
 
-    var pagamentoOutdated = false
+    private var pagamentoOutdated = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -61,14 +61,15 @@ class DetalhesPagamentoFragment: Fragment() {
             if (it.isNotEmpty()) {
                 viewModel.atualizarPreco()
                 viewModel.bindHistRecente(binding)
+                viewModel.atualizarHistoricoRecente()
                 verifyPagamentosUpdates()
             }
-            Log.i(TAG, "LiveData mudou historico de paggId:${viewModel.pagamentoSelecionado.value!!.pagamentoID} e o historico e \n${viewModel.historicoDePagamento.value!!.size}")
+            Log.i(TAG, "LiveData mudou historico de paggId:${viewModel.pagamentoSelecionado.pagamentoID} e o historico e \n${viewModel.historicoDePagamento.value!!.size}")
         }
 
         viewModel.pessoas.observe(viewLifecycleOwner) {
             if (!it.isNullOrEmpty()) {
-                viewModel.atualizarHistorico()
+                viewModel.atualizarHistoricoRecente()
             }
         }
 
@@ -94,7 +95,7 @@ class DetalhesPagamentoFragment: Fragment() {
         viewModel.verTodoOHistorico.observe(viewLifecycleOwner) {
             if (it) {
                 Toast.makeText(context, "Clicou em ver todo o Historico!", Toast.LENGTH_LONG).show()
-                findNavController().navigate(DetalhesPagamentoFragmentDirections.actionDetalhesPagamentoFragmentToHistoricosPagamentoFragment(viewModel.pagamentoSelecionado.value!!))
+                findNavController().navigate(DetalhesPagamentoFragmentDirections.actionDetalhesPagamentoFragmentToHistoricosPagamentoFragment(viewModel.pagamentoSelecionado))
                 viewModel.onVerTodoOHistoricoDone()
             }
         }
@@ -110,7 +111,7 @@ class DetalhesPagamentoFragment: Fragment() {
     fun verifyPagamentosUpdates() {
         // Verifica se e necessario atualizar e criar novos historicos de pagamento
         if (precisaDeNovoHistorico(
-                viewModel.pagamentoSelecionado.value!!.freqDoPag,
+                viewModel.pagamentoSelecionado.freqDoPag,
                 convertStringToCalendar(viewModel.getHistoricoMaisRecente().data),
                 Calendar.getInstance(),
                 requireActivity().resources.getStringArray(R.array.frequencias_pagamentos))

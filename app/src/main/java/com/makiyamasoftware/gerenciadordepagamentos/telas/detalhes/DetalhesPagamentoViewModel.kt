@@ -15,7 +15,6 @@ import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabaseD
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
 import com.makiyamasoftware.gerenciadordepagamentos.databinding.FragmentDetalhesPagamentoBinding
 import com.makiyamasoftware.gerenciadordepagamentos.getPessoaCerta
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -26,30 +25,27 @@ private const val TAG = "DetalhesPagamentoViewModel"
 
 class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
                                  private val app: Application,
-                                 pag: Pagamento) : AndroidViewModel(app) {
+                                 val pagamentoSelecionado: Pagamento) : AndroidViewModel(app) {
     private val viewModelJob = Job()
     override fun onCleared() {
         super.onCleared()
         viewModelJob.cancel()
     }
 
-    private var _pagamentoSelecionado  = MutableLiveData<Pagamento>(pag)
-    val pagamentoSelecionado: LiveData<Pagamento>
-        get() = _pagamentoSelecionado
-
     lateinit var historicoDePagamento: LiveData<List<HistoricoDePagamento>>
     val histRecente: HistoricoDePagamento
         get() = getHistoricoRecente()
 
     lateinit var pessoas: LiveData<List<Pessoa>>
+
     private var editavel: Boolean = false
 
     init {
         viewModelScope.launch {
             Log.i(TAG, "Entrou na coroutine de buscar o historico")
-            historicoDePagamento = dataSource.getHistoricosDePagamento(pagamentoSelecionado.value!!.pagamentoID)
-            pessoas = dataSource.getPessoasDoPagamento(pag.pagamentoID)
-            Log.i(TAG, "Atribuiu o historico")
+            historicoDePagamento = dataSource.getHistoricosDePagamento(pagamentoSelecionado.pagamentoID)
+            pessoas = dataSource.getPessoasDoPagamento(pagamentoSelecionado.pagamentoID)
+            Log.i(TAG, "Requisitou o historico e as pessoas do DB")
         }
     }
 
@@ -79,21 +75,31 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
     }
 
     fun atualizarPreco() {
-        if (pagamentoSelecionado.value!!.freqDoPag != app.resources.getStringArray(R.array.frequencias_pagamentos)
-                .last()) {
-            _preco.value = historicoDePagamento.value!!.first().preco.toString()
+        if (pagamentoSelecionado.freqDoPag == app.resources.getStringArray(R.array.frequencias_pagamentos).last()) {
+            var p: Double = 0.0
+            for (hist in historicoDePagamento.value!!) {
+                p += hist.preco
+            }
+            _preco.value = p.toString()
+        } else {
+            _preco.value = histRecente.preco.toString()
         }
-        Log.i(TAG, "Click Data: paggId:${pagamentoSelecionado.value!!.pagamentoID} e o historico e \n${historicoDePagamento.value!!.size}")
-    }
-    fun atualizarHistorico() {
-        if (pessoas.value != null) {
-            _ultHistNomePessoa.value = getPessoaCerta(pessoas.value!!, histRecente.pagadorID).nome
-        }
-        _ultHistPrecoPessoa.value = app.getString(R.string.simbolo_BRL) + " " + histRecente.preco.toString()
+        Log.i(TAG, "Click Data: paggId:${pagamentoSelecionado.pagamentoID} e o historico e \n${historicoDePagamento.value!!.size}")
     }
 
+    // Essa funcao atualiza as váriaveis Livedata que estão ligadas ao layout xml através de DataBinding,
+    //  é necessario verificar se ambos os LiveData<List> de Pessoa e HistoricoDePagamento já foram retornados pelo DB DAO.
+    //  Assim essa funcao tbm deve ser chamada por ambos os observers, assim o ultimo a receber os dados os atualiza.
+    fun atualizarHistoricoRecente() {
+        if (pessoas.value != null && historicoDePagamento.value != null) {
+            _ultHistNomePessoa.value = getPessoaCerta(pessoas.value!!, histRecente.pagadorID).nome
+            _ultHistPrecoPessoa.value = app.getString(R.string.simbolo_BRL) + " " + histRecente.preco.toString()
+        }
+    }
+
+    // Faz o bind da data, do texto e da cor do status do historico mais recente (cardview)
     fun bindHistRecente(binding: FragmentDetalhesPagamentoBinding) {
-        binding.textDataHist.text = histRecente.getDataString(getApplication(), pagamentoSelecionado.value!!.freqDoPag)
+        binding.textDataHist.text = histRecente.getDataString(getApplication(), pagamentoSelecionado.freqDoPag)
         binding.textStatusHist.text = histRecente.getEstaPagoString(getApplication())
         binding.backgroungHist.setBackgroundColor(histRecente.getBackgroundColorInt(getApplication()))
     }
@@ -126,7 +132,7 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
         if (editavel) {
             Toast.makeText(app, "Clicou no escolherDataInicial", Toast.LENGTH_LONG).show()
         }
-        Log.i(TAG, "Pegou o historico de paggId:${pagamentoSelecionado.value!!.pagamentoID} e o historico e \n${historicoDePagamento.value}")
+        Log.i(TAG, "Pegou o historico de paggId:${pagamentoSelecionado.pagamentoID} e o historico e \n${historicoDePagamento.value}")
     }
     //TODO refazer
     fun onSelectSpinnerItem() {
@@ -157,7 +163,7 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
     fun onUpdateHistoricosDoPagamento() {
         val novosHistoricos = atualizarNovosHistoricosDePagamento(getHistoricoRecente(),
             Calendar.getInstance(),
-            pagamentoSelecionado.value!!,
+            pagamentoSelecionado,
             app.resources.getStringArray(R.array.frequencias_pagamentos),
             pessoas.value!!)
         Log.i(TAG, "$novosHistoricos")
