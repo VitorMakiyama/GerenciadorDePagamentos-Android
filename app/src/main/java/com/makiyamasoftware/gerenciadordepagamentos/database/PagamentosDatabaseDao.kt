@@ -28,7 +28,7 @@ interface PagamentosDatabaseDao {
     fun updatePessoa(pessoa: Pessoa)
     @Query("SELECT * FROM pessoas_table WHERE pessoaID = :id")
     fun getPessoa(id: Long): LiveData<Pessoa>
-    @Query("SELECT * FROM pessoas_table WHERE pagamento_id = :pagamentoID ORDER BY ordem ASC LIMIT 1")
+    @Query("SELECT * FROM pessoas_table WHERE pagamento_id = :pagamentoID ORDER BY ordem DESC LIMIT 1")
     fun getUltimaPessoasDoPagamento(pagamentoID: Long): Pessoa
     @Query("SELECT * FROM pessoas_table WHERE pagamento_id = :pagamentoID ORDER BY ordem ASC")
     fun getPessoasDoPagamento(pagamentoID: Long): LiveData<List<Pessoa>>
