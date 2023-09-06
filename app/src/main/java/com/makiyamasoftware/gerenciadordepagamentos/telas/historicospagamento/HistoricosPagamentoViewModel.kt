@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabaseDao
+import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
 import kotlinx.coroutines.launch
 
 const val TAG = "HistoricosPagamentoViewModel"
@@ -16,10 +17,12 @@ class HistoricosPagamentoViewModel(private val dataSource: PagamentosDatabaseDao
                                    val app: Application,
                                    val pagamentoSelecionado : Pagamento): AndroidViewModel(app) {
     lateinit var historicos: LiveData<List<HistoricoDePagamento>>
+    lateinit var pessoas: LiveData<List<Pessoa>>
 
     init {
         viewModelScope.launch {
             historicos = dataSource.getHistoricosDePagamento(pagamentoSelecionado.pagamentoID)
+            pessoas = dataSource.getPessoasDoPagamento(pagamentoSelecionado.pagamentoID)
         }
     }
 

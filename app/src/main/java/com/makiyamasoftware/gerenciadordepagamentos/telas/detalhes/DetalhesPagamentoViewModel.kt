@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.makiyamasoftware.gerenciadordepagamentos.R
 import com.makiyamasoftware.gerenciadordepagamentos.atualizarNovosHistoricosDePagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagamento
@@ -31,20 +32,25 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
         super.onCleared()
         viewModelJob.cancel()
     }
-    private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
 
     private var _pagamentoSelecionado  = MutableLiveData<Pagamento>(pag)
     val pagamentoSelecionado: LiveData<Pagamento>
         get() = _pagamentoSelecionado
-    val historicoDePagamento = dataSource.getHistoricosDePagamento(pagamentoSelecionado.value!!.pagamentoID)
+
+    lateinit var historicoDePagamento: LiveData<List<HistoricoDePagamento>>
     val histRecente: HistoricoDePagamento
         get() = getHistoricoRecente()
 
-    var pessoas = MutableLiveData<List<Pessoa>>()
+    lateinit var pessoas: LiveData<List<Pessoa>>
     private var editavel: Boolean = false
 
     init {
-        getHistoricoEPessoas()
+        viewModelScope.launch {
+            Log.i(TAG, "Entrou na coroutine de buscar o historico")
+            historicoDePagamento = dataSource.getHistoricosDePagamento(pagamentoSelecionado.value!!.pagamentoID)
+            pessoas = dataSource.getPessoasDoPagamento(pag.pagamentoID)
+            Log.i(TAG, "Atribuiu o historico")
+        }
     }
 
     // Preco atual do pagamento (atualizado se o usuario editar o preco e escolher a opção de "Salvar alterações"
@@ -63,15 +69,6 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
     val nomePagamentoEditado = MutableLiveData<String>()
     val precoEditado = MutableLiveData<String>()
 
-    private fun getHistoricoEPessoas() {
-        uiScope.launch {
-            Log.i(TAG, "Entrou na coroutine de buscar o historico")
-            getAllHistorico()
-            val pessoasTemp = getAllPessoas()
-            pessoas.value = pessoasTemp
-            Log.i(TAG, "Atribuiu o historico")
-        }
-    }
     // Comeca do historico mais antigo (ultimo do vetor) buscando o historico NAO PAGO mais recente
     private fun getHistoricoRecente(): HistoricoDePagamento {
         for (i in (historicoDePagamento.value!!.size - 1) downTo 1) {
@@ -80,17 +77,7 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
         }
         return historicoDePagamento.value!!.first()
     }
-    private suspend fun getAllHistorico() {
-        withContext(Dispatchers.IO) {
-            //historico.value?: listOf()
-        }
-    }
-    private suspend fun getAllPessoas(): List<Pessoa> {
-        return withContext(Dispatchers.IO) {
-            val pessoas = dataSource.getPessoasDoPagamento(pagamentoSelecionado.value!!.pagamentoID)
-            pessoas
-        }
-    }
+
     fun atualizarPreco() {
         if (pagamentoSelecionado.value!!.freqDoPag != app.resources.getStringArray(R.array.frequencias_pagamentos)
                 .last()) {
@@ -123,7 +110,7 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
     fun onMudarStatus() {
         val historico = histRecente
         historico.toogleStatus()
-        uiScope.launch {
+        viewModelScope.launch {
             saveNovoHistoricoOnDB(historico)
         }
     }
@@ -176,7 +163,7 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
         Log.i(TAG, "$novosHistoricos")
 
         // Parte de interação com o DataBase
-        uiScope.launch {
+        viewModelScope.launch {
             // Salva os novos historicos no DB
             salvarAtualizacoesHistorico(novosHistoricos)
             // Chama a função de puxar os historicos do DB, para atualizar os dados e a UI

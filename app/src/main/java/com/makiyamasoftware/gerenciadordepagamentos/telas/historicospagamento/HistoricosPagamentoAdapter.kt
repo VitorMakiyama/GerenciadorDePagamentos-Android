@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagamento
 import com.makiyamasoftware.gerenciadordepagamentos.databinding.HistoricosItemListaBinding
+import com.makiyamasoftware.gerenciadordepagamentos.getPessoaCerta
 
 class HistoricosPagamentoAdapter(private val viewModel: HistoricosPagamentoViewModel): ListAdapter<HistoricoDePagamento, RecyclerView.ViewHolder>(HistoricosDiffCallback()) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -20,17 +21,17 @@ class HistoricosPagamentoAdapter(private val viewModel: HistoricosPagamentoViewM
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
-            is HistoricoViewHolder -> holder.bind(viewModel.getHistoricoAt(position), viewModel.pagamentoSelecionado.freqDoPag, viewModel.app)
+            is HistoricoViewHolder -> holder.bind(viewModel.getHistoricoAt(position), viewModel.pagamentoSelecionado.freqDoPag, viewModel)
         }
     }
 
     class HistoricoViewHolder(val binding: HistoricosItemListaBinding): RecyclerView.ViewHolder(binding.root) {
-        fun bind(historico: HistoricoDePagamento, freq: String, app : Application) {
-            binding.textNomeHist.text
+        fun bind(historico: HistoricoDePagamento, freq: String, viewModel: HistoricosPagamentoViewModel) {
+            binding.textNomeHist.text = getPessoaCerta(viewModel.pessoas.value, historico.pagadorID).nome
             binding.textPrecoHist.text = historico.preco.toString()
-            binding.textDataHist.text = historico.getDataString(app, freq)
-            binding.textStatusHist.text = historico.getEstaPagoString(app)
-            binding.backgroungHist.setBackgroundColor(historico.getBackgroundColorInt(app))
+            binding.textDataHist.text = historico.getDataString(viewModel.app, freq)
+            binding.textStatusHist.text = historico.getEstaPagoString(viewModel.app)
+            binding.backgroungHist.setBackgroundColor(historico.getBackgroundColorInt(viewModel.app))
         }
 
         companion object {

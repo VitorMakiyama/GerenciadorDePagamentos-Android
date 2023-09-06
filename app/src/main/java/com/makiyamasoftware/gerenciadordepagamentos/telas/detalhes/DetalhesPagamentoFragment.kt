@@ -27,6 +27,8 @@ private const val TAG: String = "DetalhesPagamentoFrag"
 class DetalhesPagamentoFragment: Fragment() {
     lateinit var viewModel: DetalhesPagamentoViewModel
 
+    var pagamentoOutdated = false
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -58,17 +60,18 @@ class DetalhesPagamentoFragment: Fragment() {
         viewModel.historicoDePagamento.observe(viewLifecycleOwner) {
             if (it.isNotEmpty()) {
                 viewModel.atualizarPreco()
-                viewModel.atualizarHistorico()
                 viewModel.bindHistRecente(binding)
                 verifyPagamentosUpdates()
             }
             Log.i(TAG, "LiveData mudou historico de paggId:${viewModel.pagamentoSelecionado.value!!.pagamentoID} e o historico e \n${viewModel.historicoDePagamento.value!!.size}")
         }
+
         viewModel.pessoas.observe(viewLifecycleOwner) {
             if (!it.isNullOrEmpty()) {
                 viewModel.atualizarHistorico()
             }
         }
+
         // Observer do click listener do status do Pagamento, habilitando o evento para atualiza-lo
         viewModel.onMudarStatus.observe(viewLifecycleOwner) {
             if (it) {
@@ -105,13 +108,13 @@ class DetalhesPagamentoFragment: Fragment() {
      *  gerando novos Historicos
      */
     fun verifyPagamentosUpdates() {
-        // Verifica se e necessario atualziar e criar novos historicos de pagamento
+        // Verifica se e necessario atualizar e criar novos historicos de pagamento
         if (precisaDeNovoHistorico(
                 viewModel.pagamentoSelecionado.value!!.freqDoPag,
                 convertStringToCalendar(viewModel.getHistoricoMaisRecente().data),
                 Calendar.getInstance(),
                 requireActivity().resources.getStringArray(R.array.frequencias_pagamentos))
-        ) {
+         and !pagamentoOutdated) {
             // Criar um AlertDialog, definindo os botões, clickLiseteners e os textos
             val builder = AlertDialog.Builder(context)
             builder.setTitle(getString(R.string.detalhesPagamentoFragment_update_historicos_alertTitle))
@@ -119,6 +122,8 @@ class DetalhesPagamentoFragment: Fragment() {
             builder.setPositiveButton(getText(R.string.generic_Update)) { _, _ -> viewModel.onUpdateHistoricosDoPagamento() }
             builder.setNegativeButton(getText(R.string.generic_Nao)) { _, _ -> }
             builder.show()
+
+            pagamentoOutdated = true
         }
     }
 }

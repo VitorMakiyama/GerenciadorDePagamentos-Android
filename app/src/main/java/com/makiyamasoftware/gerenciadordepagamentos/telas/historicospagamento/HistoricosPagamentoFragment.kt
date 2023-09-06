@@ -47,6 +47,10 @@ class HistoricosPagamentoFragment : Fragment() {
             adapter.submitList(it)
         }
 
+        viewModel.pessoas.observe(viewLifecycleOwner) {
+            adapter.submitList(viewModel.historicos.value)
+        }
+
         return binding.root
     }
 }

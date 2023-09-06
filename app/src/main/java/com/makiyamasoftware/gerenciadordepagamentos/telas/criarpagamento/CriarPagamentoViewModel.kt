@@ -135,7 +135,7 @@ class CriarPagamentoViewModel(val database:PagamentosDatabaseDao, val app: Appli
             for (i in participantes.indices) {
                 participantes[i].nome.value?.let {
                     database.inserirPessoa(Pessoa(nome = it, ordem = ordem, pagamentoID = pagId))
-                    val pessId = database.getPessoasDoPagamento(pagId).last().pessoaID
+                    val pessId = database.getUltimaPessoasDoPagamento(pagId).pessoaID
                     // Para registrar os historicos de pagamentos SEM periodicidade, nesse caso, cada pessoa gera um historico com o preco = parcela dele
                     if (pagamento.freqDoPag == app.resources.getStringArray(R.array.frequencias_pagamentos).last()) {
                         database.inserirHistoricoDePagamento(HistoricoDePagamento(data =pagamento.dataDeInicio, preco = participantes[i].preco.value!!.toDouble(), pagadorID = pessId,
