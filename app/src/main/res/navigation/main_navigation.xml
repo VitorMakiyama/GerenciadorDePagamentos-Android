@@ -42,8 +42,7 @@
     </fragment>
     <fragment
         android:id="@+id/detalhesPagamentoFragment"
-        android:name="com.makiyamasoftware.gerenciadordepagamentos.telas.detalhes.DetalhesPagamentoFragment"
-        android:label="DetalhesPagamentoFragment" >
+        android:name="com.makiyamasoftware.gerenciadordepagamentos.telas.detalhes.DetalhesPagamentoFragment" >
         <argument
             android:name="pagamentoEscolhido"
             app:argType="com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento" />
@@ -58,8 +57,7 @@
     </fragment>
     <fragment
         android:id="@+id/historicosPagamentoFragment"
-        android:name="com.makiyamasoftware.gerenciadordepagamentos.telas.historicospagamento.HistoricosPagamentoFragment"
-        android:label="HistoricosPagamentoFragment" >
+        android:name="com.makiyamasoftware.gerenciadordepagamentos.telas.historicospagamento.HistoricosPagamentoFragment" >
         <argument
             android:name="pagamentoEscolhido"
             app:argType="com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento" />
