@@ -27,5 +27,11 @@ data class Pagamento(
         val numPessoas: Int,
 
         @ColumnInfo(name = "frequencia_do_pagamento")
-        val freqDoPag: String
+        val freqDoPag: String,
+
+        @ColumnInfo(name = "auto_update_historico")
+        val autoUpdateHistorico: Boolean = false,
+
+        @ColumnInfo(name = "pode_enviar_push")
+        val podeEnviarPush: Boolean = false,
         ): Parcelable

@@ -14,13 +14,15 @@ interface PagamentosDatabaseDao {
     @Update
     fun updatePagamento(pagamento: Pagamento)
     @Query("SELECT * FROM pagamento_table WHERE pagamentoID = :id")
-    fun getPagamento(id: Long): Pagamento
+    fun getPagamento(id: Long): LiveData<Pagamento>
     @Query("SELECT * FROM pagamento_table")
     fun getAllPagamentos(): LiveData<List<Pagamento>>
     @Query("SELECT pagamentoID FROM pagamento_table ORDER BY pagamentoID DESC LIMIT 1")
     fun getUltimoPagamentoID(): Long
     @Query("DELETE FROM pagamento_table")
     fun clearPagamentos()
+    @Query("SELECT * FROM pagamento_table")
+    fun getAllPagamentosBackground() : List<Pagamento>
 
     @Insert
     fun inserirPessoa(pessoa: Pessoa)
@@ -36,9 +38,11 @@ interface PagamentosDatabaseDao {
     fun getAllPessoas(): List<Pessoa>
     @Query("DELETE FROM pessoas_table")
     fun clearPessoas()
+    @Query("SELECT * FROM pessoas_table WHERE pagamento_id = :pagamentoID ORDER BY ordem ASC")
+    fun getPessoasDoPagamentoBackground(pagamentoID: Long) : List<Pessoa>
 
     @Insert
-    fun inserirHistoricoDePagamento(historicoDePagamento: HistoricoDePagamento)
+    fun inserirHistoricoDePagamento(vararg historicoDePagamento: HistoricoDePagamento)
     @Update
     fun updateHistoricoDePagamento(historicoDePagamento: HistoricoDePagamento)
     @Query("SELECT * FROM historico_de_pagamento_table WHERE pagamento_id = :pagamentoID ORDER BY historicoID DESC")
@@ -51,4 +55,7 @@ interface PagamentosDatabaseDao {
     fun getListaInicialHistoricoDePagamento(): LiveData<List<HistoricoDePagamento>>
     @Query("DELETE FROM historico_de_pagamento_table")
     fun clearHistoricoDePagamentos()
+
+    @Query("SELECT * FROM historico_de_pagamento_table WHERE pagamento_id = :pagamentoID ORDER BY historicoID DESC LIMIT 1")
+    fun getHistoricoDePagamentoBackground(pagamentoID: Long) : HistoricoDePagamento
 }

@@ -25,7 +25,7 @@ private const val TAG = "DetalhesPagamentoViewModel"
 
 class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
                                  private val app: Application,
-                                 val pagamentoSelecionado: Pagamento) : AndroidViewModel(app) {
+                                 private val pagamentoSelecionado: Pagamento) : AndroidViewModel(app) {
     private val viewModelJob = Job()
     override fun onCleared() {
         super.onCleared()
@@ -36,12 +36,15 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
     val histRecente: HistoricoDePagamento
         get() = getHistoricoRecente()
 
+    lateinit var pagamentoLiveData: LiveData<Pagamento>
     lateinit var pessoas: LiveData<List<Pessoa>>
 
-    private var editavel: Boolean = false
+    // Variavel que guarda as edicoes do Switch de auto update
+    var pagamentoSelecionadoAutoUpdate = (pagamentoSelecionado.autoUpdateHistorico)
 
     init {
         viewModelScope.launch {
+            pagamentoLiveData = dataSource.getPagamento(pagamentoSelecionado.pagamentoID)
             Log.i(TAG, "Entrou na coroutine de buscar o historico")
             historicoDePagamento = dataSource.getHistoricosDePagamento(pagamentoSelecionado.pagamentoID)
             pessoas = dataSource.getPessoasDoPagamento(pagamentoSelecionado.pagamentoID)
@@ -61,9 +64,6 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
     val ultHistPrecoPessoa: LiveData<String>
         get() = _ultHistPrecoPessoa
 
-
-    val nomePagamentoEditado = MutableLiveData<String>()
-    val precoEditado = MutableLiveData<String>()
 
     // Comeca do historico mais antigo (ultimo do vetor) buscando o historico NAO PAGO mais recente
     private fun getHistoricoRecente(): HistoricoDePagamento {
@@ -129,9 +129,7 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
 
     //TODO refazer escolherDataInicial
     fun onEscolherDataInicial() {
-        if (editavel) {
-            Toast.makeText(app, "Clicou no escolherDataInicial", Toast.LENGTH_LONG).show()
-        }
+        Toast.makeText(app, "Clicou no escolherDataInicial", Toast.LENGTH_LONG).show()
         Log.i(TAG, "Pegou o historico de paggId:${pagamentoSelecionado.pagamentoID} e o historico e \n${historicoDePagamento.value}")
     }
     //TODO refazer
@@ -180,5 +178,40 @@ class DetalhesPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
         withContext(Dispatchers.IO) {
             for (historico in novosHistoricos) dataSource.inserirHistoricoDePagamento(historico)
         }
+    }
+
+    // Logica para salvar as edicoes
+    private val _onSalvarEdicoes = MutableLiveData<Boolean>()
+    val onSalvarEdicoes: LiveData<Boolean>
+        get() = _onSalvarEdicoes
+
+    // Funcao chamada ao clicar no salvarFAB
+    fun onClickSalvarEdicoes() {
+        _onSalvarEdicoes.value = true
+        viewModelScope.launch {
+            salvarEdicoesPagamentoNoDB()
+        }
+    }
+
+    // Funcao que salva as edicoes no Pagamento no DB
+    private suspend fun salvarEdicoesPagamentoNoDB() {
+        withContext(Dispatchers.IO) {
+            dataSource.updatePagamento(
+                Pagamento(
+                    pagamentoID = pagamentoSelecionado.pagamentoID,
+                    nome = pagamentoSelecionado.nome,
+                    dataDeInicio = pagamentoSelecionado.dataDeInicio,
+                    freqDoPag = pagamentoSelecionado.freqDoPag,
+                    numPessoas = pagamentoSelecionado.numPessoas,
+                    autoUpdateHistorico = pagamentoSelecionadoAutoUpdate
+                )
+            )
+        }
+    }
+
+    // Funcao chamada pelo observer ao terminar de alterar as views, para resetar a variavel de estado
+    fun onSavedEdicoes() {
+        _onSalvarEdicoes.value = false
+        Log.d(TAG, "auto update ${pagamentoSelecionadoAutoUpdate}")
     }
 }

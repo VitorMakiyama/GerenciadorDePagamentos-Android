@@ -10,7 +10,7 @@ import androidx.room.RoomDatabase
  */
 
 
-@Database(entities = [Pagamento::class, Pessoa::class, HistoricoDePagamento::class], version = 2, exportSchema = false)
+@Database(entities = [Pagamento::class, Pessoa::class, HistoricoDePagamento::class], version = 3, exportSchema = false)
 abstract class PagamentosDatabase : RoomDatabase() {
 
     abstract val pagamentosDatabaseDao: PagamentosDatabaseDao

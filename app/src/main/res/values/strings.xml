@@ -41,6 +41,8 @@
     <string name="detalhesPagamentoFragment_status_alertMessage">Deseja alterar o status deste histórico para: \n</string>
     <string name="detalhesPagamentoFragment_update_historicos_alertTitle">Pagamento desatualizado!</string>
     <string name="detalhesPagamentoFragment_update_historicos_alertMessage">Seu pagamento está desatualizado, deseja atualiza-lo?</string>
+    <string name="menu_detalhes_fragment_editar">Editar</string>
+    <string name="menu_detalhes_fragment_apagar">Apagar</string>
 
     <string-array name="frequencias_pagamentos">
         <item>Escolha a frequência do pagamento</item>

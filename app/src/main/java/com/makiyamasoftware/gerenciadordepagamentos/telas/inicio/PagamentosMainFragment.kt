@@ -80,17 +80,6 @@ class PagamentosMainFragment : Fragment() {
                 adapter.addESubmit(viewModel.pagamentos.value)
             }
         }
-        /*
-        viewModel.pessoasRecentesState.observe(viewLifecycleOwner, Observer {
-            if (it) {
-                Log.i(TAG, "pessoas.size == ${viewModel.pessoasRecentes} e historicos.size == ${viewModel.historicoDosPagamentos.value?.size}\n")
-
-                viewModel.pessoasRecentes.last().observe(viewLifecycleOwner) {
-                    adapter.addESubmit(viewModel.pagamentos.value)}
-                Log.i(TAG, "entrou - pessoas.size != historicos.size")
-                viewModel.pessoasStateDone()
-            }
-        })*/
 
         // setando a navegacao do FAB
         viewModel.navigateToCriarPagamento.observe(viewLifecycleOwner, Observer { //trocou this por ViewLifecycleOwner
