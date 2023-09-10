@@ -1,6 +1,5 @@
 package com.makiyamasoftware.gerenciadordepagamentos
 
-import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
@@ -14,7 +13,6 @@ import com.makiyamasoftware.gerenciadordepagamentos.workbackground.UpdatePagamen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {

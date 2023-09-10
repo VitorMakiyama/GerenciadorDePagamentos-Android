@@ -78,6 +78,12 @@ class DetalhesPagamentoFragment: Fragment() {
             }
         }
 
+        viewModel.pagamentoLiveData.observe(viewLifecycleOwner) {
+            if (it != null) {
+                verifyPagamentosUpdates()
+            }
+        }
+
         // Observer do click listener do status do Pagamento, habilitando o evento para atualiza-lo
         viewModel.onMudarStatus.observe(viewLifecycleOwner) {
             if (it) {
@@ -151,22 +157,26 @@ class DetalhesPagamentoFragment: Fragment() {
      *  gerando novos Historicos
      */
     fun verifyPagamentosUpdates() {
-        // Verifica se e necessario atualizar e criar novos historicos de pagamento
-        if (precisaDeNovoHistorico(
-                viewModel.pagamentoLiveData.value!!.freqDoPag,
-                convertStringToCalendar(viewModel.getHistoricoMaisRecente().data),
-                Calendar.getInstance(),
-                requireActivity().resources.getStringArray(R.array.frequencias_pagamentos))
-         and !pagamentoOutdated) {
-            // Criar um AlertDialog, definindo os botões, clickLiseteners e os textos
-            val builder = AlertDialog.Builder(context)
-            builder.setTitle(getString(R.string.detalhesPagamentoFragment_update_historicos_alertTitle))
-            builder.setMessage(getString(R.string.detalhesPagamentoFragment_update_historicos_alertMessage))
-            builder.setPositiveButton(getText(R.string.generic_Update)) { _, _ -> viewModel.onUpdateHistoricosDoPagamento() }
-            builder.setNegativeButton(getText(R.string.generic_Nao)) { _, _ -> }
-            builder.show()
+        if (viewModel.pagamentoLiveData.isInitialized && viewModel.historicoDePagamento.isInitialized) {
+            // Verifica se e necessario atualizar e criar novos historicos de pagamento
+            if (precisaDeNovoHistorico(
+                    viewModel.pagamentoLiveData.value!!.freqDoPag,
+                    convertStringToCalendar(viewModel.getHistoricoMaisRecente().data),
+                    Calendar.getInstance(),
+                    requireActivity().resources.getStringArray(R.array.frequencias_pagamentos)
+                )
+                and !pagamentoOutdated
+            ) {
+                // Criar um AlertDialog, definindo os botões, clickLiseteners e os textos
+                val builder = AlertDialog.Builder(context)
+                builder.setTitle(getString(R.string.detalhesPagamentoFragment_update_historicos_alertTitle))
+                builder.setMessage(getString(R.string.detalhesPagamentoFragment_update_historicos_alertMessage))
+                builder.setPositiveButton(getText(R.string.generic_Update)) { _, _ -> viewModel.onUpdateHistoricosDoPagamento() }
+                builder.setNegativeButton(getText(R.string.generic_Nao)) { _, _ -> }
+                builder.show()
 
-            pagamentoOutdated = true
+                pagamentoOutdated = true
+            }
         }
     }
 }

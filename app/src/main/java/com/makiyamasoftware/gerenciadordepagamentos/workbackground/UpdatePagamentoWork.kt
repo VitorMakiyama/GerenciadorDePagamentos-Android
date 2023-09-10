@@ -2,7 +2,6 @@ package com.makiyamasoftware.gerenciadordepagamentos.workbackground
 
 import android.content.Context
 import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.makiyamasoftware.gerenciadordepagamentos.R
