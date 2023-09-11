@@ -52,7 +52,7 @@ class MainActivity : AppCompatActivity() {
 
         WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
             UpdatePagamentoWork.WORK_NAME,      // agenda o WORK_NAME work
-            ExistingPeriodicWorkPolicy.KEEP,    // politica do que fazer caso haja mais de um WORK_NAME enqueued,nesse caso, KEEP o antigo e descarta o novo
+            ExistingPeriodicWorkPolicy.UPDATE,  // politica do que fazer caso haja mais de um WORK_NAME enqueued,nesse caso, UPDATE o antigo com as especificacoes do novo
             repeatingRequest
         )
     }

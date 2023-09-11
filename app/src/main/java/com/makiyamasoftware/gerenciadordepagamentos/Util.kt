@@ -1,11 +1,14 @@
 package com.makiyamasoftware.gerenciadordepagamentos
 
 import android.annotation.SuppressLint
+import android.util.Log
 import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
 import java.text.SimpleDateFormat
 import java.util.*
+
+const val TAG = "UtilFunctions"
 
 @SuppressLint("SimpleDateFormat")
 fun convertCalendarToString(calendar: Calendar): String {
@@ -171,6 +174,9 @@ fun precisaDeNovoHistorico(frequencia: String, dataUltimoHistorico: Calendar, ho
     val anos: Int = hoje.get(Calendar.YEAR) - dataUltimoHistorico.get(Calendar.YEAR)
     val meses = hoje.get(Calendar.MONTH) - dataUltimoHistorico.get(Calendar.MONTH)
     val dias = hoje.get(Calendar.DAY_OF_YEAR) - dataUltimoHistorico.get(Calendar.DAY_OF_YEAR)
+
+    Log.d(TAG, "meses = $meses, today=${hoje.time} data=${dataUltimoHistorico.time}")
+
     when (frequencia) {
         // Diário
         freqs[1] -> {

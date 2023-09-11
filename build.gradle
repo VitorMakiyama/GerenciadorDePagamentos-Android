@@ -4,9 +4,9 @@ buildscript {
         kotlin_version = "1.9.0"
         core_version = "1.10.1"
         coroutine_version = "1.6.4"
-        nav_version = '2.6.0'
+        nav_version = '2.7.1'
         constraint_layout_version = "2.1.4"
-        gradle_version = '7.4.1'
+        gradle_version = '8.1.1'
         lifecycle_extensions_version = "2.2.0"
         room_version = "2.5.2"
         appcompat_version = "1.6.1"
