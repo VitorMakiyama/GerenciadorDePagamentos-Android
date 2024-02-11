@@ -2,16 +2,16 @@
 buildscript {
     ext {
         kotlin_version = "1.9.0"
-        core_version = "1.10.1"
+        core_version = "1.12.0"
         coroutine_version = "1.6.4"
-        nav_version = '2.7.1'
+        nav_version = '2.7.7'
         constraint_layout_version = "2.1.4"
         gradle_version = '8.1.1'
         lifecycle_extensions_version = "2.2.0"
-        room_version = "2.5.2"
+        room_version = "2.6.1"
         appcompat_version = "1.6.1"
-        fragment_version = "1.6.1"
-        version_work = "2.8.1"
+        fragment_version = "1.6.2"
+        version_work = "2.9.0"
     }
     repositories {
         google()

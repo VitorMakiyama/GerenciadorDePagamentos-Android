@@ -13,6 +13,8 @@
     <string name="clear_button_apagar_tudo">Apagar tudo</string>
     <string name="blocoEstaPago_status_pago">Pago</string>
     <string name="blocoEstaPago_status_naoPago">Não Pago</string>
+    <string name="clear_aviso_titulo">Apagar o banco de dados</string>
+    <string name="clear_aviso_mensagem">Você tem certeza que deseja apagar TODOS os dados do banco de dados? (Não pode ser desfeito)</string>
 
     <!-- Strings usadas no Criar Pagamentos. -->
     <string name="CriarPagamentoFragment_nome_hint">Nome do Pagamento</string>
@@ -43,6 +45,14 @@
     <string name="detalhesPagamentoFragment_update_historicos_alertMessage">Seu pagamento está desatualizado, deseja atualiza-lo?</string>
     <string name="menu_detalhes_fragment_editar">Editar</string>
     <string name="menu_detalhes_fragment_apagar">Apagar</string>
+
+    <!-- Strings usadas no Detalhes Pagamento-->
+    <string name="historicosPagamentoFragment_descricao_preco">Preço (R$):</string>
+    <string name="historicosPagamentoFragment_status_alertTitle">Mudar status</string>
+    <string name="historicosPagamentoFragment_status_alertMessage_unico">Deseja alterar o status deste histórico para: \n</string>
+    <string name="historicosPagamentoFragment_status_alertMessage_multiplos">Deseja alterar o status deste histórico e de todos os anteriores para "Pago", ou apenas esse?</string>
+    <string name="historicosPagamentoFragment_status_alert_button_opcaoUnico">Apenas esse</string>
+
 
     <string-array name="frequencias_pagamentos">
         <item>Escolha a frequência do pagamento</item>

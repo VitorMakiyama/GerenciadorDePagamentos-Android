@@ -1,6 +1,5 @@
 package com.makiyamasoftware.gerenciadordepagamentos.telas.historicospagamento
 
-import android.app.Application
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -21,17 +20,19 @@ class HistoricosPagamentoAdapter(private val viewModel: HistoricosPagamentoViewM
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
-            is HistoricoViewHolder -> holder.bind(viewModel.getHistoricoAt(position), viewModel.pagamentoSelecionado.freqDoPag, viewModel)
+            is HistoricoViewHolder -> holder.bind(viewModel.getHistoricoAt(position), viewModel.pagamentoSelecionado.freqDoPag, viewModel, position)
         }
     }
 
     class HistoricoViewHolder(val binding: HistoricosItemListaBinding): RecyclerView.ViewHolder(binding.root) {
-        fun bind(historico: HistoricoDePagamento, freq: String, viewModel: HistoricosPagamentoViewModel) {
+        fun bind(historico: HistoricoDePagamento, freq: String, viewModel: HistoricosPagamentoViewModel, position: Int) {
             binding.textNomeHist.text = getPessoaCerta(viewModel.pessoas.value, historico.pagadorID).nome
             binding.textPrecoHist.text = historico.preco.toString()
             binding.textDataHist.text = historico.getDataString(viewModel.app, freq)
             binding.textStatusHist.text = historico.getEstaPagoString(viewModel.app)
             binding.backgroungHist.setBackgroundColor(historico.getBackgroundColorInt(viewModel.app))
+            // setta o click listener do status do historico
+            binding.textStatusHist.setOnClickListener { viewModel.onClickStatus(position) }
         }
 
         companion object {

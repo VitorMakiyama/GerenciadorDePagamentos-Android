@@ -136,7 +136,7 @@ class DetalhesPagamentoFragment: Fragment() {
     }
 
     private fun onClickApagarPagamento() {
-        Toast.makeText(context, "tentou apagar esse pagamento (${viewModel.pagamentoLiveData.value?.nome}", Toast.LENGTH_LONG).show()
+        Toast.makeText(context, "tentou apagar esse pagamento (${viewModel.pagamentoLiveData.value?.nome})", Toast.LENGTH_LONG).show()
     }
 
     private fun onClickEditarPagamento() {
@@ -156,7 +156,7 @@ class DetalhesPagamentoFragment: Fragment() {
      *  gera um AlertDialogue perguntando para o usuario se ele quer atualiza-lo,
      *  gerando novos Historicos
      */
-    fun verifyPagamentosUpdates() {
+    private fun verifyPagamentosUpdates() {
         if (viewModel.pagamentoLiveData.isInitialized && viewModel.historicoDePagamento.isInitialized) {
             // Verifica se e necessario atualizar e criar novos historicos de pagamento
             if (precisaDeNovoHistorico(

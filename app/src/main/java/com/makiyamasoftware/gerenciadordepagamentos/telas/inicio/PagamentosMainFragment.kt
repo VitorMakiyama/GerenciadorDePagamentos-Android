@@ -112,12 +112,13 @@ class PagamentosMainFragment : Fragment() {
         }
     }
     private fun onClearButton() {
-        // Criar um AlertDialog, definindo os botões, clickLiseteners e os textos
+        // Criar um AlertDialog, definindo os botões, clickListeners e os textos
         val builder = AlertDialog.Builder(context)
-        builder.setTitle("Apagar o banco de dados")
-        builder.setMessage("Você tem certeza que deseja apagar TODOS os dados do banco de dados? (Não pode ser desfeito)")
-        builder.setPositiveButton("Sim") { _, _ -> viewModel.onClearAll()}
-        builder.setNegativeButton("Não") { _, _ ->}
+        builder.setTitle(R.string.clear_aviso_titulo)
+        builder.setMessage(R.string.clear_aviso_mensagem)
+        builder.setPositiveButton(R.string.generic_Sim) { _, _ -> viewModel.onClearAll()}
+        //builder.setNeutralButton() {_, _ -> _}
+        builder.setNegativeButton(R.string.generic_Nao) { _, _ ->}
         builder.show()
         Log.i(TAG, "HISTORICOS ${viewModel.historicoDosPagamentos}\n" +
                 "${viewModel.historicoDosPagamentos.value?.first()}\n${viewModel.historicoDosPagamentos.value?.last()}")
