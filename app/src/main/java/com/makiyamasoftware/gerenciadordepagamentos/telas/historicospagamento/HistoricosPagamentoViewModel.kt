@@ -31,8 +31,8 @@ class HistoricosPagamentoViewModel(private val dataSource: PagamentosDatabaseDao
     }
 
     fun getHistoricoAt(index : Int) : HistoricoDePagamento {
-        Log.d(TAG, "HISTS SIZE: ${historicos.value?.size} and index $index")
-        return historicos.value?.get(index) ?: throw ArrayIndexOutOfBoundsException("$index do vetor (${historicos.value?.size}) de historicos out of bounds")
+        Log.d(TAG, "HISTS SIZE: ${historicos.value!!.size} and index $index")
+        return historicos.value!![index]
     }
 
     private val _eventUpdateStatus = MutableLiveData<StatusChangeType>()
@@ -82,7 +82,7 @@ class HistoricosPagamentoViewModel(private val dataSource: PagamentosDatabaseDao
             dataSource.updateHistoricoDePagamento(historico)
         }
     }
-    fun onAtualizarStatusMultiplos() {
+    fun onAtualizarMultiplosStatus() {
         // começa a partir do item após o historico clicado
         for (i in historicoClicado + 1..<historicos.value!!.size) {
             if (!historicos.value!![i].estaPago) {
@@ -91,8 +91,6 @@ class HistoricosPagamentoViewModel(private val dataSource: PagamentosDatabaseDao
             }
         }
     }
-
-
 
     fun getHistoricoClicado(): HistoricoDePagamento {
         if (historicoClicado < 0) {

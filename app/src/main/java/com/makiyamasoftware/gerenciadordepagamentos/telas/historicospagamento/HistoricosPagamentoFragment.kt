@@ -86,7 +86,7 @@ class HistoricosPagamentoFragment : Fragment() {
         builder.setTitle(R.string.historicosPagamentoFragment_status_alertTitle)
         builder.setMessage(mensagem)
         builder.setPositiveButton(R.string.historicosPagamentoFragment_status_alert_button_opcaoUnico) { _, _ -> viewModel.onAtualizarStatus() }
-        if (type == StatusChangeType.MULTIPLE) { builder.setNeutralButton(R.string.generic_Sim) { _, _ -> viewModel.onAtualizarStatus(); viewModel.onAtualizarStatusMultiplos()} }
+        if (type == StatusChangeType.MULTIPLE) { builder.setNeutralButton(R.string.generic_Sim) { _, _ -> viewModel.onAtualizarStatus(); viewModel.onAtualizarMultiplosStatus()} }
         builder.setNegativeButton(R.string.generic_Nao) { _, _ ->}
         builder.show()
 
