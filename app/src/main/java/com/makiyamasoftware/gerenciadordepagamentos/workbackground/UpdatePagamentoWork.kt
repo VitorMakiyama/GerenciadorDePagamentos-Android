@@ -7,11 +7,13 @@ import androidx.work.WorkerParameters
 import com.makiyamasoftware.gerenciadordepagamentos.R
 import com.makiyamasoftware.gerenciadordepagamentos.atualizarNovosHistoricosDePagamento
 import com.makiyamasoftware.gerenciadordepagamentos.convertStringToCalendar
+import com.makiyamasoftware.gerenciadordepagamentos.createNewHistoryNotification
 import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabase
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabaseDao
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
+import com.makiyamasoftware.gerenciadordepagamentos.getPaymentNotificationContent
 import com.makiyamasoftware.gerenciadordepagamentos.precisaDeNovoHistorico
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -23,13 +25,12 @@ class UpdatePagamentoWork(appContext: Context, params: WorkerParameters) : Corou
     companion object {
         const val WORK_NAME = "UpdatePagamento"
     }
+    private var notificationId = 1
 
     // uma funcao coroutine-friendly que vai executar o trabalho no background!
     override suspend fun doWork(): Result {
         val dataSource = PagamentosDatabase.getInstance(applicationContext).pagamentosDatabaseDao
-
         return try {
-
             withContext(Dispatchers.IO) {
                 val pagamentos = dataSource.getAllPagamentosBackground()
                 for (pagamento in pagamentos) {
@@ -39,6 +40,7 @@ class UpdatePagamentoWork(appContext: Context, params: WorkerParameters) : Corou
                         val freqs = applicationContext.resources.getStringArray(R.array.frequencias_pagamentos)
 
                         getNovosHistoricosSeNecessario(pagamento, historico, pessoas, freqs, dataSource)
+                        notificationId++
                     }
                 }
             }
@@ -59,6 +61,9 @@ class UpdatePagamentoWork(appContext: Context, params: WorkerParameters) : Corou
                 val novosHistoricos = atualizarNovosHistoricosDePagamento(historico, Calendar.getInstance(), pagamento, freqs, pessoas)
                 dataSource.inserirHistoricoDePagamento(*novosHistoricos.toTypedArray())
                 Log.d(TAG, "Gerou os novos historicos!\n$novosHistoricos")
+
+                val notifyHistory = novosHistoricos.last()
+                createNewHistoryNotification(applicationContext, pagamento.nome, getPaymentNotificationContent(notifyHistory, pessoas.find { p: Pessoa -> p.pessoaID == notifyHistory.pagadorID }!!), notificationId, pagamento)
             }
         }
     }

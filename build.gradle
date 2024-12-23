@@ -12,7 +12,7 @@ buildscript {
         roomVersion = "2.6.1"
         appcompatVersion = "1.7.0"
         fragmentVersion = "1.6.5"
-        versionWork = "2.10.0"
+        workVersion = "2.10.0"
 
         // Tests
         junitVersion = '4.13.2'

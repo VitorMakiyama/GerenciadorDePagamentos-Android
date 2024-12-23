@@ -15,8 +15,10 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.makiyamasoftware.gerenciadordepagamentos.R
+import com.makiyamasoftware.gerenciadordepagamentos.createNewHistoryNotification
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabase
 import com.makiyamasoftware.gerenciadordepagamentos.databinding.FragmentPagamentosMainBinding
+import com.makiyamasoftware.gerenciadordepagamentos.getPaymentNotificationContent
 
 const val TAG = "PagamentosMainFragment"
 /**
@@ -92,6 +94,7 @@ class PagamentosMainFragment : Fragment() {
         // Setando a navegaçao do card do pagamento
         viewModel.clickNoPagamento.observe(viewLifecycleOwner, Observer {
             if (it) {
+                createNewHistoryNotification(requireContext(), viewModel.getPagamentoCerto(viewModel.selectedPag)!!.nome, getPaymentNotificationContent(viewModel.getHistoricoCerto(viewModel.selectedPag)!!, viewModel.getPessoaCerta(viewModel.getHistoricoCerto(viewModel.selectedPag)!!.pagadorID)!!), viewModel.selectedPag.toInt(), viewModel.getPagamentoCerto(viewModel.selectedPag)!!)
                 Toast.makeText(context, "${viewModel.getPagamentoCerto(viewModel.selectedPag)?.nome}  ${viewModel.getHistoricoCerto(viewModel.selectedPag)}", Toast.LENGTH_SHORT).show()
                 findNavController().navigate(PagamentosMainFragmentDirections.actionPagamentosMainFragmentToDetalhesPagamentoFragment(viewModel.getPagamentoCerto(viewModel.selectedPag)!!))
                 viewModel.onClickPagamentoDone()

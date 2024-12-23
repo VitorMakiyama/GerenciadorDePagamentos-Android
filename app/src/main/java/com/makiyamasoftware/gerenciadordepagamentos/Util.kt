@@ -1,12 +1,22 @@
 package com.makiyamasoftware.gerenciadordepagamentos
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.util.Log
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.os.bundleOf
+import androidx.navigation.NavDeepLinkBuilder
 import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
 
 const val TAG = "UtilFunctions"
 
@@ -204,4 +214,59 @@ fun precisaDeNovoHistorico(frequencia: String, dataUltimoHistorico: Calendar, ho
         // Escolha.. e Sem frequência
         else -> return false
     }
+}
+
+const val CHANNEL_ID = "GerenciadorDePagamentosNotificationChannelId"
+/**
+ * Função que cria e entrega uma push notification
+ */
+fun createNewHistoryNotification(ctx: Context, textTitle: String, textContent: String, notificationId: Int, pagamento: Pagamento) {
+    // Create an explicit intent for an Activity in your app.
+    val intent = Intent(ctx, MainActivity::class.java).apply {
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+    }
+    val pendingIntent: PendingIntent = NavDeepLinkBuilder(ctx)
+        .setGraph(R.navigation.main_navigation)
+        .setDestination(R.id.detalhesPagamentoFragment)
+        .setArguments(bundleOf(Pair("pagamentoEscolhido", pagamento)))
+        .createPendingIntent()// PendingIntent.getActivity(ctx, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+
+
+    val builder = NotificationCompat.Builder(ctx, CHANNEL_ID)
+        .setSmallIcon(R.drawable.ic_logo_foreground)
+        .setContentTitle(textTitle)
+        .setContentText(textContent)
+        .setStyle(NotificationCompat.BigTextStyle()
+            .bigText(textContent))
+        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        .setContentIntent(pendingIntent)
+        .setAutoCancel(true)
+
+    with(NotificationManagerCompat.from(ctx)) {
+        if (ActivityCompat.checkSelfPermission(
+                ctx,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            // ActivityCompat.requestPermissions()
+            // here to request the missing permissions, and then overriding
+            // public fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>,
+            //                                        grantResults: IntArray)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+
+            return@with
+        }
+        // notificationId is a unique int for each notification that you must define.
+        notify(notificationId, builder.build())
+    }
+}
+
+/**
+ * Funcao que utiliza um historico e uma pessoa para escrever o texto da notificacao
+ *  de um pagamento num novo periodo
+ */
+fun getPaymentNotificationContent(historico: HistoricoDePagamento, pessoa: Pessoa): String {
+    return "${pessoa.nome} precisa pagar R$ ${historico.preco}, referente à data: ${historico.data}"
 }

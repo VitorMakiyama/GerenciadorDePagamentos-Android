@@ -12,7 +12,7 @@ android {
         minSdkVersion 23
         targetSdkVersion 35
         versionCode 1
-        versionName "0.9.0"
+        versionName "0.9.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -69,7 +69,7 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
 
     // WorkManager
-    implementation "androidx.work:work-runtime-ktx:$versionWork"
+    implementation "androidx.work:work-runtime-ktx:$workVersion"
 
     // Dependencies for local unit tests
     testImplementation "junit:junit:$junitVersion" // JUnit, which is necessary for writing basic test statements.
@@ -83,6 +83,7 @@ dependencies {
     testImplementation "androidx.test.ext:junit-ktx:$androidXTestExtKotlinRunnerVersion"
     testImplementation "androidx.test:core-ktx:$androidXTestCoreVersion" // Core AndroidX test library
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion"
+    testImplementation "androidx.work:work-testing:$workVersion"
 
     // AndroidX Test - Instrumented testing
     androidTestImplementation "androidx.test.ext:junit:$androidXTestExtKotlinRunnerVersion"
@@ -93,5 +94,6 @@ dependencies {
     androidTestImplementation "com.linkedin.dexmaker:dexmaker-mockito:$dexMakerVersion" // This library is required to use Mockito in an Android project. Mockito needs to generate classes at runtime. On Android, this is done using dex byte code, and so this library enables Mockito to generate objects during runtime on Android.
     androidTestImplementation "androidx.test.espresso:espresso-contrib:$espressoVersion" // This library is made up of external contributions (hence the name) which contain testing code for more advanced views, such as DatePicker and RecyclerView. It also contains Accessibility checks and class called CountingIdlingResource that is covered later.
     androidTestImplementation "androidx.arch.core:core-testing:$archTestingVersion" //for testing Room
+    androidTestImplementation "androidx.work:work-testing:$workVersion"
 
 }

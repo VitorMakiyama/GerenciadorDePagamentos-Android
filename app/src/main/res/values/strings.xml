@@ -52,6 +52,8 @@
     <string name="historicosPagamentoFragment_status_alertMessage_unico">Deseja alterar o status deste histórico para: \n</string>
     <string name="historicosPagamentoFragment_status_alertMessage_multiplos">Deseja alterar o status deste histórico e de todos os anteriores para "Pago", ou apenas esse?</string>
     <string name="historicosPagamentoFragment_status_alert_button_opcaoUnico">Apenas esse</string>
+    <string name="channel_name">Atualizações de Pagamentos</string>
+    <string name="channel_description">Notification channel for delivering notifications of configured payments</string>
 
 
     <string-array name="frequencias_pagamentos">
