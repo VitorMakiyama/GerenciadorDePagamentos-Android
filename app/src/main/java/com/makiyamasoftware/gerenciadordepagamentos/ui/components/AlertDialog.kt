@@ -106,7 +106,7 @@ fun AlertDialogComponent(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoFrequencyPriceChangeAlertDialog(
-	title: String = stringResource(R.string.detalhesPagamentoFragment_on_change_price_noFrequency_alertTitle),
+	title: String = stringResource(R.string.detalhesPagamento_on_change_price_noFrequency_alertTitle),
 	histories: List<HistoricoDePagamento>,
 	people: List<Pessoa>,
 	affirmativeText: String = stringResource(R.string.generic_Pronto),
@@ -135,7 +135,7 @@ fun NoFrequencyPriceChangeAlertDialog(
 					style = MaterialTheme.typography.headlineMedium
 				)
 				// Descricao explicativa
-				Text(stringResource(R.string.detalhesPagamentoFragment_on_change_price_noFrequency_alertMessage))
+				Text(stringResource(R.string.detalhesPagamento_on_change_price_noFrequency_alertMessage))
 				// Os preços do pagamento SEM FREQUENCIA a serem modificados
 				LazyColumn(modifier = Modifier.padding(vertical = dimensionResource(R.dimen.margin_small))) {
 					items(
@@ -189,7 +189,7 @@ private fun AlertDialogComponentPreview() {
 	GerenciadorDePagamentosTheme {
 		AlertDialogComponent(
 			title = "Titulo",
-			message = stringResource(R.string.detalhesPagamentoFragment_status_alertMessage),
+			message = stringResource(R.string.detalhesPagamento_status_alertMessage),
 			affirmativeText = pluralStringResource(R.plurals.generic_Update, 11),
 			onAffirmativeRequest = {},
 			dismissText = stringResource(R.string.generic_Cancelar),

@@ -90,7 +90,6 @@ class DetalhesPagamentoFragment: Fragment() {
         // Observer para navegar para a pagina com todos os HistoricosDePagamento do Pagamento
         detalhesPagamentoViewModel.verTodoOHistorico.observe(viewLifecycleOwner) {
             if (it) {
-                Toast.makeText(context, "Clicou em ver todo o Historico!", Toast.LENGTH_LONG).show()
                 findNavController().navigate(DetalhesPagamentoFragmentDirections.actionDetalhesPagamentoFragmentToHistoricosPagamentoFragment(detalhesPagamentoViewModel.pagamento.value!!))
                 detalhesPagamentoViewModel.onVerTodoOHistoricoDone()
             }
@@ -98,6 +97,7 @@ class DetalhesPagamentoFragment: Fragment() {
 
         detalhesPagamentoViewModel.hasDeletedPayment.observe(viewLifecycleOwner) {
             if (it) {
+                Toast.makeText(context, application.resources.getString(R.string.detalhesPagamento_ToastText_deletePayment, detalhesPagamentoViewModel.pagamento.value?.nome), Toast.LENGTH_LONG).show()
                 findNavController().popBackStack()
             }
         }
@@ -132,7 +132,6 @@ class DetalhesPagamentoFragment: Fragment() {
     }
 
     private fun onClickApagarPagamento() {
-        Toast.makeText(context, "tentou apagar esse pagamento (${detalhesPagamentoViewModel.pagamento.value?.nome})", Toast.LENGTH_LONG).show()
         detalhesPagamentoViewModel.onShowAlertDialog(DetalhesPagamentoViewModel.AlertType.DELETE_PAYMENT)
     }
 

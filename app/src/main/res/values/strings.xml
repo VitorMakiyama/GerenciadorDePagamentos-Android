@@ -40,26 +40,27 @@
     <string name="criarPagamentosFragment_erro_campos_vazios_message_parcela_participante">\t•Parcela do valor de algum participante\n</string>
 
     <!-- Strings usadas no Detalhes Pagamento-->
-    <string name="detalhesPagamentoFragment_ver_todo_o_historicos">"Ver todo o histórico"</string>
-    <string name="detalhesPagamentoFragment_descricao_nome">Nome:</string>
-    <string name="detalhesPagamentoFragment_descricao_data">Data:</string>
-    <string name="detalhesPagamentoFragment_descricao_frequencia">Frequência:</string>
-    <string name="detalhesPagamentoFragment_descricao_preco">Preço (R$):</string>
-    <string name="detalhesPagamentoFragment_status_alertTitle">Mudar o status</string>
-    <string name="detalhesPagamentoFragment_status_alertMessage">Deseja alterar o status deste histórico para: \n</string>
-    <string name="detalhesPagamentoFragment_update_historicos_alertTitle">Pagamento desatualizado!</string>
-    <string name="detalhesPagamentoFragment_update_historicos_alertMessage">Seu pagamento está desatualizado, deseja atualiza-lo?</string>
+    <string name="detalhesPagamento_ver_todo_o_historicos">"Ver todo o histórico"</string>
+    <string name="detalhesPagamento_descricao_nome">Nome:</string>
+    <string name="detalhesPagamento_descricao_data">Data:</string>
+    <string name="detalhesPagamento_descricao_frequencia">Frequência:</string>
+    <string name="detalhesPagamento_descricao_preco">Preço (R$):</string>
+    <string name="detalhesPagamento_status_alertTitle">Mudar o status</string>
+    <string name="detalhesPagamento_status_alertMessage">Deseja alterar o status deste histórico para: \n</string>
+    <string name="detalhesPagamento_update_historicos_alertTitle">Pagamento desatualizado!</string>
+    <string name="detalhesPagamento_update_historicos_alertMessage">Seu pagamento está desatualizado, deseja atualiza-lo?</string>
     <string name="menu_detalhes_fragment_editar">Editar</string>
     <string name="menu_detalhes_fragment_apagar">Apagar</string>
-    <string name="detalhesPagamentoFragment_on_delete_payment_alertTitle">Apagar Pagamento</string>
-    <string name="detalhesPagamentoFragment_on_delete_payment_alertMessage">Deseja apagar este Pagamento?\nEssa ação não pode ser desfeita!</string>
-    <string name="detalhesPagamentoFragment_on_change_price_noFrequency_alertTitle">Preços</string>
-    <string name="detalhesPagamentoFragment_on_change_price_noFrequency_alertMessage">Altere quanto cada pessoa deste pagamento deverá pagar!</string>
-    <string name="detalhesPagamentoFragment_on_change_price_withFrequency_oldHistory_alertTitle">Atualizar preços</string>
-    <string name="detalhesPagamentoFragment_on_change_price_withFrequency_oldHistory_alertMessage">Deseja atualizar apenas o histórico pendente mais recente, de %1$s, ou deseja atualizar este e todos os históricos subsequentes?</string>
+    <string name="detalhesPagamento_on_delete_payment_alertTitle">Apagar Pagamento</string>
+    <string name="detalhesPagamento_on_delete_payment_alertMessage">Deseja apagar este Pagamento?\nEssa ação não pode ser desfeita!</string>
+    <string name="detalhesPagamento_on_change_price_noFrequency_alertTitle">Preços</string>
+    <string name="detalhesPagamento_on_change_price_noFrequency_alertMessage">Altere quanto cada pessoa deste pagamento deverá pagar!</string>
+    <string name="detalhesPagamento_on_change_price_withFrequency_oldHistory_alertTitle">Atualizar preços</string>
+    <string name="detalhesPagamento_on_change_price_withFrequency_oldHistory_alertMessage">Deseja atualizar apenas o histórico pendente mais recente, de %1$s, ou deseja atualizar este e todos os históricos subsequentes?</string>
     <string name="detalhesPagamento_descricao_manter_atualizado">Manter atualizado</string>
     <string name="detalhesPagamento_descricao_pode_enviar_push">Push Notifications</string>
     <string name="detalhesPagamento_contentDescription_salvarAlteracoes">Salvar alterações</string>
+    <string name="detalhesPagamento_ToastText_deletePayment">"Pagamento %1$s apagado com sucesso!"</string>
 
     <!-- Strings usadas no Historicos de Pagamento-->
     <string name="historicosPagamentoFragment_descricao_preco">Preço (R$):</string>

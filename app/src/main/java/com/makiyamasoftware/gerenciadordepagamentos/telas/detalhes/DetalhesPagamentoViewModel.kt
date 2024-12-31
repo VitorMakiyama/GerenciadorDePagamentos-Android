@@ -302,6 +302,6 @@ class DetalhesPagamentoViewModel(
 	}
 
 	fun isLatestHistory(): Boolean {
-		return historicoRecente.value == historicosDoPagamento.value?.first()
+		return historicoRecente.value?.historicoID == historicosDoPagamento.value?.first()?.historicoID
 	}
 }

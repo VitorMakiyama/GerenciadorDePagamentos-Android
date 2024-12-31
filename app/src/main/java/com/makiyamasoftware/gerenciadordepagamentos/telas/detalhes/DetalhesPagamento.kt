@@ -138,8 +138,8 @@ fun DetalhesPagamentoScreen(detalhesPagamentoViewModel: DetalhesPagamentoViewMod
 				when (detalhesPagamentoAlertType) {
 					DetalhesPagamentoViewModel.AlertType.CHANGE_STATUS -> {
 						AlertDialogComponent(
-							title = stringResource(R.string.detalhesPagamentoFragment_status_alertTitle),
-							message = stringResource(R.string.detalhesPagamentoFragment_status_alertMessage) +
+							title = stringResource(R.string.detalhesPagamento_status_alertTitle),
+							message = stringResource(R.string.detalhesPagamento_status_alertMessage) +
 									when (estaPagoultimoHistorico) {
 										true -> stringResource(R.string.blocoEstaPago_status_naoPago)
 										else -> stringResource(R.string.blocoEstaPago_status_pago)
@@ -154,8 +154,8 @@ fun DetalhesPagamentoScreen(detalhesPagamentoViewModel: DetalhesPagamentoViewMod
 
 					DetalhesPagamentoViewModel.AlertType.DELETE_PAYMENT -> {
 						AlertDialogComponent(
-							title = stringResource(R.string.detalhesPagamentoFragment_on_delete_payment_alertTitle),
-							message = stringResource(R.string.detalhesPagamentoFragment_on_delete_payment_alertMessage),
+							title = stringResource(R.string.detalhesPagamento_on_delete_payment_alertTitle),
+							message = stringResource(R.string.detalhesPagamento_on_delete_payment_alertMessage),
 							onAffirmativeRequest = {
 								detalhesPagamentoViewModel.onClickDeletePayment()
 								detalhesPagamentoViewModel.onDoneShowAlertDialog()
@@ -166,8 +166,8 @@ fun DetalhesPagamentoScreen(detalhesPagamentoViewModel: DetalhesPagamentoViewMod
 
 					DetalhesPagamentoViewModel.AlertType.UPDATE_PAYMENT -> {
 						AlertDialogComponent(
-							title = stringResource(R.string.detalhesPagamentoFragment_update_historicos_alertTitle),
-							message = stringResource(R.string.detalhesPagamentoFragment_update_historicos_alertMessage),
+							title = stringResource(R.string.detalhesPagamento_update_historicos_alertTitle),
+							message = stringResource(R.string.detalhesPagamento_update_historicos_alertMessage),
 							affirmativeText = pluralStringResource(R.plurals.generic_Update, 1),
 							onAffirmativeRequest = {
 								detalhesPagamentoViewModel.onUpdateHistoricosDoPagamento()
@@ -192,8 +192,8 @@ fun DetalhesPagamentoScreen(detalhesPagamentoViewModel: DetalhesPagamentoViewMod
 
 					DetalhesPagamentoViewModel.AlertType.MODIFY_OLD_HISTORY_PRICE -> {
 						AlertDialogComponent(
-							title = stringResource(R.string.detalhesPagamentoFragment_on_change_price_withFrequency_oldHistory_alertTitle),
-							message = stringResource(R.string.detalhesPagamentoFragment_on_change_price_withFrequency_oldHistory_alertMessage, getFormattedStringDate(ultimoHistorico!!.data)),
+							title = stringResource(R.string.detalhesPagamento_on_change_price_withFrequency_oldHistory_alertTitle),
+							message = stringResource(R.string.detalhesPagamento_on_change_price_withFrequency_oldHistory_alertMessage, getFormattedStringDate(ultimoHistorico!!.data)),
 							affirmativeText = pluralStringResource(R.plurals.generic_Update, detalhesPagamentoViewModel.historicosDoPagamento.value!!.size),
 							onAffirmativeRequest = {
 								detalhesPagamentoViewModel.onClickSalvarEdicoes(
@@ -281,7 +281,7 @@ fun DetalhesPagamentoScreenContent(
 				onClick = onClickAllHistories,
 				modifier = Modifier.padding(vertical = dimensionResource(R.dimen.margin_small)),
 			) {
-				Text(stringResource(R.string.detalhesPagamentoFragment_ver_todo_o_historicos))
+				Text(stringResource(R.string.detalhesPagamento_ver_todo_o_historicos))
 			}
 		}
 	}
@@ -305,7 +305,7 @@ fun EditablePaymentFields(
 	Column(modifier = modifier) {
 		OutlinedTextField(
 			value = paymentName,
-			label = { Text(stringResource(R.string.detalhesPagamentoFragment_descricao_nome)) },
+			label = { Text(stringResource(R.string.detalhesPagamento_descricao_nome)) },
 			onValueChange = {
 				paymentName = it
 				payment.nome = it
@@ -316,21 +316,21 @@ fun EditablePaymentFields(
 		)
 		OutlinedTextField(
 			value = getFormattedStringDate(payment.dataDeInicio),
-			label = { Text(stringResource(R.string.detalhesPagamentoFragment_descricao_data)) },
+			label = { Text(stringResource(R.string.detalhesPagamento_descricao_data)) },
 			onValueChange = { },
 			readOnly = true,
 			modifier = modifier
 		)
 		OutlinedTextField(
 			value = payment.freqDoPag,
-			label = { Text(stringResource(R.string.detalhesPagamentoFragment_descricao_frequencia)) },
+			label = { Text(stringResource(R.string.detalhesPagamento_descricao_frequencia)) },
 			onValueChange = { },
 			readOnly = true,
 			modifier = modifier,
 		)
 		OutlinedTextField(
 			value = if (isNoFrequencyPayment(payment.freqDoPag)) formatReadablePrice(price) else formatReadablePrice(editablePrice),
-			label = { Text(stringResource(R.string.detalhesPagamentoFragment_descricao_preco)) },
+			label = { Text(stringResource(R.string.detalhesPagamento_descricao_preco)) },
 			onValueChange = {
 				parseStringToDouble(it)?.let { convertedPrice ->
 					editablePrice = convertedPrice
