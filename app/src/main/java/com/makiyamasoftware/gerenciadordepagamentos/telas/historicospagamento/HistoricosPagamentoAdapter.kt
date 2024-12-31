@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.makiyamasoftware.gerenciadordepagamentos.R
 import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagamento
 import com.makiyamasoftware.gerenciadordepagamentos.databinding.HistoricosItemListaBinding
 import com.makiyamasoftware.gerenciadordepagamentos.getPessoaCerta
@@ -28,7 +29,7 @@ class HistoricosPagamentoAdapter(private val viewModel: HistoricosPagamentoViewM
         fun bind(historico: HistoricoDePagamento, freq: String, viewModel: HistoricosPagamentoViewModel, position: Int) {
             binding.textNomeHist.text = getPessoaCerta(viewModel.pessoas.value, historico.pagadorID).nome
             binding.textPrecoHist.text = historico.preco.toString()
-            binding.textDataHist.text = historico.getDataString(viewModel.app, freq)
+            binding.textDataHist.text = historico.getDataString(viewModel.app.resources.getStringArray(R.array.frequencias_pagamentos), freq)
             binding.textStatusHist.text = historico.getEstaPagoString(viewModel.app)
             binding.backgroungHist.setBackgroundColor(historico.getBackgroundColorInt(viewModel.app))
             // setta o click listener do status do historico

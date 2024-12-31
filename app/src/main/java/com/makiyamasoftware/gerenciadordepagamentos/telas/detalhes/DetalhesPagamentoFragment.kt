@@ -1,6 +1,5 @@
 package com.makiyamasoftware.gerenciadordepagamentos.telas.detalhes
 
-import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -11,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -20,6 +20,7 @@ import com.makiyamasoftware.gerenciadordepagamentos.convertStringToCalendar
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabase
 import com.makiyamasoftware.gerenciadordepagamentos.databinding.FragmentDetalhesPagamentoBinding
 import com.makiyamasoftware.gerenciadordepagamentos.precisaDeNovoHistorico
+import com.makiyamasoftware.gerenciadordepagamentos.ui.theme.GerenciadorDePagamentosTheme
 import java.util.Calendar
 
 private const val TAG: String = "DetalhesPagamentoFrag"
@@ -29,7 +30,7 @@ private const val TAG: String = "DetalhesPagamentoFrag"
  *  botões no menu é possível alterar os seus detalhes e salvar as alterações
  */
 class DetalhesPagamentoFragment: Fragment() {
-    lateinit var viewModel: DetalhesPagamentoViewModel
+    private lateinit var detalhesPagamentoViewModel: DetalhesPagamentoViewModel
     lateinit var binding: FragmentDetalhesPagamentoBinding
 
     private var pagamentoOutdated = false
@@ -57,69 +58,64 @@ class DetalhesPagamentoFragment: Fragment() {
         val dataSource = PagamentosDatabase.getInstance(application).pagamentosDatabaseDao
         // instancia uma viewModelFactory
         val viewModelFactory = DetalhesPagamentoViewModelFactory(dataSource, application, pagamentoSelecionado)
-        viewModel = ViewModelProvider(this, viewModelFactory).get(DetalhesPagamentoViewModel::class.java)
+        detalhesPagamentoViewModel = ViewModelProvider(this, viewModelFactory).get(DetalhesPagamentoViewModel::class.java)
 
-        binding.viewModel = viewModel
+        binding.viewModel = detalhesPagamentoViewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
-        viewModel.historicoDePagamento.observe(viewLifecycleOwner) {
+        detalhesPagamentoViewModel.historicosDoPagamento.observe(viewLifecycleOwner) {
             if (it.isNotEmpty()) {
-                viewModel.atualizarPreco()
-                viewModel.bindHistRecente(binding)
-                viewModel.atualizarHistoricoRecente()
+                detalhesPagamentoViewModel.atualizarHistoricoRecente()
                 verifyPagamentosUpdates()
             }
-            Log.i(TAG, "LiveData mudou historico de paggId:${pagamentoSelecionado.pagamentoID} e o historico e \n${viewModel.historicoDePagamento.value!!.size}")
+            Log.d(TAG, "LiveData historico mudou, size=${detalhesPagamentoViewModel.historicosDoPagamento.value!!.size}\n${detalhesPagamentoViewModel.historicosDoPagamento.value}")
+        }
+        detalhesPagamentoViewModel.historicoRecente.observe(viewLifecycleOwner) {
+            if (it != null) detalhesPagamentoViewModel.atualizarPreco()
+            Log.d(TAG, "historicoRecente.estaPago=${it?.estaPago}")
         }
 
-        viewModel.pessoas.observe(viewLifecycleOwner) {
+        detalhesPagamentoViewModel.pessoas.observe(viewLifecycleOwner) {
             if (!it.isNullOrEmpty()) {
-                viewModel.atualizarHistoricoRecente()
+                detalhesPagamentoViewModel.atualizarHistoricoRecente()
             }
         }
 
-        viewModel.pagamentoLiveData.observe(viewLifecycleOwner) {
+        detalhesPagamentoViewModel.pagamento.observe(viewLifecycleOwner) {
             if (it != null) {
                 verifyPagamentosUpdates()
             }
         }
 
-        // Observer do click listener do status do Pagamento, habilitando o evento para atualiza-lo
-        viewModel.onMudarStatus.observe(viewLifecycleOwner) {
-            if (it) {
-                // Criar um AlertDialog, definindo os botões, clickLiseteners e os textos
-                val builder = AlertDialog.Builder(context)
-                builder.setTitle(getString(R.string.detalhesPagamentoFragment_status_alertTitle))
-                builder.setMessage(getString(R.string.detalhesPagamentoFragment_status_alertMessage) +
-                        when (viewModel.histRecente.estaPago) {
-                            true -> getString(R.string.blocoEstaPago_status_naoPago)
-                            else -> getString(R.string.blocoEstaPago_status_pago)
-                })
-                builder.setPositiveButton(getText(R.string.generic_Ok)) { _, _ -> viewModel.onMudarStatus()}
-                builder.setNegativeButton(getText(R.string.generic_Nao)) { _, _ -> }
-                builder.show()
-                viewModel.onClickStatusHistoricoDone()
-            }
-        }
-
         // Observer para navegar para a pagina com todos os HistoricosDePagamento do Pagamento
-        viewModel.verTodoOHistorico.observe(viewLifecycleOwner) {
+        detalhesPagamentoViewModel.verTodoOHistorico.observe(viewLifecycleOwner) {
             if (it) {
                 Toast.makeText(context, "Clicou em ver todo o Historico!", Toast.LENGTH_LONG).show()
-                findNavController().navigate(DetalhesPagamentoFragmentDirections.actionDetalhesPagamentoFragmentToHistoricosPagamentoFragment(viewModel.pagamentoLiveData.value!!))
-                viewModel.onVerTodoOHistoricoDone()
+                findNavController().navigate(DetalhesPagamentoFragmentDirections.actionDetalhesPagamentoFragmentToHistoricosPagamentoFragment(detalhesPagamentoViewModel.pagamento.value!!))
+                detalhesPagamentoViewModel.onVerTodoOHistoricoDone()
             }
         }
 
-        // Observer do botao (FAB) de salvar
-        viewModel.onSalvarEdicoes.observe(viewLifecycleOwner) {
+        detalhesPagamentoViewModel.hasDeletedPayment.observe(viewLifecycleOwner) {
             if (it) {
-                onSavedEdicoesDePagamanto()
-                viewModel.onSavedEdicoes()
+                findNavController().popBackStack()
             }
         }
 
         setHasOptionsMenu(true)
+        binding.apply {
+            composeView.apply {
+				setViewCompositionStrategy(
+					ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+				)
+                setContent {
+                    // Inside Compose world!
+                    GerenciadorDePagamentosTheme {
+                        DetalhesPagamentoScreen(detalhesPagamentoViewModel)
+                    }
+                }
+            }
+        }
         return binding.root
     }
 
@@ -129,26 +125,20 @@ class DetalhesPagamentoFragment: Fragment() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.apagarButton -> {onClickApagarPagamento();true}
+            R.id.apagarButton -> {onClickApagarPagamento(); true}
             R.id.editarButton -> {onClickEditarPagamento(); true}
             else -> false
         }
     }
 
     private fun onClickApagarPagamento() {
-        Toast.makeText(context, "tentou apagar esse pagamento (${viewModel.pagamentoLiveData.value?.nome})", Toast.LENGTH_LONG).show()
+        Toast.makeText(context, "tentou apagar esse pagamento (${detalhesPagamentoViewModel.pagamento.value?.nome})", Toast.LENGTH_LONG).show()
+        detalhesPagamentoViewModel.onShowAlertDialog(DetalhesPagamentoViewModel.AlertType.DELETE_PAYMENT)
     }
 
     private fun onClickEditarPagamento() {
-        binding.salvarFAB.visibility = View.VISIBLE
-        binding.switchAutoUpdate.isEnabled = true
+        detalhesPagamentoViewModel.onEditingPayment()
 
-    }
-
-    private fun onSavedEdicoesDePagamanto() {
-        binding.salvarFAB.visibility = View.GONE
-        binding.switchAutoUpdate.isEnabled = false
-        viewModel.pagamentoSelecionadoAutoUpdate = binding.switchAutoUpdate.isChecked
     }
 
     /**
@@ -157,24 +147,17 @@ class DetalhesPagamentoFragment: Fragment() {
      *  gerando novos Historicos
      */
     private fun verifyPagamentosUpdates() {
-        if (viewModel.pagamentoLiveData.isInitialized && viewModel.historicoDePagamento.isInitialized) {
+        if (detalhesPagamentoViewModel.pagamento.isInitialized && detalhesPagamentoViewModel.historicosDoPagamento.isInitialized) {
             // Verifica se e necessario atualizar e criar novos historicos de pagamento
             if (precisaDeNovoHistorico(
-                    viewModel.pagamentoLiveData.value!!.freqDoPag,
-                    convertStringToCalendar(viewModel.getHistoricoMaisRecente().data),
+                    detalhesPagamentoViewModel.pagamento.value!!.freqDoPag,
+                    convertStringToCalendar(detalhesPagamentoViewModel.getHistoricoMaisRecente().data),
                     Calendar.getInstance(),
                     requireActivity().resources.getStringArray(R.array.frequencias_pagamentos)
                 )
                 and !pagamentoOutdated
             ) {
-                // Criar um AlertDialog, definindo os botões, clickLiseteners e os textos
-                val builder = AlertDialog.Builder(context)
-                builder.setTitle(getString(R.string.detalhesPagamentoFragment_update_historicos_alertTitle))
-                builder.setMessage(getString(R.string.detalhesPagamentoFragment_update_historicos_alertMessage))
-                builder.setPositiveButton(getText(R.string.generic_Update)) { _, _ -> viewModel.onUpdateHistoricosDoPagamento() }
-                builder.setNegativeButton(getText(R.string.generic_Nao)) { _, _ -> }
-                builder.show()
-
+                detalhesPagamentoViewModel.onShowAlertDialog(DetalhesPagamentoViewModel.AlertType.UPDATE_PAYMENT)
                 pagamentoOutdated = true
             }
         }

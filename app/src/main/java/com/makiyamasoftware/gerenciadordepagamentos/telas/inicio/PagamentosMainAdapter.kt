@@ -72,7 +72,7 @@ class PagamentosMainAdapter(private val viewModel: PagamentosMainViewModel): Lis
                 editBinding.textMesPagamento.text = viewModel.application.getString(R.string.generic_caps_null)
                 editBinding.textStatusPagamento.text = viewModel.application.getString(R.string.generic_caps_null)
             } else {
-                editBinding.textMesPagamento.text = historico.getDataString(viewModel.application, pagamento.freqDoPag)
+                editBinding.textMesPagamento.text = historico.getDataString(viewModel.application.resources.getStringArray(R.array.frequencias_pagamentos), pagamento.freqDoPag)
                 editBinding.textStatusPagamento.text = historico.getEstaPagoString(viewModel.application)
                 editBinding.backgroungPagamentoListas.setBackgroundColor(historico.getBackgroundColorInt(viewModel.application))
             }

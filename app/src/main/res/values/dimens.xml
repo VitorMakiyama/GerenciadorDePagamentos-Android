@@ -3,6 +3,8 @@
     <dimen name="default_margin">24dp</dimen>
     <dimen name="default_half_margin">12dp</dimen>
     <dimen name="defaultDivMargin">150dp</dimen>
+    <dimen name="margin_small">8dp</dimen>
+    <dimen name="margin_normal">16dp</dimen>
 
     <dimen name="pagoLetter">24sp</dimen>
 

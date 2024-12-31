@@ -1,6 +1,7 @@
 package com.makiyamasoftware.gerenciadordepagamentos.workbackground
 
 import android.content.Context
+import android.content.res.Resources
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -63,7 +64,18 @@ class UpdatePagamentoWork(appContext: Context, params: WorkerParameters) : Corou
                 Log.d(TAG, "Gerou os novos historicos!\n$novosHistoricos")
 
                 val notifyHistory = novosHistoricos.last()
-                createNewHistoryNotification(applicationContext, pagamento.nome, getPaymentNotificationContent(notifyHistory, pessoas.find { p: Pessoa -> p.pessoaID == notifyHistory.pagadorID }!!), notificationId, pagamento)
+                createNewHistoryNotification(
+                    applicationContext,
+                    pagamento.nome,
+                    getPaymentNotificationContent(
+						notifyHistory,
+						pessoas.find { p: Pessoa -> p.pessoaID == notifyHistory.pagadorID }!!,
+						frequencia = pagamento.freqDoPag,
+						frequencias = Resources.getSystem().getStringArray(R.array.frequencias_pagamentos)
+					),
+                    notificationId,
+                    pagamento
+                )
             }
         }
     }

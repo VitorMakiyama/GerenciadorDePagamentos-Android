@@ -8,6 +8,7 @@ import androidx.room.Update
 
 @Dao
 interface PagamentosDatabaseDao {
+    /** Pagamento **/
     @Insert
     fun inserirPagamento(pagamento: Pagamento)
     @Update
@@ -18,11 +19,14 @@ interface PagamentosDatabaseDao {
     fun getAllPagamentos(): LiveData<List<Pagamento>>
     @Query("SELECT pagamentoID FROM pagamento_table ORDER BY pagamentoID DESC LIMIT 1")
     fun getUltimoPagamentoID(): Long
+    @Query("DELETE FROM pagamento_table WHERE pagamentoID = :pagamentoID")
+    fun deletePagamento(pagamentoID: Long)
     @Query("DELETE FROM pagamento_table")
     fun clearPagamentos()
     @Query("SELECT * FROM pagamento_table")
     fun getAllPagamentosBackground() : List<Pagamento>
 
+    /** Pessoa **/
     @Insert
     fun inserirPessoa(pessoa: Pessoa)
     @Update
@@ -35,11 +39,14 @@ interface PagamentosDatabaseDao {
     fun getPessoasDoPagamento(pagamentoID: Long): LiveData<List<Pessoa>>
     @Query("SELECT * FROM pessoas_table ORDER BY pagamento_id, ordem ASC")
     fun getAllPessoas(): List<Pessoa>
+    @Query("DELETE FROM pessoas_table WHERE pagamento_id = :pagamentoID")
+    fun deletePessoasFromPagamento(pagamentoID: Long)
     @Query("DELETE FROM pessoas_table")
     fun clearPessoas()
     @Query("SELECT * FROM pessoas_table WHERE pagamento_id = :pagamentoID ORDER BY ordem ASC")
     fun getPessoasDoPagamentoBackground(pagamentoID: Long) : List<Pessoa>
 
+    /** HistoricoDePagamento **/
     @Insert
     fun inserirHistoricoDePagamento(vararg historicoDePagamento: HistoricoDePagamento)
     @Update
@@ -52,9 +59,10 @@ interface PagamentosDatabaseDao {
             "ORDER BY esta_pago, CASE WHEN esta_pago = 1 THEN historicoID END DESC, " +
             "CASE WHEN esta_pago = 0 THEN historicoID END ASC) GROUP BY pagamento_id ")
     fun getListaInicialHistoricoDePagamento(): LiveData<List<HistoricoDePagamento>>
+    @Query("DELETE FROM historico_de_pagamento_table WHERE pagamento_id = :pagamentoID")
+    fun deleteHistoricoDePagamentosFromPagamento(pagamentoID: Long)
     @Query("DELETE FROM historico_de_pagamento_table")
     fun clearHistoricoDePagamentos()
-
     @Query("SELECT * FROM historico_de_pagamento_table WHERE pagamento_id = :pagamentoID ORDER BY historicoID DESC LIMIT 1")
     fun getHistoricoDePagamentoBackground(pagamentoID: Long) : HistoricoDePagamento
 }

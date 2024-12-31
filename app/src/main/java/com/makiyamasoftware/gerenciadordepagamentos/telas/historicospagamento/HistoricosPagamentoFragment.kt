@@ -85,7 +85,7 @@ class HistoricosPagamentoFragment : Fragment() {
         val builder = AlertDialog.Builder(context)
         builder.setTitle(R.string.historicosPagamentoFragment_status_alertTitle)
         builder.setMessage(mensagem)
-        builder.setPositiveButton(R.string.historicosPagamentoFragment_status_alert_button_opcaoUnico) { _, _ -> viewModel.onAtualizarStatus() }
+        builder.setPositiveButton(R.string.generic_button_OnlyThis) { _, _ -> viewModel.onAtualizarStatus() }
         if (type == StatusChangeType.MULTIPLE) { builder.setNeutralButton(R.string.generic_Sim) { _, _ -> viewModel.onAtualizarStatus(); viewModel.onAtualizarMultiplosStatus()} }
         builder.setNegativeButton(R.string.generic_Nao) { _, _ ->}
         builder.show()

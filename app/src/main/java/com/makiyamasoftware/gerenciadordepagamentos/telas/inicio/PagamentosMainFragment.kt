@@ -94,7 +94,12 @@ class PagamentosMainFragment : Fragment() {
         // Setando a navegaçao do card do pagamento
         viewModel.clickNoPagamento.observe(viewLifecycleOwner, Observer {
             if (it) {
-                createNewHistoryNotification(requireContext(), viewModel.getPagamentoCerto(viewModel.selectedPag)!!.nome, getPaymentNotificationContent(viewModel.getHistoricoCerto(viewModel.selectedPag)!!, viewModel.getPessoaCerta(viewModel.getHistoricoCerto(viewModel.selectedPag)!!.pagadorID)!!), viewModel.selectedPag.toInt(), viewModel.getPagamentoCerto(viewModel.selectedPag)!!)
+                createNewHistoryNotification(requireContext(), viewModel.getPagamentoCerto(viewModel.selectedPag)!!.nome, getPaymentNotificationContent(
+					viewModel.getHistoricoCerto(viewModel.selectedPag)!!,
+					viewModel.getPessoaCerta(viewModel.getHistoricoCerto(viewModel.selectedPag)!!.pagadorID)!!,
+					frequencia = viewModel.getPagamentoCerto(viewModel.selectedPag)!!.freqDoPag,
+					frequencias = resources.getStringArray(R.array.frequencias_pagamentos)
+				), viewModel.selectedPag.toInt(), viewModel.getPagamentoCerto(viewModel.selectedPag)!!)
                 Toast.makeText(context, "${viewModel.getPagamentoCerto(viewModel.selectedPag)?.nome}  ${viewModel.getHistoricoCerto(viewModel.selectedPag)}", Toast.LENGTH_SHORT).show()
                 findNavController().navigate(PagamentosMainFragmentDirections.actionPagamentosMainFragmentToDetalhesPagamentoFragment(viewModel.getPagamentoCerto(viewModel.selectedPag)!!))
                 viewModel.onClickPagamentoDone()

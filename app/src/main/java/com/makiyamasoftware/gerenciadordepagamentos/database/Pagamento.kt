@@ -18,7 +18,7 @@ data class Pagamento(
         val pagamentoID: Long = 0L,
 
         @ColumnInfo(name = "nome")
-        val nome: String,
+		var nome: String,
 
         @ColumnInfo(name = "data_de_inicio_em_string")
         val dataDeInicio: String,
@@ -30,8 +30,8 @@ data class Pagamento(
         val freqDoPag: String,
 
         @ColumnInfo(name = "auto_update_historico")
-        val autoUpdateHistorico: Boolean = false,
+        var autoUpdateHistorico: Boolean = false,
 
         @ColumnInfo(name = "pode_enviar_push")
-        val podeEnviarPush: Boolean = false,
+        var podeEnviarPush: Boolean = false,
         ): Parcelable

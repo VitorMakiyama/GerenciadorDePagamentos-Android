@@ -6,7 +6,13 @@
     <string name="generic_Nao">Não</string>
     <string name="generic_caps_null">NULL</string>
     <string name="simbolo_BRL">R$</string>
-    <string name="generic_Update">Atualizar</string>
+    <string name="generic_button_OnlyThis">Apenas\neste</string>
+    <plurals name="generic_Update">
+        <item quantity="one">Atualizar</item>
+        <item quantity="other">Atualizar todos</item>
+    </plurals>
+    <string name="generic_Pronto">Pronto</string>
+    <string name="generic_Cancelar">Cancelar</string>
 
     <!-- Strings usadas no Inicio - PagamentosMain. -->
     <string name="fragment_pagamentos_main_provisorio">Seus futuros pagamentos serão\nlistados aqui! \o/</string>
@@ -45,13 +51,21 @@
     <string name="detalhesPagamentoFragment_update_historicos_alertMessage">Seu pagamento está desatualizado, deseja atualiza-lo?</string>
     <string name="menu_detalhes_fragment_editar">Editar</string>
     <string name="menu_detalhes_fragment_apagar">Apagar</string>
+    <string name="detalhesPagamentoFragment_on_delete_payment_alertTitle">Apagar Pagamento</string>
+    <string name="detalhesPagamentoFragment_on_delete_payment_alertMessage">Deseja apagar este Pagamento?\nEssa ação não pode ser desfeita!</string>
+    <string name="detalhesPagamentoFragment_on_change_price_noFrequency_alertTitle">Preços</string>
+    <string name="detalhesPagamentoFragment_on_change_price_noFrequency_alertMessage">Altere quanto cada pessoa deste pagamento deverá pagar!</string>
+    <string name="detalhesPagamentoFragment_on_change_price_withFrequency_oldHistory_alertTitle">Atualizar preços</string>
+    <string name="detalhesPagamentoFragment_on_change_price_withFrequency_oldHistory_alertMessage">Deseja atualizar apenas o histórico pendente mais recente, de %1$s, ou deseja atualizar este e todos os históricos subsequentes?</string>
+    <string name="detalhesPagamento_descricao_manter_atualizado">Manter atualizado</string>
+    <string name="detalhesPagamento_descricao_pode_enviar_push">Push Notifications</string>
+    <string name="detalhesPagamento_contentDescription_salvarAlteracoes">Salvar alterações</string>
 
-    <!-- Strings usadas no Detalhes Pagamento-->
+    <!-- Strings usadas no Historicos de Pagamento-->
     <string name="historicosPagamentoFragment_descricao_preco">Preço (R$):</string>
     <string name="historicosPagamentoFragment_status_alertTitle">Mudar status</string>
     <string name="historicosPagamentoFragment_status_alertMessage_unico">Deseja alterar o status deste histórico para: \n</string>
     <string name="historicosPagamentoFragment_status_alertMessage_multiplos">Deseja alterar o status deste histórico e de todos os anteriores para "Pago", ou apenas esse?</string>
-    <string name="historicosPagamentoFragment_status_alert_button_opcaoUnico">Apenas esse</string>
     <string name="channel_name">Atualizações de Pagamentos</string>
     <string name="channel_description">Notification channel for delivering notifications of configured payments</string>
 
