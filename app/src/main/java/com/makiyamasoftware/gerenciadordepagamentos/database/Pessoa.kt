@@ -6,15 +6,15 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "pessoas_table")
 data class Pessoa(
-        @PrimaryKey(autoGenerate = true)
-        val pessoaID: Long = 0L,
+	@PrimaryKey(autoGenerate = true)
+	val id: Long = 0L,
 
-        @ColumnInfo(name = "nome")
-        val nome: String,
+	@ColumnInfo(name = "nome")
+	val nome: String,
 
-        @ColumnInfo(name = "ordem")
-        val ordem: Int,
+	@ColumnInfo(name = "ordem")
+	val ordem: Int,
 
-        @ColumnInfo(name = "pagamento_id")
-        val pagamentoID: Long
+	@ColumnInfo(name = "pagamento_id")
+	val pagamentoId: Long
 )

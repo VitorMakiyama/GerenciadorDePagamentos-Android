@@ -31,7 +31,7 @@ class HistoricosPagamentoFragment : Fragment() {
         // After the deprecation of toolbar and actionBar
         val actionBar = (requireActivity() as AppCompatActivity).supportActionBar
         actionBar?.setDisplayShowTitleEnabled(true)
-        actionBar?.title = pagamentoSelecionado.nome
+        actionBar?.title = pagamentoSelecionado.titulo
 
         // instanciar uma application p/ usar no ViewModelFactory
         val application = requireNotNull(this.activity).application

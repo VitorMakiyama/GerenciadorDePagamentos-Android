@@ -17,7 +17,7 @@ class FakePagamentosDao: PagamentosDatabaseDao {
     }
 
     override fun inserirPagamento(pagamento: Pagamento) {
-        pagamentosData[pagamento.pagamentoID] = pagamento
+        pagamentosData[pagamento.id] = pagamento
     }
 
     override fun updatePagamento(pagamento: Pagamento) {
@@ -36,6 +36,10 @@ class FakePagamentosDao: PagamentosDatabaseDao {
         TODO("Not yet implemented")
     }
 
+    override fun deletePagamento(pagamentoID: Long) {
+        TODO("Not yet implemented")
+    }
+
     override fun clearPagamentos() {
         TODO("Not yet implemented")
     }
@@ -45,7 +49,7 @@ class FakePagamentosDao: PagamentosDatabaseDao {
     }
 
     override fun inserirPessoa(pessoa: Pessoa) {
-        pessoasData[pessoa.pessoaID] = pessoa
+        pessoasData[pessoa.id] = pessoa
     }
 
     override fun updatePessoa(pessoa: Pessoa) {
@@ -70,6 +74,10 @@ class FakePagamentosDao: PagamentosDatabaseDao {
         TODO("Not yet implemented")
     }
 
+    override fun deletePessoasFromPagamento(pagamentoID: Long) {
+        TODO("Not yet implemented")
+    }
+
     override fun clearPessoas() {
         TODO("Not yet implemented")
     }
@@ -80,12 +88,12 @@ class FakePagamentosDao: PagamentosDatabaseDao {
 
     override fun inserirHistoricoDePagamento(vararg historicoDePagamento: HistoricoDePagamento) {
         for (historico in historicoDePagamento) {
-            historicosData[historico.historicoID] = historico
+            historicosData[historico.id] = historico
         }
     }
 
     override fun updateHistoricoDePagamento(historicoDePagamento: HistoricoDePagamento) {
-        historicosData[historicoDePagamento.historicoID] = historicoDePagamento
+        historicosData[historicoDePagamento.id] = historicoDePagamento
     }
 
     override fun getHistoricosDePagamento(pagamentoID: Long): LiveData<List<HistoricoDePagamento>> {
@@ -99,6 +107,10 @@ class FakePagamentosDao: PagamentosDatabaseDao {
     }
 
     override fun getListaInicialHistoricoDePagamento(): LiveData<List<HistoricoDePagamento>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun deleteHistoricoDePagamentosFromPagamento(pagamentoID: Long) {
         TODO("Not yet implemented")
     }
 

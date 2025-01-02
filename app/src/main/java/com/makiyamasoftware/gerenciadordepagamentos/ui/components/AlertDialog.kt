@@ -144,12 +144,12 @@ fun NoFrequencyPriceChangeAlertDialog(
 						var price by rememberSaveable { mutableDoubleStateOf(history.preco) }
 						OutlinedTextField(
 							value = formatReadablePrice(price),
-							label = { Text(getPessoaCerta(people, history.pagadorID).nome) },
+							label = { Text(getPessoaCerta(people, history.pagadorId).nome) },
 							onValueChange = {
 								parseStringToDouble(it)?.let { convertedPrice ->
 									price = convertedPrice
 									history.preco = convertedPrice
-									modifiedHistories[history.historicoID] = history
+									modifiedHistories[history.id] = history
 								}
 							},
 							modifier = modifier.padding(vertical = dimensionResource(R.dimen.margin_small)),
@@ -207,26 +207,26 @@ private fun NoFrequencyAlertDialogPreview() {
 		HistoricoDePagamento(
 			data = "2024-12-28",
 			preco = 10.9,
-			pagadorID = 1,
-			pagamentoID = 1
+			pagadorId = 1,
+			pagamentoId = 1
 		), HistoricoDePagamento(
 			data = "2024-12-29",
 			preco = 59.9,
-			pagadorID = 2,
-			pagamentoID = 1
+			pagadorId = 2,
+			pagamentoId = 1
 		)
 	)
 	val people = listOf(
 		Pessoa(
-			pessoaID = 1,
+			id = 1,
 			nome = "Pessoa 1",
 			ordem = 1,
-			pagamentoID = 1
+			pagamentoId = 1
 		), Pessoa(
-			pessoaID = 2,
+			id = 2,
 			nome = "Pessoa 2",
 			ordem = 2,
-			pagamentoID = 1
+			pagamentoId = 1
 		)
 	)
 	GerenciadorDePagamentosTheme {

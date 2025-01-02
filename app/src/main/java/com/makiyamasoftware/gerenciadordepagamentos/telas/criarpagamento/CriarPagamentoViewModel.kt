@@ -14,10 +14,14 @@ import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagament
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabaseDao
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
-import kotlinx.coroutines.*
-import java.text.SimpleDateFormat
-import java.util.*
 import com.makiyamasoftware.gerenciadordepagamentos.databinding.CriarParticipantesHeaderBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Calendar
 
 private const val TAG = "CriarPagamentoViewModel"
 
@@ -79,8 +83,8 @@ class CriarPagamentoViewModel(val database:PagamentosDatabaseDao, val app: Appli
             _criarNovoPagamentoEvent.value = true
             var precoDouble: Double = preco.value?.toDouble() ?: 0.00
             uiScope.launch {
-                salvarNoDataBase(Pagamento(nome = nomePagamento.value!!, dataDeInicio = dataDB, numPessoas = participantes.value!!.size,
-                                            freqDoPag = spinnerEscolhaFrequencia.selectedItem as String), participantes.value!!, precoDouble)
+                salvarNoDataBase(Pagamento(titulo = nomePagamento.value!!, dataDeInicio = dataDB, numeroDePessoas = participantes.value!!.size,
+                                            frequencia = spinnerEscolhaFrequencia.selectedItem as String), participantes.value!!, precoDouble)
             }
         }
     }
@@ -130,19 +134,19 @@ class CriarPagamentoViewModel(val database:PagamentosDatabaseDao, val app: Appli
         withContext(Dispatchers.IO) {
             database.inserirPagamento(pagamento)
             val pagId = database.getUltimoPagamentoID()
-            Log.i(TAG,"ID pagamento: ${pagamento.pagamentoID} ou ${pagId}?")
+            Log.i(TAG,"ID pagamento: ${pagamento.id} ou ${pagId}?")
             var ordem = 1
             for (i in participantes.indices) {
                 participantes[i].nome.value?.let {
-                    database.inserirPessoa(Pessoa(nome = it, ordem = ordem, pagamentoID = pagId))
-                    val pessId = database.getUltimaPessoasDoPagamento(pagId).pessoaID
+                    database.inserirPessoa(Pessoa(nome = it, ordem = ordem, pagamentoId = pagId))
+                    val pessId = database.getUltimaPessoasDoPagamento(pagId).id
                     // Para registrar os historicos de pagamentos SEM periodicidade, nesse caso, cada pessoa gera um historico com o preco = parcela dele
-                    if (pagamento.freqDoPag == app.resources.getStringArray(R.array.frequencias_pagamentos).last()) {
-                        database.inserirHistoricoDePagamento(HistoricoDePagamento(data =pagamento.dataDeInicio, preco = participantes[i].preco.value!!.toDouble(), pagadorID = pessId,
-                                                                                    pagamentoID = pagId))
+                    if (pagamento.frequencia == app.resources.getStringArray(R.array.frequencias_pagamentos).last()) {
+                        database.inserirHistoricoDePagamento(HistoricoDePagamento(data =pagamento.dataDeInicio, preco = participantes[i].preco.value!!.toDouble(), pagadorId = pessId,
+                                                                                    pagamentoId = pagId))
                     } else if (ordem == 1) {
                     // Para registrar apenas o primeiro histórico de pagamentos com periodicidade, para iniciar
-                        database.inserirHistoricoDePagamento(HistoricoDePagamento(data = pagamento.dataDeInicio, preco = preco, pagadorID = pessId, pagamentoID = pagId))
+                        database.inserirHistoricoDePagamento(HistoricoDePagamento(data = pagamento.dataDeInicio, preco = preco, pagadorId = pessId, pagamentoId = pagId))
                     }
                     ordem++
                 }

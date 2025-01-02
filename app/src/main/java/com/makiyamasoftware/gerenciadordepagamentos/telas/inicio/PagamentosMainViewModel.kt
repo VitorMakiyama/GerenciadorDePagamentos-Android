@@ -119,7 +119,7 @@ class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val applicati
         Log.i(TAG, "entrou no getHistorico HISTORICO${historicoDosPagamentos.value}")
         if (!historicoDosPagamentos.value.isNullOrEmpty()) {
             Log.i(TAG, "getHistorico historicos nao null")
-            for (i in historicoDosPagamentos.value!!) if (pagId == i.pagamentoID) return i
+            for (i in historicoDosPagamentos.value!!) if (pagId == i.pagamentoId) return i
         }
         return null
     }
@@ -130,7 +130,7 @@ class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val applicati
     fun getPagamentoCerto(pagId: Long): Pagamento? {
         if (pagamentos.value != null) {
             for (i in pagamentos.value!!) {
-                if (pagId == i.pagamentoID) return i
+                if (pagId == i.id) return i
             }
         }
         return null
@@ -142,7 +142,7 @@ class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val applicati
     fun getPessoaCerta(pessoaId: Long): Pessoa? {
         if (!pessoasRecentes.value.isNullOrEmpty()) {
             for (i in pessoasRecentes.value!!) {
-                if (pessoaId == i.pessoaID) return i
+                if (pessoaId == i.id) return i
             }
         }
         return null

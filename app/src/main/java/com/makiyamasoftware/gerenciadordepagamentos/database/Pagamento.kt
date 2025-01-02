@@ -9,29 +9,27 @@ import kotlinx.parcelize.Parcelize
 
 /**
  * Pagamento guarda as informacoes do pagamento,
- * Tem um pagamento_ID unico
+ * Tem um id de pagamento unico
  */
 @Parcelize
 @Entity(tableName = "pagamento_table")
 data class Pagamento(
-        @PrimaryKey(autoGenerate = true)
-        val pagamentoID: Long = 0L,
+	@PrimaryKey(autoGenerate = true)
+	val id: Long = 0L,
 
-        @ColumnInfo(name = "nome")
-		var nome: String,
+	var titulo: String,
 
-        @ColumnInfo(name = "data_de_inicio_em_string")
-        val dataDeInicio: String,
+	@ColumnInfo(name = "data_de_inicio")
+	val dataDeInicio: String,
 
-        @ColumnInfo(name = "numero_de_pessoas")
-        val numPessoas: Int,
+	@ColumnInfo(name = "numero_de_pessoas")
+	val numeroDePessoas: Int,
 
-        @ColumnInfo(name = "frequencia_do_pagamento")
-        val freqDoPag: String,
+	val frequencia: String,
 
-        @ColumnInfo(name = "auto_update_historico")
-        var autoUpdateHistorico: Boolean = false,
+	@ColumnInfo(name = "auto_update_historico")
+	var autoUpdateHistorico: Boolean = false,
 
-        @ColumnInfo(name = "pode_enviar_push")
-        var podeEnviarPush: Boolean = false,
-        ): Parcelable
+	@ColumnInfo(name = "pode_enviar_push")
+	var podeEnviarPush: Boolean = false,
+) : Parcelable

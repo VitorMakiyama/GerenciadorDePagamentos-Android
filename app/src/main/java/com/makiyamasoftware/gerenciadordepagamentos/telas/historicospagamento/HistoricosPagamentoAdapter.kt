@@ -21,13 +21,13 @@ class HistoricosPagamentoAdapter(private val viewModel: HistoricosPagamentoViewM
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
-            is HistoricoViewHolder -> holder.bind(viewModel.getHistoricoAt(position), viewModel.pagamentoSelecionado.freqDoPag, viewModel, position)
+            is HistoricoViewHolder -> holder.bind(viewModel.getHistoricoAt(position), viewModel.pagamentoSelecionado.frequencia, viewModel, position)
         }
     }
 
     class HistoricoViewHolder(val binding: HistoricosItemListaBinding): RecyclerView.ViewHolder(binding.root) {
         fun bind(historico: HistoricoDePagamento, freq: String, viewModel: HistoricosPagamentoViewModel, position: Int) {
-            binding.textNomeHist.text = getPessoaCerta(viewModel.pessoas.value, historico.pagadorID).nome
+            binding.textNomeHist.text = getPessoaCerta(viewModel.pessoas.value, historico.pagadorId).nome
             binding.textPrecoHist.text = historico.preco.toString()
             binding.textDataHist.text = historico.getDataString(viewModel.app.resources.getStringArray(R.array.frequencias_pagamentos), freq)
             binding.textStatusHist.text = historico.getEstaPagoString(viewModel.app)
@@ -57,7 +57,7 @@ private class HistoricosDiffCallback : DiffUtil.ItemCallback<HistoricoDePagament
         oldItem: HistoricoDePagamento,
         newItem: HistoricoDePagamento
     ): Boolean {
-        return oldItem.historicoID == newItem.historicoID
+        return oldItem.id == newItem.id
     }
 
     override fun areContentsTheSame(

@@ -30,7 +30,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/default_half_margin"
                 android:layout_marginBottom="@dimen/default_half_margin"
-                android:text="@{pagamentos.nome}"
+                android:text="@{pagamentos.titulo}"
                 android:textAlignment="center"
                 android:textAppearance="@style/TextAppearance.AppCompat.Display2"
                 app:layout_constraintBottom_toTopOf="@+id/textUltimoParticipante"

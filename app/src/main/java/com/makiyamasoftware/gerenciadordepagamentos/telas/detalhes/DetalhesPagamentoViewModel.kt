@@ -45,11 +45,11 @@ class DetalhesPagamentoViewModel(
 
 	init {
 		viewModelScope.launch {
-			pagamento = dataSource.getPagamento(pagamentoSelecionado.pagamentoID)
+			pagamento = dataSource.getPagamento(pagamentoSelecionado.id)
 			Log.i(TAG, "Entrou na coroutine de buscar o historico")
 			historicosDoPagamento =
-				dataSource.getHistoricosDePagamento(pagamentoSelecionado.pagamentoID)
-			pessoas = dataSource.getPessoasDoPagamento(pagamentoSelecionado.pagamentoID)
+				dataSource.getHistoricosDePagamento(pagamentoSelecionado.id)
+			pessoas = dataSource.getPessoasDoPagamento(pagamentoSelecionado.id)
 			Log.i(TAG, "Requisitou o historico e as pessoas do DB")
 		}
 	}
@@ -87,7 +87,7 @@ class DetalhesPagamentoViewModel(
 	 * Recebe como parametro os historicos modificados, caso seja um pagamento sem frequencia
 	 */
 	fun atualizarPreco(historicosModificados: List<HistoricoDePagamento?> = emptyList()) {
-		if (pagamentoSelecionado.freqDoPag == app.resources.getStringArray(R.array.frequencias_pagamentos).last()
+		if (pagamentoSelecionado.frequencia == app.resources.getStringArray(R.array.frequencias_pagamentos).last()
 		) {
 			// Caso seja NO FREQUENCY
 			var p: Double = 0.0
@@ -95,7 +95,7 @@ class DetalhesPagamentoViewModel(
 				if (historicosModificados.contains(hist)) {
 					// Caso precisemos atualizar o preco de historicosModificados para mostra-lo na UI, mas o usuario ainda não salvou as alterações
 					val modifiedH =
-						historicosModificados.find { h -> h?.historicoID == hist.historicoID }
+						historicosModificados.find { h -> h?.id == hist.id }
 					p += modifiedH!!.preco
 				} else {
 					p += hist.preco
@@ -106,7 +106,7 @@ class DetalhesPagamentoViewModel(
 		_precoRecente.value = historicoRecente.value?.preco
 		Log.i(
 			TAG,
-			"Click Data: paggId:${pagamentoSelecionado.pagamentoID} e o historico e \n${historicosDoPagamento.value!!.size}"
+			"Click Data: paggId:${pagamentoSelecionado.id} e o historico e \n${historicosDoPagamento.value!!.size}"
 		)
 	}
 
@@ -118,7 +118,7 @@ class DetalhesPagamentoViewModel(
 			_historicoRecente.value = getHistoricoRecenteNaoPago()!!
 			_estaPagoHistoricoRecente.value = _historicoRecente.value?.estaPago
 			_ultHistNomePessoa.value =
-				getPessoaCerta(pessoas.value!!, historicoRecente.value!!.pagadorID).nome
+				getPessoaCerta(pessoas.value!!, historicoRecente.value!!.pagadorId).nome
 		}
 	}
 
@@ -202,7 +202,7 @@ class DetalhesPagamentoViewModel(
 			if (updateLaterHistories) {
 				val histories = historicosDoPagamento.value
 				histories?.let {
-					val latestHistoryIndex = histories.indexOf(histories.find { h -> h.historicoID == historico?.historicoID })
+					val latestHistoryIndex = histories.indexOf(histories.find { h -> h.id == historico?.id })
 					if (latestHistoryIndex != -1) {
 						// se o index foi encontrado
 						for (i in latestHistoryIndex - 1 downTo 0) {
@@ -290,18 +290,18 @@ class DetalhesPagamentoViewModel(
 	 */
 	private suspend fun onDeleteThisPayment() {
 		withContext(Dispatchers.IO) {
-			dataSource.deletePessoasFromPagamento(pagamentoSelecionado.pagamentoID)
-			dataSource.deleteHistoricoDePagamentosFromPagamento(pagamentoSelecionado.pagamentoID)
-			dataSource.deletePagamento(pagamentoSelecionado.pagamentoID)
+			dataSource.deletePessoasFromPagamento(pagamentoSelecionado.id)
+			dataSource.deleteHistoricoDePagamentosFromPagamento(pagamentoSelecionado.id)
+			dataSource.deletePagamento(pagamentoSelecionado.id)
 		}
 	}
 
 	private fun isNoFrequencyPayment(payment: Pagamento): Boolean {
-		return payment.freqDoPag == app.resources.getStringArray(R.array.frequencias_pagamentos)
+		return payment.frequencia == app.resources.getStringArray(R.array.frequencias_pagamentos)
 			.last()
 	}
 
 	fun isLatestHistory(): Boolean {
-		return historicoRecente.value?.historicoID == historicosDoPagamento.value?.first()?.historicoID
+		return historicoRecente.value?.id == historicosDoPagamento.value?.first()?.id
 	}
 }

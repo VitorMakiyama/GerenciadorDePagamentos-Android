@@ -49,7 +49,7 @@ class DetalhesPagamentoFragment: Fragment() {
         // After the deprecation of toolbar and actionBar
         val actionBar = (requireActivity() as AppCompatActivity).supportActionBar
         actionBar?.setDisplayShowTitleEnabled(true)
-        actionBar?.title = pagamentoSelecionado.nome
+        actionBar?.title = pagamentoSelecionado.titulo
         Log.i(TAG, "Titulo da actionbar depois: ${activity?.actionBar?.title}")
 
         // instanciar uma application p/ usar no ViewModelFactory
@@ -97,7 +97,7 @@ class DetalhesPagamentoFragment: Fragment() {
 
         detalhesPagamentoViewModel.hasDeletedPayment.observe(viewLifecycleOwner) {
             if (it) {
-                Toast.makeText(context, application.resources.getString(R.string.detalhesPagamento_ToastText_deletePayment, detalhesPagamentoViewModel.pagamento.value?.nome), Toast.LENGTH_LONG).show()
+                Toast.makeText(context, application.resources.getString(R.string.detalhesPagamento_ToastText_deletePayment, detalhesPagamentoViewModel.pagamento.value?.titulo), Toast.LENGTH_LONG).show()
                 findNavController().popBackStack()
             }
         }
@@ -149,7 +149,7 @@ class DetalhesPagamentoFragment: Fragment() {
         if (detalhesPagamentoViewModel.pagamento.isInitialized && detalhesPagamentoViewModel.historicosDoPagamento.isInitialized) {
             // Verifica se e necessario atualizar e criar novos historicos de pagamento
             if (precisaDeNovoHistorico(
-                    detalhesPagamentoViewModel.pagamento.value!!.freqDoPag,
+                    detalhesPagamentoViewModel.pagamento.value!!.frequencia,
                     convertStringToCalendar(detalhesPagamentoViewModel.getHistoricoMaisRecente().data),
                     Calendar.getInstance(),
                     requireActivity().resources.getStringArray(R.array.frequencias_pagamentos)

@@ -52,7 +52,7 @@ fun getFormattedStringDate(date: String): String {
 fun getPessoaCerta(pessoas: List<Pessoa>?, iD: Long): Pessoa {
 	if (pessoas != null) {
 		for (i in pessoas) {
-			if (i.pessoaID == iD) {
+			if (i.id == iD) {
 				return i
 			}
 		}
@@ -82,9 +82,9 @@ fun atualizarNovosHistoricosDePagamento(
 	// inicia a lista
 	val novosHistoricos = mutableListOf<HistoricoDePagamento>()
 	// variavel que guarda o ID do ultimo pagador
-	var ultimoPagadorId: Long = ultimoHistorico.pagadorID
+	var ultimoPagadorId: Long = ultimoHistorico.pagadorId
 
-	when (pag.freqDoPag) {
+	when (pag.frequencia) {
 		// Diário
 		freqs[1] -> {
 			if (anos > 0) {
@@ -102,12 +102,12 @@ fun atualizarNovosHistoricosDePagamento(
 				ultimaDataHist.add(Calendar.DAY_OF_YEAR, 1)
 				val h = HistoricoDePagamento(
 					data = convertCalendarToString(ultimaDataHist),
-					pagamentoID = pag.pagamentoID,
-					pagadorID = getProximaPessoa(ultimoPagadorId, pessoas).pessoaID,
+					pagamentoId = pag.id,
+					pagadorId = getProximaPessoa(ultimoPagadorId, pessoas).id,
 					preco = ultimoHistorico.preco
 				)
 				novosHistoricos.add(h)
-				ultimoPagadorId = h.pagadorID
+				ultimoPagadorId = h.pagadorId
 			}
 			return novosHistoricos
 		}
@@ -121,12 +121,12 @@ fun atualizarNovosHistoricosDePagamento(
 			for (n in 1..meses) {
 				ultimaDataHist.add(Calendar.MONTH, 1)
 				val h = HistoricoDePagamento(
-					data = convertCalendarToString(ultimaDataHist), pagamentoID = pag.pagamentoID,
-					pagadorID = getProximaPessoa(ultimoPagadorId, pessoas).pessoaID,
+					data = convertCalendarToString(ultimaDataHist), pagamentoId = pag.id,
+					pagadorId = getProximaPessoa(ultimoPagadorId, pessoas).id,
 					preco = ultimoHistorico.preco
 				)
 				novosHistoricos.add(h)
-				ultimoPagadorId = h.pagadorID
+				ultimoPagadorId = h.pagadorId
 			}
 			return novosHistoricos
 		}
@@ -142,12 +142,12 @@ fun atualizarNovosHistoricosDePagamento(
 			for (n in 1..meses) {
 				ultimaDataHist.add(Calendar.MONTH, 6)
 				val h = HistoricoDePagamento(
-					data = convertCalendarToString(ultimaDataHist), pagamentoID = pag.pagamentoID,
-					pagadorID = getProximaPessoa(ultimoPagadorId, pessoas).pessoaID,
+					data = convertCalendarToString(ultimaDataHist), pagamentoId = pag.id,
+					pagadorId = getProximaPessoa(ultimoPagadorId, pessoas).id,
 					preco = ultimoHistorico.preco
 				)
 				novosHistoricos.add(h)
-				ultimoPagadorId = h.pagadorID
+				ultimoPagadorId = h.pagadorId
 			}
 			return novosHistoricos
 		}
@@ -157,12 +157,12 @@ fun atualizarNovosHistoricosDePagamento(
 			for (n in 1..anos) {
 				ultimaDataHist.add(Calendar.YEAR, 1)
 				val h = HistoricoDePagamento(
-					data = convertCalendarToString(ultimaDataHist), pagamentoID = pag.pagamentoID,
-					pagadorID = getProximaPessoa(ultimoPagadorId, pessoas).pessoaID,
+					data = convertCalendarToString(ultimaDataHist), pagamentoId = pag.id,
+					pagadorId = getProximaPessoa(ultimoPagadorId, pessoas).id,
 					preco = ultimoHistorico.preco
 				)
 				novosHistoricos.add(h)
-				ultimoPagadorId = h.pagadorID
+				ultimoPagadorId = h.pagadorId
 			}
 			return novosHistoricos
 		}
@@ -177,7 +177,7 @@ fun atualizarNovosHistoricosDePagamento(
  *  se for a ultima da ordem, ela recomeça
  */
 fun getProximaPessoa(idAtual: Long, pessoas: List<Pessoa>): Pessoa {
-	val pAtual = pessoas.find { pessoa: Pessoa -> pessoa.pessoaID == idAtual }
+	val pAtual = pessoas.find { pessoa: Pessoa -> pessoa.id == idAtual }
 
 	// se é a pessoa atual é a ultima da ordem (a List<Pessoa> deve estar ordenada)
 	if (pAtual!!.ordem == pessoas.size) {
@@ -265,7 +265,7 @@ fun createNewHistoryNotification(
 
 
 		val builder = NotificationCompat.Builder(ctx, CHANNEL_ID)
-			.setSmallIcon(R.drawable.ic_logo_foreground)
+			.setSmallIcon(R.drawable.ic_logo_prd_foreground)
 			.setContentTitle(textTitle)
 			.setContentText(textContent)
 			.setStyle(

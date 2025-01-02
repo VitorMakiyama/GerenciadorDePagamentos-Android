@@ -256,7 +256,7 @@ fun DetalhesPagamentoScreenContent(
 						EditablePaymentFields(
 							payment = p,
 							history = h,
-							price = if (isNoFrequencyPayment(frequency = pagamento.freqDoPag)) precoNoFrequencyHistory else precoUltimoHistorico,
+							price = if (isNoFrequencyPayment(frequency = pagamento.frequencia)) precoNoFrequencyHistory else precoUltimoHistorico,
 							editable = editable,
 							onModifyPayment = onModifyPayment,
 							onClickNoFrequencyPrice = onClickNoFrequencyPrice,
@@ -270,7 +270,7 @@ fun DetalhesPagamentoScreenContent(
 							isPaid = estaPago,
 							price = precoUltimoHistorico,
 							onUpdatePaymentStatus = onChangeStatus,
-							frequency = p.freqDoPag,
+							frequency = p.frequencia,
 							personName = it,
 							modifier = modifier
 						)
@@ -297,7 +297,7 @@ fun EditablePaymentFields(
 	onClickNoFrequencyPrice: () -> Unit,
 	modifier: Modifier = Modifier
 ) {
-	var paymentName by remember { mutableStateOf(payment.nome) }
+	var paymentName by remember { mutableStateOf(payment.titulo) }
 	var editablePrice by remember { mutableDoubleStateOf(price) }
 	var autoUpdatePayment by remember { mutableStateOf(payment.autoUpdateHistorico) }
 	var shouldSendPush by remember { mutableStateOf(payment.podeEnviarPush) }
@@ -308,7 +308,7 @@ fun EditablePaymentFields(
 			label = { Text(stringResource(R.string.detalhesPagamento_descricao_nome)) },
 			onValueChange = {
 				paymentName = it
-				payment.nome = it
+				payment.titulo = it
 				onModifyPayment(payment, null)
 			},
 			readOnly = !editable,
@@ -322,14 +322,14 @@ fun EditablePaymentFields(
 			modifier = modifier
 		)
 		OutlinedTextField(
-			value = payment.freqDoPag,
+			value = payment.frequencia,
 			label = { Text(stringResource(R.string.detalhesPagamento_descricao_frequencia)) },
 			onValueChange = { },
 			readOnly = true,
 			modifier = modifier,
 		)
 		OutlinedTextField(
-			value = if (isNoFrequencyPayment(payment.freqDoPag)) formatReadablePrice(price) else formatReadablePrice(editablePrice),
+			value = if (isNoFrequencyPayment(payment.frequencia)) formatReadablePrice(price) else formatReadablePrice(editablePrice),
 			label = { Text(stringResource(R.string.detalhesPagamento_descricao_preco)) },
 			onValueChange = {
 				parseStringToDouble(it)?.let { convertedPrice ->
@@ -338,16 +338,16 @@ fun EditablePaymentFields(
 					onModifyPayment(null, history)
 				}
 			},
-			enabled = !isNoFrequencyPayment(payment.freqDoPag), // disabled quando for pagamento sem frequencia
-			readOnly = isNoFrequencyPayment(payment.freqDoPag) || !editable, // se for pagamento sem frequencia OU não for editavel
+			enabled = !isNoFrequencyPayment(payment.frequencia), // disabled quando for pagamento sem frequencia
+			readOnly = isNoFrequencyPayment(payment.frequencia) || !editable, // se for pagamento sem frequencia OU não for editavel
 			trailingIcon = {
-				if (isNoFrequencyPayment(payment.freqDoPag) && editable) Icon(
+				if (isNoFrequencyPayment(payment.frequencia) && editable) Icon(
 					Icons.Filled.Edit,
 					contentDescription = stringResource(R.string.menu_detalhes_fragment_editar)
 				)
 			},
 			keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-			modifier = if (isNoFrequencyPayment(payment.freqDoPag) && editable) modifier.clickable {
+			modifier = if (isNoFrequencyPayment(payment.frequencia) && editable) modifier.clickable {
 				onClickNoFrequencyPrice()
 			} else modifier,
 		)
@@ -512,22 +512,22 @@ private fun EditablePaymentFieldsPreview() {
 	val pag by remember {
 		mutableStateOf(
 			Pagamento(
-				pagamentoID = 1L,
-				nome = "Spotify",
+				id = 1L,
+				titulo = "Spotify",
 				dataDeInicio = "2024-12-01",
-				numPessoas = 1,
-				freqDoPag = "DAILY",
+				numeroDePessoas = 1,
+				frequencia = "DAILY",
 				autoUpdateHistorico = true,
 				podeEnviarPush = true
 			)
 		)
 	}
 	val history = HistoricoDePagamento(
-		historicoID = 1L,
+		id = 1L,
 		data = "2024-11-24",
 		preco = 10.0,
-		pagadorID = 1L,
-		pagamentoID = 1L,
+		pagadorId = 1L,
+		pagamentoId = 1L,
 		estaPago = false
 	)
 	var editable by remember { mutableStateOf(false) }
@@ -562,11 +562,11 @@ private fun PaymentHistoryCardPreview() {
 	val history by remember {
 		mutableStateOf(
 			HistoricoDePagamento(
-				historicoID = 1L,
+				id = 1L,
 				data = "2024-11-24",
 				preco = 10.0,
-				pagadorID = 1L,
-				pagamentoID = 1L,
+				pagadorId = 1L,
+				pagamentoId = 1L,
 				estaPago = false
 			)
 		)

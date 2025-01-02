@@ -58,8 +58,8 @@ class PagamentosDatabaseDAOTest {
             1,
             "title",
             "description",
-            numPessoas = 1,
-            freqDoPag = "TODO()",
+            numeroDePessoas = 1,
+            frequencia = "TODO()",
             autoUpdateHistorico = false,
             podeEnviarPush = false
         )
@@ -70,11 +70,11 @@ class PagamentosDatabaseDAOTest {
 
         //THEN - The loaded data contains the expected values
         assertThat<Pagamento>(loaded as Pagamento, notNullValue())
-        assertThat(loaded.pagamentoID, `is`(pagamento.pagamentoID))
-        assertThat(loaded.nome, `is`(pagamento.nome))
+        assertThat(loaded.id, `is`(pagamento.id))
+        assertThat(loaded.titulo, `is`(pagamento.titulo))
         assertThat(loaded.dataDeInicio, `is`(pagamento.dataDeInicio))
-        assertThat(loaded.numPessoas, `is`(pagamento.numPessoas))
-        assertThat(loaded.freqDoPag, `is`(pagamento.freqDoPag))
+        assertThat(loaded.numeroDePessoas, `is`(pagamento.numeroDePessoas))
+        assertThat(loaded.frequencia, `is`(pagamento.frequencia))
         assertThat(loaded.autoUpdateHistorico, `is`(pagamento.autoUpdateHistorico))
         assertThat(loaded.podeEnviarPush, `is`(pagamento.podeEnviarPush))
     }
@@ -86,8 +86,8 @@ class PagamentosDatabaseDAOTest {
             1,
             "title",
             "description",
-            numPessoas = 1,
-            freqDoPag = "TODO()",
+            numeroDePessoas = 1,
+            frequencia = "TODO()",
             autoUpdateHistorico = false,
             podeEnviarPush = false
         )
@@ -95,24 +95,24 @@ class PagamentosDatabaseDAOTest {
 
         // 2. Update the pagamento by creating a new pagamento with the same ID but different attributes.
         val pagamentoToBeUpdated = Pagamento(
-            pagamento.pagamentoID,
+            pagamento.id,
             "titleTest",
             "descriptionTest",
-            numPessoas = 3,
-            freqDoPag = "DAILY",
+            numeroDePessoas = 3,
+            frequencia = "DAILY",
             autoUpdateHistorico = true,
             podeEnviarPush = true
         )
         database.pagamentosDatabaseDao.updatePagamento(pagamentoToBeUpdated)
 
         // 3. Check that when you get the task by its ID, it has the updated values.
-        val updatedPagamento = database.pagamentosDatabaseDao.getPagamento(pagamento.pagamentoID).getOrAwaitValue()
+        val updatedPagamento = database.pagamentosDatabaseDao.getPagamento(pagamento.id).getOrAwaitValue()
         assertThat(updatedPagamento as Pagamento, notNullValue())
-        assertThat(updatedPagamento.pagamentoID, `is`(pagamento.pagamentoID))
-        assertThat(updatedPagamento.nome, `is`(pagamentoToBeUpdated.nome))
+        assertThat(updatedPagamento.id, `is`(pagamento.id))
+        assertThat(updatedPagamento.titulo, `is`(pagamentoToBeUpdated.titulo))
         assertThat(updatedPagamento.dataDeInicio, `is`(pagamentoToBeUpdated.dataDeInicio))
-        assertThat(updatedPagamento.numPessoas, `is`(pagamentoToBeUpdated.numPessoas))
-        assertThat(updatedPagamento.freqDoPag, `is`(pagamentoToBeUpdated.freqDoPag))
+        assertThat(updatedPagamento.numeroDePessoas, `is`(pagamentoToBeUpdated.numeroDePessoas))
+        assertThat(updatedPagamento.frequencia, `is`(pagamentoToBeUpdated.frequencia))
         assertThat(updatedPagamento.autoUpdateHistorico, `is`(pagamentoToBeUpdated.autoUpdateHistorico))
         assertThat(updatedPagamento.podeEnviarPush, `is`(pagamentoToBeUpdated.podeEnviarPush))
     }

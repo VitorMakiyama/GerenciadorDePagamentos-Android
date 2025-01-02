@@ -36,8 +36,8 @@ class UpdatePagamentoWork(appContext: Context, params: WorkerParameters) : Corou
                 val pagamentos = dataSource.getAllPagamentosBackground()
                 for (pagamento in pagamentos) {
                     if (pagamento.autoUpdateHistorico) {
-                        val historico = withContext(Dispatchers.IO) { dataSource.getHistoricoDePagamentoBackground(pagamento.pagamentoID) }
-                        val pessoas = withContext(Dispatchers.IO) { dataSource.getPessoasDoPagamentoBackground(pagamento.pagamentoID) }
+                        val historico = withContext(Dispatchers.IO) { dataSource.getHistoricoDePagamentoBackground(pagamento.id) }
+                        val pessoas = withContext(Dispatchers.IO) { dataSource.getPessoasDoPagamentoBackground(pagamento.id) }
                         val freqs = applicationContext.resources.getStringArray(R.array.frequencias_pagamentos)
 
                         getNovosHistoricosSeNecessario(pagamento, historico, pessoas, freqs, dataSource)
@@ -55,7 +55,7 @@ class UpdatePagamentoWork(appContext: Context, params: WorkerParameters) : Corou
     // Funcao auxiliar
     private fun getNovosHistoricosSeNecessario(pagamento: Pagamento, historico: HistoricoDePagamento?, pessoas: List<Pessoa>, freqs: Array<String>, dataSource: PagamentosDatabaseDao) {
         if (historico != null && pessoas != null)  {
-            if (precisaDeNovoHistorico(pagamento.freqDoPag,
+            if (precisaDeNovoHistorico(pagamento.frequencia,
                     convertStringToCalendar(historico.data),
                     Calendar.getInstance(),
                     freqs)) {
@@ -66,11 +66,11 @@ class UpdatePagamentoWork(appContext: Context, params: WorkerParameters) : Corou
                 val notifyHistory = novosHistoricos.last()
                 createNewHistoryNotification(
                     applicationContext,
-                    pagamento.nome,
+                    pagamento.titulo,
                     getPaymentNotificationContent(
 						notifyHistory,
-						pessoas.find { p: Pessoa -> p.pessoaID == notifyHistory.pagadorID }!!,
-						frequencia = pagamento.freqDoPag,
+						pessoas.find { p: Pessoa -> p.id == notifyHistory.pagadorId }!!,
+						frequencia = pagamento.frequencia,
 						frequencias = Resources.getSystem().getStringArray(R.array.frequencias_pagamentos)
 					),
                     notificationId,

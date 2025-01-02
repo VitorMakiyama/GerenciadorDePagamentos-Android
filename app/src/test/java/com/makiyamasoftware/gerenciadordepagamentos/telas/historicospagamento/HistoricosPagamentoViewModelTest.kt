@@ -46,38 +46,38 @@ class HistoricosPagamentoViewModelTest {
         // Initialise te database
         pagamentosRepository = FakePagamentosDao()
         val pagamento = Pagamento(
-            pagamentoID = 1,
-            nome = "TEST",
+            id = 1,
+            titulo = "TEST",
             dataDeInicio = "2024-12-01",
-            numPessoas = 2,
-            freqDoPag = "Diário",
+            numeroDePessoas = 2,
+            frequencia = "Diário",
             autoUpdateHistorico = false,
             podeEnviarPush = false
         )
-        val pessoa1 = Pessoa(pessoaID = 1, nome = "TEST_USER_1", ordem = 1, pagamentoID = 1)
-        val pessoa2 = Pessoa(pessoaID = 2, nome = "TEST_USER_2", ordem = 2, pagamentoID = 1)
+        val pessoa1 = Pessoa(id = 1, nome = "TEST_USER_1", ordem = 1, pagamentoId = 1)
+        val pessoa2 = Pessoa(id = 2, nome = "TEST_USER_2", ordem = 2, pagamentoId = 1)
         val historico1 = HistoricoDePagamento(
-            historicoID = 1,
+            id = 1,
             data = "2024-12-02",
             preco = 10.0,
-            pagadorID = 1,
-            pagamentoID = 1,
+            pagadorId = 1,
+            pagamentoId = 1,
             estaPago = false
         )
         val historico2 = HistoricoDePagamento(
-            historicoID = 2,
+            id = 2,
             data = "2024-12-03",
             preco = 10.0,
-            pagadorID = 2,
-            pagamentoID = 1,
+            pagadorId = 2,
+            pagamentoId = 1,
             estaPago = false
         )
         val historico3 = HistoricoDePagamento(
-            historicoID = 3,
+            id = 3,
             data = "2024-12-04",
             preco = 10.0,
-            pagadorID = 1,
-            pagamentoID = 1,
+            pagadorId = 1,
+            pagamentoId = 1,
             estaPago = false
         )
 
@@ -99,19 +99,19 @@ class HistoricosPagamentoViewModelTest {
 
         // Then the returned histories are the expected ones (the most recent history should be the first in the list)
         val expectedLatestHistory = pagamentosRepository.historicosData[3]
-        assertEquals(expectedLatestHistory?.historicoID, history0.historicoID)
+        assertEquals(expectedLatestHistory?.id, history0.id)
         assertEquals(expectedLatestHistory?.data, history0.data)
         assertEquals(expectedLatestHistory?.preco, history0.preco)
-        assertEquals(expectedLatestHistory?.pagadorID, history0.pagadorID)
-        assertEquals(expectedLatestHistory?.pagamentoID, history0.pagamentoID)
+        assertEquals(expectedLatestHistory?.pagadorId, history0.pagadorId)
+        assertEquals(expectedLatestHistory?.pagamentoId, history0.pagamentoId)
         assertEquals(expectedLatestHistory?.estaPago, history0.estaPago)
 
         val expectedSecondLatestHistory = pagamentosRepository.historicosData[2]
-        assertEquals(expectedSecondLatestHistory?.historicoID, history1.historicoID)
+        assertEquals(expectedSecondLatestHistory?.id, history1.id)
         assertEquals(expectedSecondLatestHistory?.data, history1.data)
         assertEquals(expectedSecondLatestHistory?.preco, history1.preco)
-        assertEquals(expectedSecondLatestHistory?.pagadorID, history1.pagadorID)
-        assertEquals(expectedSecondLatestHistory?.pagamentoID, history1.pagamentoID)
+        assertEquals(expectedSecondLatestHistory?.pagadorId, history1.pagadorId)
+        assertEquals(expectedSecondLatestHistory?.pagamentoId, history1.pagamentoId)
         assertEquals(expectedSecondLatestHistory?.estaPago, history1.estaPago)
     }
 

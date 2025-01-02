@@ -50,8 +50,8 @@ class PagamentosMainAdapter(private val viewModel: PagamentosMainViewModel): Lis
             val itens = when (pagamentos) {
                 null -> null
                 else -> pagamentos.map { DataItem.PagamentoItem(it,
-                    viewModel.getHistoricoCerto(it.pagamentoID),
-                    viewModel.getPessoaCerta(viewModel.getHistoricoCerto(it.pagamentoID)?.pagadorID ?: -1)) }
+                    viewModel.getHistoricoCerto(it.id),
+                    viewModel.getPessoaCerta(viewModel.getHistoricoCerto(it.id)?.pagadorId ?: -1)) }
             }
             withContext(Dispatchers.Main) {
                 submitList(itens)
@@ -72,11 +72,11 @@ class PagamentosMainAdapter(private val viewModel: PagamentosMainViewModel): Lis
                 editBinding.textMesPagamento.text = viewModel.application.getString(R.string.generic_caps_null)
                 editBinding.textStatusPagamento.text = viewModel.application.getString(R.string.generic_caps_null)
             } else {
-                editBinding.textMesPagamento.text = historico.getDataString(viewModel.application.resources.getStringArray(R.array.frequencias_pagamentos), pagamento.freqDoPag)
+                editBinding.textMesPagamento.text = historico.getDataString(viewModel.application.resources.getStringArray(R.array.frequencias_pagamentos), pagamento.frequencia)
                 editBinding.textStatusPagamento.text = historico.getEstaPagoString(viewModel.application)
                 editBinding.backgroungPagamentoListas.setBackgroundColor(historico.getBackgroundColorInt(viewModel.application))
             }
-            editBinding.pagamentosListaCardView.setOnClickListener { viewModel.onClickPagamento(pagamento.pagamentoID) }
+            editBinding.pagamentosListaCardView.setOnClickListener { viewModel.onClickPagamento(pagamento.id) }
         }
         companion object {
             fun from(parent: ViewGroup): PagamentoViewHolder {
@@ -97,7 +97,7 @@ sealed class DataItem {
     abstract val pago: Boolean? // atributo do Historico para controlar se ele ja está disponivel
     abstract val nomePagador: String? // atributo do Historico para controlar se ele ja está disponivel
     data class PagamentoItem(val pag: Pagamento, val historico: HistoricoDePagamento?, val pessoa: Pessoa?): DataItem() {
-        override val id: Long = pag.pagamentoID
+        override val id: Long = pag.id
         override val pago: Boolean?
             get() = historico?.estaPago
         override val nomePagador: String?
