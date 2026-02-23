@@ -14,9 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FabPosition
@@ -38,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -95,7 +93,7 @@ fun DetalhesPagamentoScreen(detalhesPagamentoViewModel: DetalhesPagamentoViewMod
 						},
 					) {
 						Icon(
-							Icons.Filled.Done,
+							painter = painterResource(R.drawable.check_24),
 							stringResource(R.string.detalhesPagamento_contentDescription_salvarAlteracoes)
 						)
 					}
@@ -342,7 +340,7 @@ fun EditablePaymentFields(
 			readOnly = isNoFrequencyPayment(payment.frequencia) || !editable, // se for pagamento sem frequencia OU não for editavel
 			trailingIcon = {
 				if (isNoFrequencyPayment(payment.frequencia) && editable) Icon(
-					Icons.Filled.Edit,
+					painter = painterResource(R.drawable.edit_24),
 					contentDescription = stringResource(R.string.menu_detalhes_fragment_editar)
 				)
 			},
