@@ -13,36 +13,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/lista_pagamentos"
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/composeView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_constraintTop_toTopOf="parent"
-            android:clipToPadding="false"/>
+            android:layout_height="match_parent" />
 
-        <TextView
-            android:id="@+id/textProvisorio"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/fragment_pagamentos_main_provisorio"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:visibility="@{pagamentosMainViewModel.visibilityTextoVazio}"/>
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/floatingActionButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/default_margin"
-            android:layout_marginBottom="@dimen/default_margin"
-            android:clickable="true"
-            android:focusable="true"
-            android:onClick="@{() -> pagamentosMainViewModel.onCriarNovoPagamento()}"
-            android:src="@drawable/ic_round_add_24"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

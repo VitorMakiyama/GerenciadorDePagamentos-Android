@@ -7,7 +7,9 @@ import androidx.room.PrimaryKey
 import com.makiyamasoftware.gerenciadordepagamentos.R
 import com.makiyamasoftware.gerenciadordepagamentos.convertStringDateToStringDay
 import com.makiyamasoftware.gerenciadordepagamentos.convertStringDateToStringMonth
+import kotlinx.serialization.Serializable
 
+@Serializable
 @Entity(tableName = "historico_de_pagamento_table")
 data class HistoricoDePagamento(
 	@PrimaryKey(autoGenerate = true)
@@ -51,6 +53,14 @@ data class HistoricoDePagamento(
 		return if (estaPago) {
 			application.getString(R.string.blocoEstaPago_status_pago)
 		} else application.getString(R.string.blocoEstaPago_status_naoPago)
+	}
+
+	fun getEstaPagoStringID(): Int {
+		return if (estaPago) {
+			R.string.blocoEstaPago_status_pago
+		} else {
+			R.string.blocoEstaPago_status_naoPago
+		}
 	}
 
 	fun getBackgroundColorInt(application: Application): Int {

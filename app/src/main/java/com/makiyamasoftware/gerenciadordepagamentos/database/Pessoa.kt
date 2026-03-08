@@ -3,7 +3,9 @@ package com.makiyamasoftware.gerenciadordepagamentos.database
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.serialization.Serializable
 
+@Serializable
 @Entity(tableName = "pessoas_table")
 data class Pessoa(
 	@PrimaryKey(autoGenerate = true)

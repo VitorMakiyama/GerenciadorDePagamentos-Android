@@ -1,10 +1,10 @@
 package com.makiyamasoftware.gerenciadordepagamentos.telas.detalhes
 
-import android.app.Application
+import android.content.res.Resources
 import android.util.Log
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.makiyamasoftware.gerenciadordepagamentos.R
 import com.makiyamasoftware.gerenciadordepagamentos.atualizarNovosHistoricosDePagamento
@@ -15,42 +15,73 @@ import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
 import com.makiyamasoftware.gerenciadordepagamentos.getPessoaCerta
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Calendar
 
 private const val TAG = "DetalhesPagamentoViewModel"
 
+data class PaymentDetailsUIState (
+	val currentPayment: Pagamento,
+	val latestPaymentHistory: HistoricoDePagamento,
+	val latestPerson: Pessoa,
+	val isEditMode: Boolean = false,
+)
+
+// Using the Custom Provider/Factory, more info here: https://medium.com/@chetanshingare2991/passing-parameters-to-viewmodel-in-jetpack-compose-the-right-way-with-hilt-custom-factory-d0ad52e9d7de
 class DetalhesPagamentoViewModel(
+//	private val savedStateHandle: SavedStateHandle,
 	private val dataSource: PagamentosDatabaseDao,
-	private val app: Application,
-	private val pagamentoSelecionado: Pagamento
-) : AndroidViewModel(app) {
+//	private val app: Application,
+	private val pagamentoSelecionado: Pagamento,
+	private val latestPaymentHistory: HistoricoDePagamento,
+	private val latestPerson: Pessoa
+) : ViewModel() {
 	private val viewModelJob = Job()
 	override fun onCleared() {
 		super.onCleared()
 		viewModelJob.cancel()
 	}
 
-	lateinit var historicosDoPagamento: LiveData<List<HistoricoDePagamento>>
+	// DetalhesPagamento UI State
+	private val _uiState = MutableStateFlow(PaymentDetailsUIState(pagamentoSelecionado, latestPaymentHistory, latestPerson))
+	val uiState: StateFlow<PaymentDetailsUIState> = _uiState.asStateFlow()
+
+	lateinit var historicosDoPagamento: List<HistoricoDePagamento>
 	private val _historicoRecente = MutableLiveData<HistoricoDePagamento>(null)
 	val historicoRecente: LiveData<HistoricoDePagamento>
 		get() = _historicoRecente
 	private val _estaPagoHistoricoRecente = MutableLiveData<Boolean>(false)
 	val estaPagoHistoricoRecente: LiveData<Boolean>
 		get() = _estaPagoHistoricoRecente
-
 	lateinit var pagamento: LiveData<Pagamento>
-	lateinit var pessoas: LiveData<List<Pessoa>>
 
+	lateinit var pessoas: LiveData<List<Pessoa>>
 	init {
-		viewModelScope.launch {
-			pagamento = dataSource.getPagamento(pagamentoSelecionado.id)
-			Log.i(TAG, "Entrou na coroutine de buscar o historico")
-			historicosDoPagamento =
-				dataSource.getHistoricosDePagamento(pagamentoSelecionado.id)
-			pessoas = dataSource.getPessoasDoPagamento(pagamentoSelecionado.id)
-			Log.i(TAG, "Requisitou o historico e as pessoas do DB")
+		viewModelScope.launch(Dispatchers.IO) {
+				pagamento = dataSource.getPagamento(pagamentoSelecionado.id)
+				Log.i(TAG, "Entrou na coroutine de buscar o historico")
+				historicosDoPagamento = dataSource.getHistoricosDePagamento(pagamentoSelecionado.id)
+				pessoas = dataSource.getPessoasDoPagamento(pagamentoSelecionado.id)
+				Log.i(TAG, "Requisitou o historico e as pessoas do DB")
+		}.invokeOnCompletion {
+			getHistoricoRecenteNaoPago()?.let{
+				updatePaymentsDetailsState(pagamentoSelecionado, it)
+			}
+		}
+	}
+
+	fun updatePaymentsDetailsState(latestPayment: Pagamento, latestPaymentHistory: HistoricoDePagamento) {
+		// Updates PaymentDetailsUIState with new data
+		_uiState.update { currentState ->
+			currentState.copy(
+				currentPayment = latestPayment,
+				latestPaymentHistory = latestPaymentHistory
+			)
 		}
 	}
 
@@ -72,7 +103,7 @@ class DetalhesPagamentoViewModel(
 
 	// Comeca do historico mais antigo (ultimo do vetor) buscando o historico NAO PAGO mais recente
 	private fun getHistoricoRecenteNaoPago(): HistoricoDePagamento? {
-		historicosDoPagamento.value?.let { value ->
+		historicosDoPagamento.let { value ->
 			for (i in (value.size - 1) downTo 1) {
 				val historico = value[i]
 				if (!(historico.estaPago)) return historico.copy()
@@ -86,12 +117,12 @@ class DetalhesPagamentoViewModel(
 	 * Atualiza os LiveData dos precos (noFrequencyPrice e precoRecente).
 	 * Recebe como parametro os historicos modificados, caso seja um pagamento sem frequencia
 	 */
-	fun atualizarPreco(historicosModificados: List<HistoricoDePagamento?> = emptyList()) {
-		if (pagamentoSelecionado.frequencia == app.resources.getStringArray(R.array.frequencias_pagamentos).last()
+	fun atualizarPreco(historicosModificados: List<HistoricoDePagamento?> = emptyList()): Double {
+		if (pagamentoSelecionado.frequencia == Resources.getSystem().getStringArray(R.array.frequencias_pagamentos).last()
 		) {
 			// Caso seja NO FREQUENCY
 			var p: Double = 0.0
-			for (hist in historicosDoPagamento.value!!) {
+			for (hist in historicosDoPagamento) {
 				if (historicosModificados.contains(hist)) {
 					// Caso precisemos atualizar o preco de historicosModificados para mostra-lo na UI, mas o usuario ainda não salvou as alterações
 					val modifiedH =
@@ -101,20 +132,49 @@ class DetalhesPagamentoViewModel(
 					p += hist.preco
 				}
 			}
-			_noFrequencyPrice.value = p
+			return p
+		} else {
+			Log.i(
+				TAG,
+				"Click Data: paggId:${pagamentoSelecionado.id} e o historico e \n${historicosDoPagamento.size}"
+			)
+			return latestPaymentHistory.preco
 		}
-		_precoRecente.value = historicoRecente.value?.preco
-		Log.i(
-			TAG,
-			"Click Data: paggId:${pagamentoSelecionado.id} e o historico e \n${historicosDoPagamento.value!!.size}"
-		)
+	}
+
+	/**
+	 * Returns the price for the history, to be shown on UI.
+	 * There are 2 possibilities: frequency payment - shows the latest history value; or no frequency payment - sums the prices of all histories and returns them
+	 */
+	fun getPriceToShow(historicosModificados: List<HistoricoDePagamento?> = emptyList(), isNoFrequency: Boolean): Double {
+		if (isNoFrequency) {
+			// Caso seja NO FREQUENCY
+			var p: Double = 0.0
+			for (hist in historicosDoPagamento) {
+				if (historicosModificados.contains(hist)) {
+					// Caso precisemos atualizar o preco de historicosModificados para mostra-lo na UI, mas o usuario ainda não salvou as alterações
+					val modifiedH =
+						historicosModificados.find { h -> h?.id == hist.id }
+					p += modifiedH!!.preco
+				} else {
+					p += hist.preco
+				}
+			}
+			return p
+		} else {
+			Log.i(
+				TAG,
+				"Click Data: paggId:${pagamentoSelecionado.id} e o historico e \n${historicosDoPagamento.size}"
+			)
+			return latestPaymentHistory.preco
+		}
 	}
 
 	// Essa funcao atualiza as váriaveis Livedata que estão ligadas ao layout xml através de DataBinding,
 	//  é necessario verificar se ambos os LiveData<List> de Pessoa e HistoricoDePagamento já foram retornados pelo DB DAO.
 	//  Assim essa funcao tbm deve ser chamada por ambos os observers, assim o ultimo a receber os dados os atualiza.
 	fun atualizarHistoricoRecente() {
-		if (pessoas.value != null && historicosDoPagamento.value != null) {
+		if (pessoas.value != null && historicosDoPagamento != null) {
 			_historicoRecente.value = getHistoricoRecenteNaoPago()!!
 			_estaPagoHistoricoRecente.value = _historicoRecente.value?.estaPago
 			_ultHistNomePessoa.value =
@@ -151,7 +211,7 @@ class DetalhesPagamentoViewModel(
 
 	//
 	fun getHistoricoMaisRecente(): HistoricoDePagamento {
-		return historicosDoPagamento.value!!.first()
+		return historicosDoPagamento.first()
 	}
 
 	/**
@@ -164,7 +224,7 @@ class DetalhesPagamentoViewModel(
 			getHistoricoRecenteNaoPago()!!,
 			Calendar.getInstance(),
 			pagamentoSelecionado,
-			app.resources.getStringArray(R.array.frequencias_pagamentos),
+			Resources.getSystem().getStringArray(R.array.frequencias_pagamentos),
 			pessoas.value!!
 		)
 		Log.i(TAG, "$novosHistoricos")
@@ -200,7 +260,7 @@ class DetalhesPagamentoViewModel(
 		_isEditable.value = false
 		viewModelScope.launch {
 			if (updateLaterHistories) {
-				val histories = historicosDoPagamento.value
+				val histories = historicosDoPagamento
 				histories?.let {
 					val latestHistoryIndex = histories.indexOf(histories.find { h -> h.id == historico?.id })
 					if (latestHistoryIndex != -1) {
@@ -297,11 +357,11 @@ class DetalhesPagamentoViewModel(
 	}
 
 	private fun isNoFrequencyPayment(payment: Pagamento): Boolean {
-		return payment.frequencia == app.resources.getStringArray(R.array.frequencias_pagamentos)
+		return payment.frequencia == Resources.getSystem().getStringArray(R.array.frequencias_pagamentos)
 			.last()
 	}
 
 	fun isLatestHistory(): Boolean {
-		return historicoRecente.value?.id == historicosDoPagamento.value?.first()?.id
+		return historicoRecente.value?.id == historicosDoPagamento.first()?.id
 	}
 }

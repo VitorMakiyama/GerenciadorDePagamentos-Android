@@ -17,7 +17,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.makiyamasoftware.gerenciadordepagamentos.R
 import com.makiyamasoftware.gerenciadordepagamentos.convertStringToCalendar
+import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagamento
+import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabase
+import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
 import com.makiyamasoftware.gerenciadordepagamentos.databinding.FragmentDetalhesPagamentoBinding
 import com.makiyamasoftware.gerenciadordepagamentos.precisaDeNovoHistorico
 import com.makiyamasoftware.gerenciadordepagamentos.ui.theme.GerenciadorDePagamentosTheme
@@ -30,7 +33,7 @@ private const val TAG: String = "DetalhesPagamentoFrag"
  *  botões no menu é possível alterar os seus detalhes e salvar as alterações
  */
 class DetalhesPagamentoFragment: Fragment() {
-    private lateinit var detalhesPagamentoViewModel: DetalhesPagamentoViewModel
+//    private lateinit var detalhesPagamentoViewModel: DetalhesPagamentoViewModel
     lateinit var binding: FragmentDetalhesPagamentoBinding
 
     private var pagamentoOutdated = false
@@ -57,50 +60,44 @@ class DetalhesPagamentoFragment: Fragment() {
         // instancia o DAO do database, para podermos acessa-lo e alterar os dados
         val dataSource = PagamentosDatabase.getInstance(application).pagamentosDatabaseDao
         // instancia uma viewModelFactory
-        val viewModelFactory = DetalhesPagamentoViewModelFactory(dataSource, application, pagamentoSelecionado)
-        detalhesPagamentoViewModel = ViewModelProvider(this, viewModelFactory).get(DetalhesPagamentoViewModel::class.java)
+//        val viewModelFactory = DetalhesPagamentoViewModelFactory(dataSource, application, pagamentoSelecionado)
+//        detalhesPagamentoViewModel = ViewModelProvider(this, viewModelFactory).get(DetalhesPagamentoViewModel::class.java)
+//
+//        binding.viewModel = detalhesPagamentoViewModel
+//        binding.lifecycleOwner = viewLifecycleOwner
 
-        binding.viewModel = detalhesPagamentoViewModel
-        binding.lifecycleOwner = viewLifecycleOwner
 
-        detalhesPagamentoViewModel.historicosDoPagamento.observe(viewLifecycleOwner) {
-            if (it.isNotEmpty()) {
-                detalhesPagamentoViewModel.atualizarHistoricoRecente()
-                verifyPagamentosUpdates()
-            }
-            Log.d(TAG, "LiveData historico mudou, size=${detalhesPagamentoViewModel.historicosDoPagamento.value!!.size}\n${detalhesPagamentoViewModel.historicosDoPagamento.value}")
-        }
-        detalhesPagamentoViewModel.historicoRecente.observe(viewLifecycleOwner) {
-            if (it != null) detalhesPagamentoViewModel.atualizarPreco()
-            Log.d(TAG, "historicoRecente.estaPago=${it?.estaPago}")
-        }
-
-        detalhesPagamentoViewModel.pessoas.observe(viewLifecycleOwner) {
-            if (!it.isNullOrEmpty()) {
-                detalhesPagamentoViewModel.atualizarHistoricoRecente()
-            }
-        }
-
-        detalhesPagamentoViewModel.pagamento.observe(viewLifecycleOwner) {
-            if (it != null) {
-                verifyPagamentosUpdates()
-            }
-        }
-
-        // Observer para navegar para a pagina com todos os HistoricosDePagamento do Pagamento
-        detalhesPagamentoViewModel.verTodoOHistorico.observe(viewLifecycleOwner) {
-            if (it) {
-                findNavController().navigate(DetalhesPagamentoFragmentDirections.actionDetalhesPagamentoFragmentToHistoricosPagamentoFragment(detalhesPagamentoViewModel.pagamento.value!!))
-                detalhesPagamentoViewModel.onVerTodoOHistoricoDone()
-            }
-        }
-
-        detalhesPagamentoViewModel.hasDeletedPayment.observe(viewLifecycleOwner) {
-            if (it) {
-                Toast.makeText(context, application.resources.getString(R.string.detalhesPagamento_ToastText_deletePayment, detalhesPagamentoViewModel.pagamento.value?.titulo), Toast.LENGTH_LONG).show()
-                findNavController().popBackStack()
-            }
-        }
+//        detalhesPagamentoViewModel.historicoRecente.observe(viewLifecycleOwner) {
+//            if (it != null) detalhesPagamentoViewModel.atualizarPreco()
+//            Log.d(TAG, "historicoRecente.estaPago=${it?.estaPago}")
+//        }
+//
+//        detalhesPagamentoViewModel.pessoas.observe(viewLifecycleOwner) {
+//            if (!it.isNullOrEmpty()) {
+//                detalhesPagamentoViewModel.atualizarHistoricoRecente()
+//            }
+//        }
+//
+//        detalhesPagamentoViewModel.pagamento.observe(viewLifecycleOwner) {
+//            if (it != null) {
+//                verifyPagamentosUpdates()
+//            }
+//        }
+//
+//        // Observer para navegar para a pagina com todos os HistoricosDePagamento do Pagamento
+//        detalhesPagamentoViewModel.verTodoOHistorico.observe(viewLifecycleOwner) {
+//            if (it) {
+//                findNavController().navigate(DetalhesPagamentoFragmentDirections.actionDetalhesPagamentoFragmentToHistoricosPagamentoFragment(detalhesPagamentoViewModel.pagamento.value!!))
+//                detalhesPagamentoViewModel.onVerTodoOHistoricoDone()
+//            }
+//        }
+//
+//        detalhesPagamentoViewModel.hasDeletedPayment.observe(viewLifecycleOwner) {
+//            if (it) {
+//                Toast.makeText(context, application.resources.getString(R.string.detalhesPagamento_ToastText_deletePayment, detalhesPagamentoViewModel.pagamento.value?.titulo), Toast.LENGTH_LONG).show()
+//                findNavController().popBackStack()
+//            }
+//        }
 
         setHasOptionsMenu(true)
         binding.apply {
@@ -111,7 +108,12 @@ class DetalhesPagamentoFragment: Fragment() {
                 setContent {
                     // Inside Compose world!
                     GerenciadorDePagamentosTheme {
-                        DetalhesPagamentoScreen(detalhesPagamentoViewModel)
+                        DetalhesPagamentoScreen(
+                            dataSource,
+                            selectedPayment = Pagamento(1, "", "", 1, ""),
+                            latestPaymentHistory = HistoricoDePagamento(1, "", 1.0, 1, 1),
+                            latestPerson = Pessoa(1, "", 1, 1),
+                        )
                     }
                 }
             }
@@ -132,11 +134,11 @@ class DetalhesPagamentoFragment: Fragment() {
     }
 
     private fun onClickApagarPagamento() {
-        detalhesPagamentoViewModel.onShowAlertDialog(DetalhesPagamentoViewModel.AlertType.DELETE_PAYMENT)
+//        detalhesPagamentoViewModel.onShowAlertDialog(DetalhesPagamentoViewModel.AlertType.DELETE_PAYMENT)
     }
 
     private fun onClickEditarPagamento() {
-        detalhesPagamentoViewModel.onEditingPayment()
+//        detalhesPagamentoViewModel.onEditingPayment()
 
     }
 
@@ -146,19 +148,19 @@ class DetalhesPagamentoFragment: Fragment() {
      *  gerando novos Historicos
      */
     private fun verifyPagamentosUpdates() {
-        if (detalhesPagamentoViewModel.pagamento.isInitialized && detalhesPagamentoViewModel.historicosDoPagamento.isInitialized) {
-            // Verifica se e necessario atualizar e criar novos historicos de pagamento
-            if (precisaDeNovoHistorico(
-                    detalhesPagamentoViewModel.pagamento.value!!.frequencia,
-                    convertStringToCalendar(detalhesPagamentoViewModel.getHistoricoMaisRecente().data),
-                    Calendar.getInstance(),
-                    requireActivity().resources.getStringArray(R.array.frequencias_pagamentos)
-                )
-                and !pagamentoOutdated
-            ) {
-                detalhesPagamentoViewModel.onShowAlertDialog(DetalhesPagamentoViewModel.AlertType.UPDATE_PAYMENT)
-                pagamentoOutdated = true
-            }
-        }
+//        if (detalhesPagamentoViewModel.pagamento.isInitialized ) {
+//            // Verifica se e necessario atualizar e criar novos historicos de pagamento
+//            if (precisaDeNovoHistorico(
+//                    detalhesPagamentoViewModel.pagamento.value!!.frequencia,
+//                    convertStringToCalendar(detalhesPagamentoViewModel.getHistoricoMaisRecente().data),
+//                    Calendar.getInstance(),
+//                    requireActivity().resources.getStringArray(R.array.frequencias_pagamentos)
+//                )
+//                and !pagamentoOutdated
+//            ) {
+//                detalhesPagamentoViewModel.onShowAlertDialog(DetalhesPagamentoViewModel.AlertType.UPDATE_PAYMENT)
+//                pagamentoOutdated = true
+//            }
+//        }
     }
 }

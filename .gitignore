@@ -20,6 +20,7 @@ out/
 # Gradle files
 .gradle/
 build/
+gradle/gradle-daemon-jvm.properties
 
 # Android Studio Project files
 .idea
@@ -115,23 +116,3 @@ lint/tmp/
 /.idea/shelf/Uncommitted_changes_before_Update_at_02_08_2022_16_00_[Changes]1/shelved.patch
 /.idea/shelf/Uncommitted_changes_before_Update_at_02_08_2022_15_56__Changes_.xml
 /.idea/shelf/Uncommitted_changes_before_Update_at_02_08_2022_15_56__Changes_1.xml
-/.idea/shelf/Uncommitted_changes_before_Update_at_02_08_2022_15_56_[Changes]/buildOutputCleanup.lock
-/.idea/shelf/Uncommitted_changes_before_Update_at_02_08_2022_15_56_[Changes]1/buildOutputCleanup.lock
-/.idea/shelf/Uncommitted_changes_before_Update_at_02_08_2022_15_56_[Changes]/checksums.lock
-/.idea/shelf/Uncommitted_changes_before_Update_at_02_08_2022_15_56_[Changes]1/checksums.lock
-/.idea/shelf/Uncommitted_changes_before_Update_at_02_08_2022_15_56_[Changes]/executionHistory.lock
-/.idea/shelf/Uncommitted_changes_before_Update_at_02_08_2022_15_56_[Changes]1/executionHistory.lock
-/.idea/shelf/Uncommitted_changes_before_Update_at_02_08_2022_15_56_[Changes]/fileHashes.bin
-/.idea/shelf/Uncommitted_changes_before_Update_at_02_08_2022_15_56_[Changes]1/fileHashes.bin
-/.idea/shelf/Uncommitted_changes_before_Update_at_02_08_2022_15_56_[Changes]/fileHashes.lock
-/.idea/shelf/Uncommitted_changes_before_Update_at_02_08_2022_15_56_[Changes]1/fileHashes.lock
-/.idea/shelf/Uncommitted_changes_before_Update_at_02_08_2022_15_56_[Changes]/md5-checksums.bin
-/.idea/shelf/Uncommitted_changes_before_Update_at_02_08_2022_15_56_[Changes]1/md5-checksums.bin
-/.idea/shelf/Uncommitted_changes_before_Update_at_02_08_2022_15_56_[Changes]/outputFiles.bin
-/.idea/shelf/Uncommitted_changes_before_Update_at_02_08_2022_15_56_[Changes]1/outputFiles.bin
-/.idea/shelf/Uncommitted_changes_before_Update_at_02_08_2022_15_56_[Changes]/sha1-checksums.bin
-/.idea/shelf/Uncommitted_changes_before_Update_at_02_08_2022_15_56_[Changes]1/sha1-checksums.bin
-/.idea/shelf/Uncommitted_changes_before_Update_at_02_08_2022_15_56_[Changes]/shelved.patch
-/.idea/shelf/Uncommitted_changes_before_Update_at_02_08_2022_15_56_[Changes]1/shelved.patch
-/.idea/shelf/Uncommitted_changes_before_Update_at_02_08_2022_16_00_[Changes]/shelved.patch
-/.idea/shelf/Uncommitted_changes_before_Update_at_02_08_2022_16_00_[Changes]1/shelved.patch

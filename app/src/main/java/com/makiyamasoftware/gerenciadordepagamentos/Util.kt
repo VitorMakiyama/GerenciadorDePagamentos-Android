@@ -2,6 +2,7 @@ package com.makiyamasoftware.gerenciadordepagamentos
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Application
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -11,10 +12,14 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.os.bundleOf
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavDeepLinkBuilder
 import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
+import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabaseDao
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
+import com.makiyamasoftware.gerenciadordepagamentos.telas.inicio.PagamentosMainViewModel
 import java.text.DateFormat.getDateInstance
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
@@ -319,4 +324,152 @@ fun formatReadablePrice(price: Double): String {
  */
 fun parseStringToDouble(stringDouble: String): Double? {
 	return DecimalFormat.getInstance().parse(stringDouble)?.toDouble()
+}
+
+/**
+ * Classes for Testing and previewing content
+ */
+class ApplicationFake: Application()
+class DaoFake: PagamentosDatabaseDao {
+	val pagamentos = listOf<Pagamento>(
+		Pagamento(1L, "Teste 1", "2026-02-20", 2, "Daily"),
+		Pagamento(2L, "Teste 2", "2026-01-01", 2, "Sem frequência"),
+	)
+	val historicoDePagamento = listOf<HistoricoDePagamento>(
+		HistoricoDePagamento(
+			id = 1L,
+			data = "2024-11-24",
+			preco = 10.0,
+			pagadorId = 1L,
+			pagamentoId = 1L,
+			estaPago = true
+		),
+		HistoricoDePagamento(
+			id = 2L,
+			data = "2024-11-24",
+			preco = 20.0,
+			pagadorId = 2L,
+			pagamentoId = 2L,
+			estaPago = true
+		)
+	)
+	val pessoas = listOf<Pessoa>(
+		Pessoa(1L, "Pessoa 1", 1, 1L),
+		Pessoa(2L, "Pessoa 2", 1, 2L)
+	)
+
+	override fun inserirPagamento(pagamento: Pagamento) {
+		TODO("Not yet implemented")
+	}
+
+	override fun updatePagamento(pagamento: Pagamento) {
+		TODO("Not yet implemented")
+	}
+
+	override fun getPagamento(id: Long): LiveData<Pagamento> {
+		TODO("Not yet implemented")
+	}
+
+	override fun getAllPagamentos(): List<Pagamento> {
+		return pagamentos
+	}
+
+	override fun getUltimoPagamentoID(): Long {
+		return pagamentos[0].id
+	}
+
+	override fun deletePagamento(pagamentoID: Long) {
+		TODO("Not yet implemented")
+	}
+
+	override fun clearPagamentos() {
+		TODO("Not yet implemented")
+	}
+
+	override fun getAllPagamentosBackground(): List<Pagamento> {
+		return pagamentos
+	}
+
+	override fun inserirPessoa(pessoa: Pessoa) {
+		TODO("Not yet implemented")
+	}
+
+	override fun updatePessoa(pessoa: Pessoa) {
+		TODO("Not yet implemented")
+	}
+
+	override fun getPessoa(id: Long): LiveData<Pessoa> {
+		val liveData = MutableLiveData<Pessoa>()
+		liveData.value = pessoas[0]
+		return liveData
+	}
+
+	override fun getUltimaPessoasDoPagamento(pagamentoID: Long): Pessoa {
+		return pessoas[pagamentoID.toInt()]
+	}
+
+	override fun getPessoasDoPagamento(pagamentoID: Long): LiveData<List<Pessoa>> {
+		val liveData = MutableLiveData<List<Pessoa>>()
+		liveData.value = listOf(pessoas[pagamentoID.toInt()])
+		return liveData
+	}
+
+	override fun getAllPessoas(): List<Pessoa> {
+		return pessoas
+	}
+
+	override fun deletePessoasFromPagamento(pagamentoID: Long) {
+		TODO("Not yet implemented")
+	}
+
+	override fun clearPessoas() {
+		TODO("Not yet implemented")
+	}
+
+	override fun getPessoasDoPagamentoBackground(pagamentoID: Long): List<Pessoa> {
+		return pessoas
+	}
+
+	override fun inserirHistoricoDePagamento(vararg historicoDePagamento: HistoricoDePagamento) {
+		TODO("Not yet implemented")
+	}
+
+	override fun updateHistoricoDePagamento(historicoDePagamento: HistoricoDePagamento) {
+		TODO("Not yet implemented")
+	}
+
+	override fun getHistoricosDePagamento(pagamentoID: Long): List<HistoricoDePagamento> {
+		return listOf(historicoDePagamento[pagamentoID.toInt()])
+	}
+
+	override fun getHistoricosDePagamentoLD(pagamentoID: Long): LiveData<List<HistoricoDePagamento>> {
+		TODO("Not yet implemented")
+	}
+
+	override fun getUltimoHistoricoDePagamento(pagamentoID: Long): LiveData<HistoricoDePagamento> {
+		val liveData = MutableLiveData<HistoricoDePagamento>()
+		liveData.value = historicoDePagamento[pagamentoID.toInt()]
+		return liveData
+	}
+
+	override fun getListaInicialHistoricoDePagamento(): List<HistoricoDePagamento> {
+		return historicoDePagamento
+	}
+
+	override fun deleteHistoricoDePagamentosFromPagamento(pagamentoID: Long) {
+		TODO("Not yet implemented")
+	}
+
+	override fun clearHistoricoDePagamentos() {
+		TODO("Not yet implemented")
+	}
+
+	override fun getHistoricoDePagamentoBackground(pagamentoID: Long): HistoricoDePagamento {
+		return historicoDePagamento[pagamentoID.toInt()]
+	}
+}
+
+val pagamentosMainViewModelFake = PagamentosMainViewModelFake()
+
+class PagamentosMainViewModelFake: PagamentosMainViewModel(database = DaoFake(), application = ApplicationFake()) {
 }

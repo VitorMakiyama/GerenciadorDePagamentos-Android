@@ -2,7 +2,6 @@ package com.makiyamasoftware.gerenciadordepagamentos.telas.inicio
 
 import android.app.Application
 import android.util.Log
-import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -11,15 +10,46 @@ import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabaseDao
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
-class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val application: Application) : ViewModel() {
-    /**
-    * Seta o evento para navegar para o fragmento de criar um novo
-    *  pagamento
-    * */
-    private var _navigateToCriarPagamento = MutableLiveData<Boolean>()
-    val navigateToCriarPagamento: LiveData<Boolean>
-        get() = _navigateToCriarPagamento
+data class MainPaymentsUIState(
+    val paymentsList: List<Pagamento> = emptyList(),
+    val paymentsHistories: List<HistoricoDePagamento> = emptyList(),
+    val paymentsPeople: List<Pessoa> = emptyList(),
+)
+
+open class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val application: Application) : ViewModel() {
+    // UIState for Compose
+    private val _uiState = MutableStateFlow(MainPaymentsUIState())
+    val uiState: StateFlow<MainPaymentsUIState> = _uiState.asStateFlow()
+
+    fun updateMainPaymentsState() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                paymentsList = pagamentos.value?: listOf(Pagamento(
+                    titulo = "TODO()",
+                    dataDeInicio = "TODO()",
+                    numeroDePessoas = 0,
+                    frequencia = "TODO()"
+                )),
+                paymentsHistories = latestHistories.value?: listOf(HistoricoDePagamento(
+                    data = "TODO()",
+                    preco = 0.0,
+                    pagadorId = 0L,
+                    pagamentoId = 0L
+                )),
+                paymentsPeople = latestPeople.value?: listOf(Pessoa(
+                    nome = "TODO()",
+                    ordem = 0,
+                    pagamentoId = 0
+                ))
+            )
+        }
+    }
+
 
     /** Um Job pode ser cancelado, e todas as couroutines associadas a ele sao canceladas tambem,
      * assim, fica facil d ecancelar todas as coroutines de uma vez, se esse ViewModel for destruido
@@ -40,60 +70,29 @@ class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val applicati
     private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
 
     // Lista de Pagamentos, deve ser atualizada conforme o DB
-    var pagamentos: LiveData<List<Pagamento>> = database.getAllPagamentos()
+    private val _payments = MutableStateFlow<List<Pagamento>>(listOf())
+    val pagamentos: StateFlow<List<Pagamento>> = _payments
 
-    // LiveData List dos ultimos históricos dos pagamentos (historicos atuais)
-    var historicoDosPagamentos : LiveData<List<HistoricoDePagamento>> = database.getListaInicialHistoricoDePagamento()
-    var sizeHistorico: Int = 0
+    // StateFlow that encapsulates the List of latest histories of the payments (historicos atuais)
+    private val _latestHistories = MutableStateFlow<List<HistoricoDePagamento>>(listOf())
+    val latestHistories: StateFlow<List<HistoricoDePagamento>> = _latestHistories
 
-
-    // MutableList das pessoas relativas aos ultimos historicos
-    var pessoasRecentes = MutableLiveData<List<Pessoa>>()
-    private val _pessoasRecentesState = MutableLiveData<Boolean>(false)
-    val pessoasRecentesState: LiveData<Boolean>
-        get() =  _pessoasRecentesState
-    var sizePessoas: Int = 0
-    fun pessoasStateDone() {
-        _pessoasRecentesState.value = false
-    }
+    // StateFlow that encapsulates the List of People from histories
+    private val _latestPeople = MutableStateFlow<List<Pessoa>>(listOf())
+    val latestPeople: StateFlow<List<Pessoa>> = _latestPeople
 
     init {
-        uiScope.launch {
-            pessoasRecentes.value = getAllPessoas()!!
+        uiScope.launch(Dispatchers.IO) {
+            _payments.update{ database.getAllPagamentos() }
+            _latestHistories.update { database.getListaInicialHistoricoDePagamento() }
+            _latestPeople.update { getAllPessoas() }
         }
     }
-    // funcao para pegar todas as pessoas
+    // Suspend function to get all people from database
     suspend fun getAllPessoas(): List<Pessoa> {
         return withContext(Dispatchers.IO) {
             database.getAllPessoas()
         }
-    }
-
-    /**
-     * Atributo para controlar o texto para lista vazia
-     */
-    private var _visibilityTextoVazio = MutableLiveData<Int>()
-    val visibilityTextoVazio: LiveData<Int>
-        get() = _visibilityTextoVazio
-    fun textoVazioVisivel() {
-        _visibilityTextoVazio.value = View.VISIBLE
-    }
-    fun textoVazioInvisivel() {
-        _visibilityTextoVazio.value = View.GONE
-    }
-
-    init {
-        _navigateToCriarPagamento.value = false
-
-    }
-
-    // Funções para navegação do FAB, para criar novo pagamento
-    fun onCriarNovoPagamento() {
-        _navigateToCriarPagamento.value = true
-    }
-    fun doneNavigating() {
-        _navigateToCriarPagamento.value = false
-        Log.i("Test","${pagamentos.value.isNullOrEmpty()}")
     }
 
     /** Provisoria: para zerar o DB
@@ -116,69 +115,38 @@ class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val applicati
      * dos historicos armazenados
      */
     fun getHistoricoCerto(pagId: Long): HistoricoDePagamento? {
-        Log.i(TAG, "entrou no getHistorico HISTORICO${historicoDosPagamentos.value}")
-        if (!historicoDosPagamentos.value.isNullOrEmpty()) {
+        Log.i(TAG, "entrou no getHistorico HISTORICO${latestHistories.value}")
+        if (!latestHistories.value.isNullOrEmpty()) {
             Log.i(TAG, "getHistorico historicos nao null")
-            for (i in historicoDosPagamentos.value!!) if (pagId == i.pagamentoId) return i
+            for (i in latestHistories.value!!) if (pagId == i.pagamentoId) return i
         }
         return null
     }
-    /**
-     * Funcao retorna o Pagamento correspondente ao id de pagamentro passado, dentro
-     * dos pagamentos armazenados
-     */
-    fun getPagamentoCerto(pagId: Long): Pagamento? {
-        if (pagamentos.value != null) {
-            for (i in pagamentos.value!!) {
-                if (pagId == i.id) return i
-            }
-        }
-        return null
-    }
+
     /**
      * Funcao retorna a Pessoa correspondente ao id de pessoa passado,
      *  dentro das pessoas armazenadas
      */
     fun getPessoaCerta(pessoaId: Long): Pessoa? {
-        if (!pessoasRecentes.value.isNullOrEmpty()) {
-            for (i in pessoasRecentes.value!!) {
+        if (latestPeople.value.isNotEmpty()) {
+            for (i in latestPeople.value) {
                 if (pessoaId == i.id) return i
             }
         }
         return null
     }
 
-    /**
-     * Funcao que retorna a pessoa respectiva do historico, identificado
-     *  pelo pessoaId (parametro)
-     */
-    /*fun getPessoaDoHistoricoFromDB(pessoaId: Long, pagId: Long) {
-        uiScope.launch {
-            if (sizePessoas < sizeHistorico) {
-                // Se ainda nao houver uma pessoa desse pagamento, adiciona-la no vetor
-                pessoasRecentes.add(_getPessoaDoHistorico(pessoaId))
-                sizePessoas++
-            }
-            _pessoasRecentesState.value = true
-        }
-    }*/
-    private suspend fun _getPessoaDoHistorico(pessoaId: Long) : LiveData<Pessoa> {
-        return withContext(Dispatchers.IO) {
-            database.getPessoa(pessoaId)
-        }
+    //TODO: DEPRECATE THIS
+    private val _navigateToCriarPagamento = MutableLiveData(false)
+    val navigateToCriarPagamento: LiveData<Boolean> = _navigateToCriarPagamento
+
+    // Funções para navegação do FAB, para criar novo pagamento
+    fun onCriarNovoPagamento() {
+        _navigateToCriarPagamento.value = true
     }
-    /**
-     * Click listener è evento para o click nos cards, ele aciona a navegaçao atraves de um observer no Fragment
-     */
-    private val _clickNoPagamento = MutableLiveData<Boolean>()
-    val clickNoPagamento : LiveData<Boolean>
-        get() = _clickNoPagamento
-    var selectedPag: Long = 0L
-    fun onClickPagamento(pagamentoId: Long) {
-        selectedPag = pagamentoId
-        _clickNoPagamento.value = true
+    fun doneNavigating() {
+        _navigateToCriarPagamento.value = false
+        Log.i("Test","${pagamentos.value.isNullOrEmpty()}")
     }
-    fun onClickPagamentoDone() {
-        _clickNoPagamento.value = false
-    }
+
 }

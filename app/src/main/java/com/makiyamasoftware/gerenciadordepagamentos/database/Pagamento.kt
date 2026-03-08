@@ -5,12 +5,14 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
 
 /**
  * Pagamento guarda as informacoes do pagamento,
  * Tem um id de pagamento unico
  */
+@Serializable
 @Parcelize
 @Entity(tableName = "pagamento_table")
 data class Pagamento(
