@@ -36,7 +36,9 @@ interface PagamentosDatabaseDao {
     @Query("SELECT * FROM pessoas_table WHERE pagamento_id = :pagamentoID ORDER BY ordem DESC LIMIT 1")
     fun getUltimaPessoasDoPagamento(pagamentoID: Long): Pessoa
     @Query("SELECT * FROM pessoas_table WHERE pagamento_id = :pagamentoID ORDER BY ordem ASC")
-    fun getPessoasDoPagamento(pagamentoID: Long): LiveData<List<Pessoa>>
+    fun getPessoasDoPagamento(pagamentoID: Long): List<Pessoa>
+    @Query("SELECT * FROM pessoas_table WHERE pagamento_id = :pagamentoID ORDER BY ordem ASC")
+    fun getPessoasDoPagamentoLD(pagamentoID: Long): LiveData<List<Pessoa>> // TODO: remove
     @Query("SELECT * FROM pessoas_table ORDER BY pagamento_id, ordem ASC")
     fun getAllPessoas(): List<Pessoa>
     @Query("DELETE FROM pessoas_table WHERE pagamento_id = :pagamentoID")

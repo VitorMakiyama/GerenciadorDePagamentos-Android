@@ -56,7 +56,7 @@ class PagamentosMainFragment : Fragment() {
                 }
             })
 
-        setHasOptionsMenu(true)
+//        setHasOptionsMenu(true)
         binding.apply {
             composeView.apply {
                 setViewCompositionStrategy(

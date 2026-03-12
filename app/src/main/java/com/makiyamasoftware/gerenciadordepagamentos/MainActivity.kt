@@ -10,7 +10,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
-import androidx.navigation.ui.NavigationUI
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
@@ -34,9 +33,8 @@ class MainActivity : AppCompatActivity() {
 
 		navController = this.findNavController(R.id.nav_host_fragment)
 
-		setSupportActionBar(findViewById(R.id.toolbar))
-
-		NavigationUI.setupActionBarWithNavController(this, navController)
+//		setSupportActionBar(findViewById(R.id.toolbar))
+//		NavigationUI.setupActionBarWithNavController(this, navController)
 
 		delayedInit()
 
@@ -56,7 +54,7 @@ class MainActivity : AppCompatActivity() {
 		val constraints = Constraints.Builder()
 			.setRequiresStorageNotLow(true)
 			.setRequiresBatteryNotLow(true)
-			.setRequiresDeviceIdle(true) // Apenas se o dispositivo estiver idle (nao ativo)
+//			.setRequiresDeviceIdle(true) // Apenas se o dispositivo estiver idle (nao ativo)
 			.build()
 
 		val repeatingRequest = PeriodicWorkRequestBuilder<UpdatePagamentoWork>(1, TimeUnit.DAYS)

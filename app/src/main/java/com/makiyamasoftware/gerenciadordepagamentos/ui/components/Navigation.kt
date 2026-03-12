@@ -26,8 +26,8 @@ enum class Destination(
     val icon: Int,
     val contentDescription: String
 ) {
-    PAYMENTS("payments", "Payments", R.drawable.credit_card_gear_24, "Payments Manager"),
-    EVENTS("events", "Events", R.drawable.event_24, "Events Manager"),
+    PAYMENTS("payments", "Payments", R.drawable.credit_card_gear_24dp, "Payments Manager"),
+    EVENTS("events", "Events", R.drawable.event_24dp, "Events Manager"),
 }
 
 @Composable

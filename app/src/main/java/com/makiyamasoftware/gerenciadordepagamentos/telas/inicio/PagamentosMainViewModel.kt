@@ -19,6 +19,7 @@ data class MainPaymentsUIState(
     val paymentsList: List<Pagamento> = emptyList(),
     val paymentsHistories: List<HistoricoDePagamento> = emptyList(),
     val paymentsPeople: List<Pessoa> = emptyList(),
+    val showDeleteDialog: Boolean = false
 )
 
 open class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val application: Application) : ViewModel() {
@@ -29,27 +30,20 @@ open class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val appl
     fun updateMainPaymentsState() {
         _uiState.update { currentState ->
             currentState.copy(
-                paymentsList = pagamentos.value?: listOf(Pagamento(
-                    titulo = "TODO()",
-                    dataDeInicio = "TODO()",
-                    numeroDePessoas = 0,
-                    frequencia = "TODO()"
-                )),
-                paymentsHistories = latestHistories.value?: listOf(HistoricoDePagamento(
-                    data = "TODO()",
-                    preco = 0.0,
-                    pagadorId = 0L,
-                    pagamentoId = 0L
-                )),
-                paymentsPeople = latestPeople.value?: listOf(Pessoa(
-                    nome = "TODO()",
-                    ordem = 0,
-                    pagamentoId = 0
-                ))
+                paymentsList = pagamentos.value,
+                paymentsHistories = latestHistories.value,
+                paymentsPeople = latestPeople.value
             )
         }
     }
 
+    fun toggleDialog() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                showDeleteDialog = !currentState.showDeleteDialog
+            )
+        }
+    }
 
     /** Um Job pode ser cancelado, e todas as couroutines associadas a ele sao canceladas tambem,
      * assim, fica facil d ecancelar todas as coroutines de uma vez, se esse ViewModel for destruido
@@ -82,12 +76,17 @@ open class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val appl
     val latestPeople: StateFlow<List<Pessoa>> = _latestPeople
 
     init {
+        updateDataFromDB()
+    }
+
+    fun updateDataFromDB() {
         uiScope.launch(Dispatchers.IO) {
             _payments.update{ database.getAllPagamentos() }
             _latestHistories.update { database.getListaInicialHistoricoDePagamento() }
-            _latestPeople.update { getAllPessoas() }
+            _latestPeople.update { database.getAllPessoas() }
         }
     }
+
     // Suspend function to get all people from database
     suspend fun getAllPessoas(): List<Pessoa> {
         return withContext(Dispatchers.IO) {

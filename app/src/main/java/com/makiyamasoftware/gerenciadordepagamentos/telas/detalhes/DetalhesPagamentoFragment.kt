@@ -113,6 +113,8 @@ class DetalhesPagamentoFragment: Fragment() {
                             selectedPayment = Pagamento(1, "", "", 1, ""),
                             latestPaymentHistory = HistoricoDePagamento(1, "", 1.0, 1, 1),
                             latestPerson = Pessoa(1, "", 1, 1),
+                            {},
+                            {}
                         )
                     }
                 }

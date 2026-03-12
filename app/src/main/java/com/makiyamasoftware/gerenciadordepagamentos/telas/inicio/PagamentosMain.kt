@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,16 +18,19 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
@@ -40,15 +44,22 @@ import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagament
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
 import com.makiyamasoftware.gerenciadordepagamentos.pagamentosMainViewModelFake
+import com.makiyamasoftware.gerenciadordepagamentos.ui.components.AlertDialogComponent
+import com.makiyamasoftware.gerenciadordepagamentos.ui.components.DynamicTopAppBarViewModel
 import com.makiyamasoftware.gerenciadordepagamentos.ui.theme.GerenciadorDePagamentosTheme
+
+private const val DEBUG_TAG = "PagamentosMainScreen"
 
 @Composable
 fun PagamentosMainScreen(
     viewModel: PagamentosMainViewModel = viewModel(),
+    setTopAppBarActions: (actions: @Composable (RowScope.() -> Unit)) -> Unit,
     onNavigateToDetails: (payment: Pagamento, history: HistoricoDePagamento, person: Pessoa) -> Unit,
-    onNavigateToCreateNewPayment: () -> Unit
+    onNavigateToCreateNewPayment: () -> Unit,
+    modifier: Modifier,
 ) {
     val mainPaymentsUIState by viewModel.uiState.collectAsState()
+    Log.d(DEBUG_TAG, "mainPaymentsUIState: ${mainPaymentsUIState.paymentsList}")
 
     LaunchedEffect(
         viewModel.pagamentos,
@@ -58,24 +69,53 @@ fun PagamentosMainScreen(
         viewModel.updateMainPaymentsState()
     }
 
+    LaunchedEffect(viewModel) {
+        setTopAppBarActions {
+            IconButton(onClick = {
+                viewModel.toggleDialog()
+                Log.d(DEBUG_TAG, "mainPaymentsUIState: ${mainPaymentsUIState.paymentsList}")
+            }) {
+                Icon(
+                    painter = painterResource(R.drawable.delete_forever_24dp),
+                    contentDescription = stringResource(R.string.topAppBar_DeleteForever_description)
+                )
+            }
+        }
+    }
+
+    SideEffect {
+        viewModel.updateDataFromDB()
+    }
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = viewModel::onCriarNovoPagamento, //TODO: when CriarPagamento is fully migrated, change to onNavigateToCreateNewPayment
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_round_add_24),
+                    painter = painterResource(R.drawable.ic_round_add_24dp),
                     stringResource(R.string.Label_CriarPagamentoFragment_fragment_name)
                 )
             }
         },
         floatingActionButtonPosition = FabPosition.End,
     ) { padding ->
+        if (mainPaymentsUIState.showDeleteDialog) {
+            AlertDialogComponent(
+                title = stringResource(R.string.clear_aviso_titulo),
+                message = stringResource(R.string.clear_aviso_mensagem),
+                onAffirmativeRequest = {
+                    viewModel.onClearAll()
+                    viewModel.toggleDialog()
+                },
+                onDismissRequest = viewModel::toggleDialog,
+            )
+        }
         PagamentosMainContent(
             mainPaymentsUIState.paymentsList,
             viewModel,
             onNavigateToDetails,
-            Modifier.padding(padding)
+            modifier.padding(padding)
         )
     }
 }
@@ -85,9 +125,9 @@ fun PagamentosMainContent(
     paymentsList: List<Pagamento>,
     viewModel: PagamentosMainViewModel,
     onNavigateToDetails: (Pagamento, HistoricoDePagamento, Pessoa) -> Unit,
-    modifier: Modifier
+    modifier: Modifier = Modifier
 ) {
-    LazyColumn(modifier.fillMaxSize()) {
+    LazyColumn(modifier.fillMaxSize().padding(horizontal = dimensionResource(R.dimen.margin_normal)), verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.margin_normal))) {
         items(items = paymentsList) { payment ->
             val history = viewModel.getHistoricoCerto(payment.id)
             val person = viewModel.getPessoaCerta(history?.pagadorId ?: 0L)
@@ -105,9 +145,6 @@ fun PagamentosMainContent(
                             ordem = 0,
                             pagamentoId = payment.id
                         ),
-                        modifier = modifier // This double .padding adds padding/spacing first horizontally (start and end) then only on top (new PaymentCards will use this top padding to keep distance from the one above them)
-                            .padding(horizontal = dimensionResource(R.dimen.margin_normal))
-                            .padding(top = dimensionResource(R.dimen.margin_normal))
                     )
                 }
             }
@@ -252,13 +289,15 @@ fun PagamentosMainPreview() {
     GerenciadorDePagamentosTheme {
         PagamentosMainScreen(
             pagamentosMainViewModelFake,
+            {},
             { payment: Pagamento, history: HistoricoDePagamento, person: Pessoa ->
                 Log.d(
                     "PagamentosMainPreview",
                     "Navigated to Payment Details"
                 )
             },
-            { Log.d("PagamentosMainPreview", "Navigated to Create New Payment") }
+            { Log.d("PagamentosMainPreview", "Navigated to Create New Payment") },
+            Modifier
         )
     }
 }

@@ -26,7 +26,7 @@ class HistoricosPagamentoViewModel(private val dataSource: PagamentosDatabaseDao
     init {
         viewModelScope.launch {
             historicos = dataSource.getHistoricosDePagamentoLD(pagamentoSelecionado.id)
-            pessoas = dataSource.getPessoasDoPagamento(pagamentoSelecionado.id)
+            pessoas = dataSource.getPessoasDoPagamentoLD(pagamentoSelecionado.id)
         }
     }
 

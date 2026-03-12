@@ -39,6 +39,7 @@ import com.makiyamasoftware.gerenciadordepagamentos.ui.theme.GerenciadorDePagame
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlertDialogComponent(
+	modifier: Modifier = Modifier,
 	title: String = "",
 	message: String,
 	affirmativeText: String = stringResource(R.string.generic_Sim),
@@ -46,8 +47,7 @@ fun AlertDialogComponent(
 	dismissText: String = stringResource(R.string.generic_Nao),
 	thirdActionText: String = "",
 	onThirdRequest: (() -> Unit)? = null,
-	onDismissRequest: () -> Unit,
-	modifier: Modifier = Modifier
+	onDismissRequest: () -> Unit
 ) {
 	val dialogModifier = Modifier.padding(dimensionResource(R.dimen.margin_normal))
 	BasicAlertDialog(
@@ -106,14 +106,14 @@ fun AlertDialogComponent(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoFrequencyPriceChangeAlertDialog(
+	modifier: Modifier = Modifier,
 	title: String = stringResource(R.string.detalhesPagamento_on_change_price_noFrequency_alertTitle),
 	histories: List<HistoricoDePagamento>,
 	people: List<Pessoa>,
 	affirmativeText: String = stringResource(R.string.generic_Pronto),
 	onAffirmativeRequest: (List<HistoricoDePagamento>) -> Unit,
 	dismissText: String = stringResource(R.string.generic_Cancelar),
-	onDismissRequest: () -> Unit,
-	modifier: Modifier = Modifier
+	onDismissRequest: () -> Unit
 ) {
 	val dialogModifier = Modifier.padding(dimensionResource(R.dimen.margin_normal))
 	val modifiedHistories = mutableMapOf<Long, HistoricoDePagamento>()

@@ -71,6 +71,13 @@
     <string name="channel_description">Notification channel for delivering notifications of configured payments</string>
 
 
+    <!-- Strings usadas no AppTopBar-->
+    <string name="topAppBar_Main_title">Pagamentos</string>
+    <string name="topAppBar_Back_description">Voltar</string>
+    <string name="topAppBar_DeleteForever_description">Deletar tudo</string>
+    <string name="topAppBar_Delete_description">Deletar este pagamento</string>
+    <string name="topAppBar_EditPayment_description">Editar este pagamento</string>
+
     <string-array name="frequencias_pagamentos">
         <item>Escolha a frequência do pagamento</item>
         <item>Diário</item>

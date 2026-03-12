@@ -408,10 +408,12 @@ class DaoFake: PagamentosDatabaseDao {
 		return pessoas[pagamentoID.toInt()]
 	}
 
-	override fun getPessoasDoPagamento(pagamentoID: Long): LiveData<List<Pessoa>> {
-		val liveData = MutableLiveData<List<Pessoa>>()
-		liveData.value = listOf(pessoas[pagamentoID.toInt()])
-		return liveData
+	override fun getPessoasDoPagamento(pagamentoID: Long): List<Pessoa> {
+		return listOf(pessoas[pagamentoID.toInt()])
+	}
+
+	override fun getPessoasDoPagamentoLD(pagamentoID: Long): LiveData<List<Pessoa>> {
+		TODO("Not yet implemented")
 	}
 
 	override fun getAllPessoas(): List<Pessoa> {

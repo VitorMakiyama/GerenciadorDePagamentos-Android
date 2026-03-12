@@ -1,5 +1,6 @@
 package com.makiyamasoftware.gerenciadordepagamentos.telas.detalhes
 
+import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,6 +21,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -26,6 +29,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -64,6 +68,8 @@ fun DetalhesPagamentoScreen(
     selectedPayment: Pagamento,
     latestPaymentHistory: HistoricoDePagamento,
     latestPerson: Pessoa,
+    setTopAppBarActions: (actions: @Composable (RowScope.() -> Unit)) -> Unit,
+    onNavigateUp: () -> Unit
 ) {
     val factory = remember {
         DetalhesPagamentoViewModelFactory(
@@ -77,172 +83,214 @@ fun DetalhesPagamentoScreen(
 
     val paymentsUIState by detalhesPagamentoViewModel.uiState.collectAsState()
 
-    val estaPagoultimoHistorico by detalhesPagamentoViewModel.estaPagoHistoricoRecente.observeAsState()
+    val paymentHistories by detalhesPagamentoViewModel.paymentHistories.collectAsState()
+    val paymentPeople by detalhesPagamentoViewModel.paymentPeople.collectAsState()
+    var modifiablePayment by remember { mutableStateOf<Pagamento>(paymentsUIState.currentPayment) }
+    var modifiableHistory by remember { mutableStateOf<HistoricoDePagamento>(paymentsUIState.latestPaymentHistory) }
 
-    var modifiablePayment by remember { mutableStateOf<Pagamento?>(null) }
-    var modifiableHistory by remember { mutableStateOf<HistoricoDePagamento?>(null) }
-    var modifiedHistories by remember { mutableStateOf<List<HistoricoDePagamento>>(emptyList()) }
-
-    val isEditable by detalhesPagamentoViewModel.isEditable.observeAsState()
-
-    val shouldShowAlert by detalhesPagamentoViewModel.shouldShowAlertDialog.observeAsState()
     val detalhesPagamentoAlertType by detalhesPagamentoViewModel.alertType.observeAsState()
 
-    isEditable?.let { editable ->
-        Scaffold(
-            floatingActionButton = {
-                if (editable) {
-                    FloatingActionButton(
-                        onClick = {
-                            if (modifiableHistory != null && !detalhesPagamentoViewModel.isLatestHistory()) {
-                                // Se o user tiver modificado o preco (modifiableHistory not null - só deveria acontecer quando o pagamento tiver alguma frequencia) e o historico não for o mais recente do pagamento
-                                detalhesPagamentoViewModel.onShowAlertDialog(
-                                    DetalhesPagamentoViewModel.AlertType.MODIFY_OLD_HISTORY_PRICE
-                                )
-                            } else {
-                                detalhesPagamentoViewModel.onClickSalvarEdicoes(
-                                    modifiablePayment,
-                                    modifiableHistory,
-                                    modifiedHistories
-                                )
-                            }
-                        },
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.check_24),
-                            stringResource(R.string.detalhesPagamento_contentDescription_salvarAlteracoes)
-                        )
-                    }
-                }
-            },
-            floatingActionButtonPosition = FabPosition.End,
-        ) { padding ->
-            val onModifyPayment = { p: Pagamento?, h: HistoricoDePagamento? ->
-                if (p != null) {
-                    modifiablePayment = p
-                }
-                if (h != null) { // Para pagamentos com frequencia
-                    modifiableHistory = h
+    val frequenciesArray = stringArrayResource(R.array.frequencias_pagamentos)
+
+    LaunchedEffect(detalhesPagamentoViewModel) {
+        setTopAppBarActions {
+            if (!paymentsUIState.isEditMode) {
+                IconButton(onClick = {
+                    detalhesPagamentoViewModel.toggleEditable()
+                    Log.d(
+                        DEBUG_TAG,
+                        "Click Edit - mainPaymentsUIState: $paymentsUIState"
+                    )
+                }) {
+                    Icon(
+                        painter = painterResource(R.drawable.edit_24dp),
+                        contentDescription = stringResource(R.string.topAppBar_EditPayment_description)
+                    )
                 }
             }
-            DetalhesPagamentoScreenContent(
-                pagamento = paymentsUIState.currentPayment,
-                ultimoHistorico = paymentsUIState.latestPaymentHistory,
-                latestPerson = paymentsUIState.latestPerson,
-                viewModel = detalhesPagamentoViewModel,
-                editable = editable,
-                onModifyPayment = onModifyPayment,
-                onClickNoFrequencyPrice = {
-                    detalhesPagamentoViewModel.onShowAlertDialog(
-                        DetalhesPagamentoViewModel.AlertType.MODIFY_NO_FREQUENCY_PRICE
+            IconButton(onClick = {
+                detalhesPagamentoViewModel.onShowAlertDialog(DetalhesPagamentoViewModel.AlertType.DELETE_PAYMENT)
+                detalhesPagamentoViewModel.toggleDialog()
+                Log.d(
+                    DEBUG_TAG,
+                    "Click Delete - mainPaymentsUIState: $paymentsUIState"
+                )
+            }) {
+                Icon(
+                    painter = painterResource(R.drawable.delete_24dp),
+                    contentDescription = stringResource(R.string.topAppBar_Delete_description)
+                )
+            }
+        }
+    }
+
+    Scaffold(
+        floatingActionButton = {
+            if (paymentsUIState.isEditMode) {
+                FloatingActionButton(
+                    onClick = {
+                        if (!detalhesPagamentoViewModel.isNoFrequencyPayment(frequenciesArray) && !detalhesPagamentoViewModel.isMostRecentHistory(paymentsUIState.latestPaymentHistory)) {
+                            // Se o pagamento tiver alguma frequencia (not isNoFrequency) e o historico não for o mais recente do pagamento
+                            // serve para atualizar todos os historicos criados apos este, ja que se o preco de um historico passado foi alterado, e possivel que os novos historicos precisem atualizar seus precos tambem
+                            detalhesPagamentoViewModel.onShowAlertDialog(
+                                DetalhesPagamentoViewModel.AlertType.MODIFY_OLD_HISTORY_PRICE
+                            )
+                            detalhesPagamentoViewModel.toggleDialog()
+                        } else {
+                            detalhesPagamentoViewModel.onClickSalvarEdicoes(
+                                modifiablePayment,
+                                modifiableHistory,
+                                true,
+                                isNoFrequencyPayment = detalhesPagamentoViewModel.isNoFrequencyPayment(frequenciesArray)
+                            )
+                        }
+                    },
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.check_24dp),
+                        stringResource(R.string.detalhesPagamento_contentDescription_salvarAlteracoes)
                     )
-                },
-                onChangeStatus = {
-                    detalhesPagamentoViewModel.onShowAlertDialog(
-                        DetalhesPagamentoViewModel.AlertType.CHANGE_STATUS
+                }
+            }
+        },
+        floatingActionButtonPosition = FabPosition.End,
+    ) { padding ->
+        val onModifyPayment = { p: Pagamento?, h: HistoricoDePagamento? ->
+            if (p != null) {
+                modifiablePayment = p
+            }
+            if (h != null) { // Para pagamentos com frequencia
+                modifiableHistory = h
+            }
+        }
+        DetalhesPagamentoScreenContent(
+            pagamento = paymentsUIState.currentPayment,
+            ultimoHistorico = paymentsUIState.latestPaymentHistory,
+            latestPerson = paymentsUIState.latestPerson,
+            paymentsHistories = paymentHistories,
+            viewModel = detalhesPagamentoViewModel,
+            editable = paymentsUIState.isEditMode,
+            onModifyPayment = onModifyPayment,
+            onClickNoFrequencyPrice = {
+                detalhesPagamentoViewModel.onShowAlertDialog(
+                    DetalhesPagamentoViewModel.AlertType.MODIFY_NO_FREQUENCY_PRICE
+                )
+                detalhesPagamentoViewModel.toggleDialog()
+            },
+            onChangeStatus = {
+                detalhesPagamentoViewModel.onShowAlertDialog(
+                    DetalhesPagamentoViewModel.AlertType.CHANGE_STATUS
+                )
+                detalhesPagamentoViewModel.toggleDialog()
+            },
+            onClickAllHistories = {
+                //TODO: apos implementar o HistoricosDePagamentos em Compose, add a navegacao ate a tela
+                Log.d(
+                    DEBUG_TAG,
+                    "Click All Histories"
+                )
+            },
+            padding = padding,
+            modifier = Modifier.padding(all = dimensionResource(R.dimen.margin_small))
+        )
+        if (paymentsUIState.showDialog) {
+            when (detalhesPagamentoAlertType) {
+                DetalhesPagamentoViewModel.AlertType.CHANGE_STATUS -> {
+                    AlertDialogComponent(
+                        title = stringResource(R.string.detalhesPagamento_status_alertTitle),
+                        message = stringResource(R.string.detalhesPagamento_status_alertMessage) +
+                                when (paymentsUIState.latestPaymentHistory.estaPago) {
+                                    true -> stringResource(R.string.blocoEstaPago_status_naoPago)
+                                    else -> stringResource(R.string.blocoEstaPago_status_pago)
+                                },
+                        onAffirmativeRequest = {
+                            detalhesPagamentoViewModel.onClickChangeStatus()
+                            detalhesPagamentoViewModel.toggleDialog()
+                        },
+                        onDismissRequest = detalhesPagamentoViewModel::toggleDialog,
                     )
-                },
-                onClickAllHistories = { detalhesPagamentoViewModel.onVerTodoOHistorico() },
-                padding = padding,
-                modifier = Modifier.padding(all = dimensionResource(R.dimen.margin_small))
-            )
-            if (shouldShowAlert == true) {
-                when (detalhesPagamentoAlertType) {
-                    DetalhesPagamentoViewModel.AlertType.CHANGE_STATUS -> {
-                        AlertDialogComponent(
-                            title = stringResource(R.string.detalhesPagamento_status_alertTitle),
-                            message = stringResource(R.string.detalhesPagamento_status_alertMessage) +
-                                    when (estaPagoultimoHistorico) {
-                                        true -> stringResource(R.string.blocoEstaPago_status_naoPago)
-                                        else -> stringResource(R.string.blocoEstaPago_status_pago)
-                                    },
-                            onAffirmativeRequest = {
-                                detalhesPagamentoViewModel.onCickChangeStatus()
-                                detalhesPagamentoViewModel.onDoneShowAlertDialog()
-                            },
-                            onDismissRequest = { detalhesPagamentoViewModel.onDoneShowAlertDialog() },
-                        )
-                    }
+                }
 
-                    DetalhesPagamentoViewModel.AlertType.DELETE_PAYMENT -> {
-                        AlertDialogComponent(
-                            title = stringResource(R.string.detalhesPagamento_on_delete_payment_alertTitle),
-                            message = stringResource(R.string.detalhesPagamento_on_delete_payment_alertMessage),
-                            onAffirmativeRequest = {
-                                detalhesPagamentoViewModel.onClickDeletePayment()
-                                detalhesPagamentoViewModel.onDoneShowAlertDialog()
-                            },
-                            onDismissRequest = { detalhesPagamentoViewModel.onDoneShowAlertDialog() },
-                        )
-                    }
+                DetalhesPagamentoViewModel.AlertType.DELETE_PAYMENT -> {
+                    AlertDialogComponent(
+                        title = stringResource(R.string.detalhesPagamento_on_delete_payment_alertTitle),
+                        message = stringResource(R.string.detalhesPagamento_on_delete_payment_alertMessage),
+                        onAffirmativeRequest = {
+                            detalhesPagamentoViewModel.onClickDeletePayment()
+                            detalhesPagamentoViewModel.toggleDialog()
+                            onNavigateUp()
+                        },
+                        onDismissRequest = detalhesPagamentoViewModel::toggleDialog,
+                    )
+                }
 
-                    DetalhesPagamentoViewModel.AlertType.UPDATE_PAYMENT -> {
-                        AlertDialogComponent(
-                            title = stringResource(R.string.detalhesPagamento_update_historicos_alertTitle),
-                            message = stringResource(R.string.detalhesPagamento_update_historicos_alertMessage),
-                            affirmativeText = pluralStringResource(R.plurals.generic_Update, 1),
-                            onAffirmativeRequest = {
-                                detalhesPagamentoViewModel.onUpdateHistoricosDoPagamento()
-                                detalhesPagamentoViewModel.onDoneShowAlertDialog()
-                            },
-                            onDismissRequest = { detalhesPagamentoViewModel.onDoneShowAlertDialog() },
-                        )
-                    }
+                DetalhesPagamentoViewModel.AlertType.UPDATE_PAYMENT -> {
+                    AlertDialogComponent(
+                        title = stringResource(R.string.detalhesPagamento_update_historicos_alertTitle),
+                        message = stringResource(R.string.detalhesPagamento_update_historicos_alertMessage),
+                        affirmativeText = pluralStringResource(R.plurals.generic_Update, 1),
+                        onAffirmativeRequest = {
+                            detalhesPagamentoViewModel.onUpdateHistoricosDoPagamento()
+                            detalhesPagamentoViewModel.toggleDialog()
+                        },
+                        onDismissRequest = detalhesPagamentoViewModel::toggleDialog,
+                    )
+                }
 
-                    DetalhesPagamentoViewModel.AlertType.MODIFY_NO_FREQUENCY_PRICE -> {
-                        NoFrequencyPriceChangeAlertDialog(
-                            histories = detalhesPagamentoViewModel.historicosDoPagamento,
-                            people = detalhesPagamentoViewModel.pessoas.value!!,
-                            onAffirmativeRequest = { histories ->
-                                modifiedHistories = histories
-                                detalhesPagamentoViewModel.atualizarPreco(modifiedHistories)
-                                detalhesPagamentoViewModel.onDoneShowAlertDialog()
-                            },
-                            onDismissRequest = { detalhesPagamentoViewModel.onDoneShowAlertDialog() },
-                        )
-                    }
+                DetalhesPagamentoViewModel.AlertType.MODIFY_NO_FREQUENCY_PRICE -> {
+                    NoFrequencyPriceChangeAlertDialog(
+                        histories = paymentHistories,
+                        people = paymentPeople,
+                        onAffirmativeRequest = { histories ->
+                            detalhesPagamentoViewModel.updateNoFrequencyPrices(histories)
+                            detalhesPagamentoViewModel.toggleDialog()
+                        },
+                        onDismissRequest = detalhesPagamentoViewModel::toggleDialog,
+                    )
+                }
 
-                    DetalhesPagamentoViewModel.AlertType.MODIFY_OLD_HISTORY_PRICE -> {
-                        AlertDialogComponent(
-                            title = stringResource(R.string.detalhesPagamento_on_change_price_withFrequency_oldHistory_alertTitle),
-                            message = stringResource(
-                                R.string.detalhesPagamento_on_change_price_withFrequency_oldHistory_alertMessage,
-                                getFormattedStringDate(paymentsUIState.latestPaymentHistory!!.data)
-                            ),
-                            affirmativeText = pluralStringResource(
-                                R.plurals.generic_Update,
-                                detalhesPagamentoViewModel.historicosDoPagamento.size
-                            ),
-                            onAffirmativeRequest = {
-                                detalhesPagamentoViewModel.onClickSalvarEdicoes(
-                                    modifiablePayment,
-                                    modifiableHistory,
-                                    modifiedHistories,
-                                    updateLaterHistories = true
-                                )
-                                detalhesPagamentoViewModel.onDoneShowAlertDialog()
-                            },
-                            dismissText = stringResource(R.string.generic_Cancelar),
-                            onDismissRequest = { detalhesPagamentoViewModel.onDoneShowAlertDialog() },
-                            thirdActionText = stringResource(R.string.generic_button_OnlyThis),
-                            onThirdRequest = {
-                                detalhesPagamentoViewModel.onClickSalvarEdicoes(
-                                    modifiablePayment,
-                                    modifiableHistory,
-                                    modifiedHistories
-                                )
-                                detalhesPagamentoViewModel.onDoneShowAlertDialog()
-                            }
-                        )
-                    }
+                DetalhesPagamentoViewModel.AlertType.MODIFY_OLD_HISTORY_PRICE -> {
+                    AlertDialogComponent(
+                        title = stringResource(R.string.detalhesPagamento_on_change_price_withFrequency_oldHistory_alertTitle),
+                        message = stringResource(
+                            R.string.detalhesPagamento_on_change_price_withFrequency_oldHistory_alertMessage,
+                            getFormattedStringDate(paymentsUIState.latestPaymentHistory.data)
+                        ),
+                        affirmativeText = pluralStringResource(
+                            R.plurals.generic_Update,
+                            paymentHistories.size
+                        ),
+                        onAffirmativeRequest = {
+                            detalhesPagamentoViewModel.onClickSalvarEdicoes(
+                                pagamentoModificado = modifiablePayment,
+                                modifiedHistory = modifiableHistory,
+                                updateLaterHistories = true,
+                                isNoFrequencyPayment = detalhesPagamentoViewModel.isNoFrequencyPayment(frequenciesArray)
+                            )
+                            detalhesPagamentoViewModel.toggleDialog()
+                        },
+                        dismissText = stringResource(R.string.generic_Cancelar),
+                        onDismissRequest = detalhesPagamentoViewModel::toggleDialog,
+                        thirdActionText = stringResource(R.string.generic_button_OnlyThis),
+                        onThirdRequest = {
+                            detalhesPagamentoViewModel.onClickSalvarEdicoes(
+                                modifiablePayment,
+                                modifiableHistory,
+                                false,
+                                detalhesPagamentoViewModel.isNoFrequencyPayment(frequenciesArray)
+                            )
+                            detalhesPagamentoViewModel.toggleDialog()
+                        }
+                    )
+                }
 
-                    else -> {
-                        detalhesPagamentoViewModel.onDoneShowAlertDialog()
-                    }
+                else -> {
+                    detalhesPagamentoViewModel.toggleDialog()
                 }
             }
         }
     }
+
 }
 
 @Composable
@@ -250,6 +298,7 @@ fun DetalhesPagamentoScreenContent(
     pagamento: Pagamento,
     ultimoHistorico: HistoricoDePagamento,
     latestPerson: Pessoa,
+    paymentsHistories: List<HistoricoDePagamento>,
     viewModel: DetalhesPagamentoViewModel,
     editable: Boolean,
     onModifyPayment: (Pagamento?, HistoricoDePagamento?) -> Unit,
@@ -265,25 +314,28 @@ fun DetalhesPagamentoScreenContent(
             .verticalScroll(rememberScrollState()) // Allows scroll, recommended for few items! For more items use LazyColumn
             .padding(padding)
     ) {
-            EditablePaymentFields(
-                payment = pagamento,
-                history = ultimoHistorico,
-                price = viewModel.getPriceToShow(viewModel.historicosDoPagamento, isNoFrequencyPayment(pagamento.frequencia)), //TODO: change to real updated price
-                editable = editable,
-                onModifyPayment = onModifyPayment,
-                onClickNoFrequencyPrice = onClickNoFrequencyPrice,
-                modifier = modifier
-                    .fillMaxWidth(),
-            )
-            PaymentHistoryCard(
-                history = ultimoHistorico,
-                isPaid = ultimoHistorico.estaPago,
-                price = ultimoHistorico.preco, //TODO: change to real updated price
-                onUpdatePaymentStatus = onChangeStatus,
-                frequency = pagamento.frequencia,
-                personName = latestPerson.nome,
-                modifier = modifier
-            )
+        EditablePaymentFields(
+            payment = pagamento,
+            history = ultimoHistorico,
+            price = viewModel.getPriceToShow(
+                    paymentsHistories,
+                    isNoFrequencyPayment(pagamento.frequencia)
+            ),
+            editable = editable,
+            onModifyPayment = onModifyPayment,
+            onClickNoFrequencyPrice = onClickNoFrequencyPrice,
+            modifier = modifier
+                .fillMaxWidth(),
+        )
+        PaymentHistoryCard(
+            history = ultimoHistorico,
+            isPaid = ultimoHistorico.estaPago,
+            price = ultimoHistorico.preco,
+            onUpdatePaymentStatus = onChangeStatus,
+            frequency = pagamento.frequencia,
+            personName = latestPerson.nome,
+            modifier = modifier
+        )
         Button(
             onClick = onClickAllHistories,
             modifier = Modifier.padding(vertical = dimensionResource(R.dimen.margin_small)),
@@ -350,7 +402,7 @@ fun EditablePaymentFields(
             readOnly = isNoFrequencyPayment(payment.frequencia) || !editable, // se for pagamento sem frequencia OU não for editavel
             trailingIcon = {
                 if (isNoFrequencyPayment(payment.frequencia) && editable) Icon(
-                    painter = painterResource(R.drawable.edit_24),
+                    painter = painterResource(R.drawable.edit_24dp),
                     contentDescription = stringResource(R.string.menu_detalhes_fragment_editar)
                 )
             },
@@ -549,7 +601,6 @@ private fun EditablePaymentFieldsPreview() {
                 price = price,
                 editable,
                 onModifyPayment = { p, h ->
-
                 },
                 onClickNoFrequencyPrice = {},
                 Modifier
@@ -580,7 +631,7 @@ private fun PaymentHistoryCardPreview() {
         )
     }
     var isPaid by remember { mutableStateOf(false) }
-    var price = history.preco
+    val price = history.preco
     GerenciadorDePagamentosTheme {
         PaymentHistoryCard(
             history,

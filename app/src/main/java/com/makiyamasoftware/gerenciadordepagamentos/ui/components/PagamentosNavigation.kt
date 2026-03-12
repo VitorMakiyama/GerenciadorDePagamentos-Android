@@ -3,9 +3,9 @@ package com.makiyamasoftware.gerenciadordepagamentos.ui.components
 import android.os.Bundle
 import android.util.Log
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -66,76 +66,89 @@ internal val PersonParameterType = object : NavType<Pessoa>(
 }
 
 @Serializable
-object PaymentsListDestination
-@Serializable
-data class PaymentDetailsDestination(val payment: Pagamento, val history: HistoricoDePagamento, val person: Pessoa)
+object PaymentsListDestination : PaymentsDestination
 
 @Serializable
-enum class PaymentsDestination(
-    val route: String,
-    val label: String,
-    val contentDescription: String
-) {
+data class PaymentDetailsDestination(
+    val payment: Pagamento,
+    val history: HistoricoDePagamento,
+    val person: Pessoa
+) : PaymentsDestination
 
-    PAYMENTS_LIST("createPayment", "Create Payment", "List of Payments"),
-    CREATE_PAYMENT("createPayment", "Create Payment","Create Payment"),
-    PAYMENT_DETAILS("events", "Payment Details", "Events Manager"),
-
-}
+@Serializable
+sealed interface PaymentsDestination
 
 @Composable
 fun PaymentsNavHost(
     viewModel: PagamentosMainViewModel,
+    topAppBarViewModel: DynamicTopAppBarViewModel,
     navController: NavHostController,
-    startDestination: Any,
+    startDestination: PaymentsDestination,
     modifier: Modifier = Modifier
 ) {
     NavHost(
         navController,
-        startDestination = startDestination
+        startDestination = startDestination,
+        modifier = modifier
     ) {
-        composable<PaymentsListDestination> { PagamentosMainScreen(viewModel,
-            { payment: Pagamento, history: HistoricoDePagamento, person: Pessoa ->
-                Log.d("PagamentosMainPreview", "Navigated to Details of $payment, $history and $person")
-                navController.navigate(route = PaymentDetailsDestination(
-                payment = payment,
-                history = history,
-                person = person
-
-            )) },
-            { Log.d("PagamentosMainPreview", "Navigated on Create New Payment")} )
+        composable<PaymentsListDestination> {
+            PagamentosMainScreen(
+                viewModel,
+                topAppBarViewModel::setActions,
+                { payment: Pagamento, history: HistoricoDePagamento, person: Pessoa ->
+                    Log.d(
+                        "PagamentosMainPreview",
+                        "Navigated to Details of $payment, $history and $person"
+                    )
+                    navController.navigate(
+                        route = PaymentDetailsDestination(
+                            payment = payment,
+                            history = history,
+                            person = person
+                        )
+                    )
+                },
+                { Log.d("PagamentosMainPreview", "Navigated on Create New Payment") },
+                modifier = Modifier
+            )
         }
         composable<PaymentDetailsDestination>(
-            typeMap = mapOf(typeOf<Pagamento>() to PaymentParameterType, typeOf<HistoricoDePagamento>() to HistoryParameterType, typeOf<Pessoa>() to PersonParameterType)
+            typeMap = mapOf(
+                typeOf<Pagamento>() to PaymentParameterType,
+                typeOf<HistoricoDePagamento>() to HistoryParameterType,
+                typeOf<Pessoa>() to PersonParameterType
+            )
         ) { backStackEntry ->
             val details: PaymentDetailsDestination = backStackEntry.toRoute()
+
             DetalhesPagamentoScreen(
                 dataSource = viewModel.database,
                 selectedPayment = details.payment,
                 latestPaymentHistory = details.history,
-                latestPerson = details.person
-            ) }
+                latestPerson = details.person,
+                setTopAppBarActions = topAppBarViewModel::setActions,
+                onNavigateUp = navController::navigateUp
+            )
         }
-//        PaymentsDestination.entries.forEach { destination ->
-//            composable(destination.route) {
-//                when (destination) {
-//                    PaymentsDestination.PAYMENTS_LIST -> PagamentosMainScreen(navController = navController)
-//                    PaymentsDestination.CREATE_PAYMENT -> TODO()
-//                    PaymentsDestination.PAYMENT_DETAILS -> DetalhesPagamentoScreen(viewModel.database)
-//                }
-//            }
-//        }
     }
+}
 
 @Composable
-fun PagamentosNavigation(viewModel: PagamentosMainViewModel, modifier: Modifier = Modifier) {
+fun PagamentosNavigation(
+    paymentsViewModel: PagamentosMainViewModel,
+    modifier: Modifier = Modifier
+) {
     val navController = rememberNavController()
     val startDestination = PaymentsListDestination
+    val topAppBarViewModel: DynamicTopAppBarViewModel = viewModel()
 
-    Scaffold(
+    DynamicTopAppBar(
+        navController = navController,
+        viewModel = topAppBarViewModel
     ) { contentPadding ->
         PaymentsNavHost(
-            viewModel,
+            paymentsViewModel,
+            topAppBarViewModel,
             navController,
             startDestination,
             modifier = Modifier.padding(contentPadding)
