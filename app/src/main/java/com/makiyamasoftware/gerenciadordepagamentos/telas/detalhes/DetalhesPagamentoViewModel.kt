@@ -8,11 +8,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.makiyamasoftware.gerenciadordepagamentos.R
 import com.makiyamasoftware.gerenciadordepagamentos.atualizarNovosHistoricosDePagamento
+import com.makiyamasoftware.gerenciadordepagamentos.convertStringToCalendar
 import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabaseDao
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
 import com.makiyamasoftware.gerenciadordepagamentos.getPessoaCerta
+import com.makiyamasoftware.gerenciadordepagamentos.precisaDeNovoHistorico
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,9 +37,7 @@ data class PaymentDetailsUIState(
 
 // Using the Custom Provider/Factory, more info here: https://medium.com/@chetanshingare2991/passing-parameters-to-viewmodel-in-jetpack-compose-the-right-way-with-hilt-custom-factory-d0ad52e9d7de
 class DetalhesPagamentoViewModel(
-//	private val savedStateHandle: SavedStateHandle,
     private val dataSource: PagamentosDatabaseDao,
-//	private val app: Application,
     private val pagamentoSelecionado: Pagamento,
     private val latestPaymentHistory: HistoricoDePagamento,
     private val latestPerson: Pessoa
@@ -66,29 +66,18 @@ class DetalhesPagamentoViewModel(
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            _paymentHistories.update {
-                dataSource.getHistoricosDePagamento(pagamentoSelecionado.id)
-            }
-            _paymentPeople.update {
-                dataSource.getPessoasDoPagamento(pagamentoSelecionado.id)
-            }
-            Log.i(TAG, "Requisitou os historicos e as pessoas do DB")
-        }.invokeOnCompletion {
-//            updatePaymentsDetailsState(pagamentoSelecionado, getHistoricoRecenteNaoPago())
+            fetchPeopleAndPaymentHistoriesFromDB()
         }
     }
 
-    fun updatePaymentsDetailsState(
-        latestPayment: Pagamento,
-        latestPaymentHistory: HistoricoDePagamento
-    ) {
-        // Updates PaymentDetailsUIState with new data
-        _uiState.update { currentState ->
-            currentState.copy(
-                currentPayment = latestPayment,
-                latestPaymentHistory = latestPaymentHistory
-            )
+    fun fetchPeopleAndPaymentHistoriesFromDB() {
+        _paymentHistories.update {
+            dataSource.getHistoricosDePagamento(pagamentoSelecionado.id)
         }
+        _paymentPeople.update {
+            dataSource.getPessoasDoPagamento(pagamentoSelecionado.id)
+        }
+        Log.i(TAG, "Requisitou os historicos e as pessoas do DB")
     }
 
     fun toggleDialog() {
@@ -234,23 +223,24 @@ class DetalhesPagamentoViewModel(
     /**
      *  Funcao chamada quando, ao iniciar esse fragment, e' detectada a necessidade de
      *      atualizar os Historicos do Pagamento, pois o ultimo esta com uma data menor que
-     *      hoje - periodo
+     *      hoje - conforme o periodo/frequencia
      */
-    fun onUpdateHistoricosDoPagamento() {
+    fun onUpdateHistoricosDoPagamento(frequenciesArray: Array<String>) {
         val novosHistoricos = atualizarNovosHistoricosDePagamento(
-            getHistoricoRecenteNaoPago()!!,
+            getHistoricoRecenteNaoPago(),
             Calendar.getInstance(),
             pagamentoSelecionado,
-            Resources.getSystem().getStringArray(R.array.frequencias_pagamentos),
-            paymentPeople.value!!
+            frequenciesArray,
+            paymentPeople.value
         )
         Log.i(TAG, "$novosHistoricos")
 
         // Parte de interação com o DataBase
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             // Salva os novos historicos no DB
             salvarAtualizacoesHistorico(novosHistoricos)
             // Chama a função de puxar os historicos do DB, para atualizar os dados e a UI
+            fetchPeopleAndPaymentHistoriesFromDB()
         }
     }
 
@@ -260,11 +250,6 @@ class DetalhesPagamentoViewModel(
             for (historico in novosHistoricos) dataSource.inserirHistoricoDePagamento(historico)
         }
     }
-
-    // Logica de evento para começar a editar
-    private val _isEditable = MutableLiveData<Boolean>(false)
-    val isEditable: LiveData<Boolean>
-        get() = _isEditable
 
 
     // Funcao chamada ao clicar no salvarFAB
@@ -392,5 +377,29 @@ class DetalhesPagamentoViewModel(
         _paymentHistories.update {
             histories
         }
+    }
+
+    /**
+     * Verifica se o Pagamento esta com os Historicos desatualizados (o historico mais recente é o da data atual,
+     *  de acordo com a sua frequencia - e.g.: mensal, tem que ter a data do mes corrente). Se estiver, gera um
+     *  AlertDialogue perguntando para o usuario se ele quer atualiza-lo, gerando novos Historicos
+     */
+    fun verifyPagamentoIsUpToDate(frequenciesArray: Array<String>) {
+        // Verifica se e necessario atualizar e criar novos historicos de pagamento
+        if (precisaDeNovoHistorico(
+                uiState.value.currentPayment.frequencia,
+                convertStringToCalendar(paymentHistories.value.first().data), // O historico mais recente é o primeiro da List
+                Calendar.getInstance(),
+                frequenciesArray
+            )
+        ) {
+            onShowAlertDialog(AlertType.UPDATE_PAYMENT)
+            toggleDialog()
+        }
+    }
+
+    fun onUpdateAppTopBarTitle(setUpdateTopAppBarTitle: (Pagamento) -> Unit) {
+        // Atualizar o title do appTopBar dando set com currentPayment
+        setUpdateTopAppBarTitle(uiState.value.currentPayment)
     }
 }

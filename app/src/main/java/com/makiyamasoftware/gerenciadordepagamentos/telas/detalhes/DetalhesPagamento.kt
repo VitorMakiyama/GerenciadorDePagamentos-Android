@@ -1,10 +1,12 @@
 package com.makiyamasoftware.gerenciadordepagamentos.telas.detalhes
 
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -29,6 +31,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -39,6 +42,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
@@ -69,6 +73,7 @@ fun DetalhesPagamentoScreen(
     latestPaymentHistory: HistoricoDePagamento,
     latestPerson: Pessoa,
     setTopAppBarActions: (actions: @Composable (RowScope.() -> Unit)) -> Unit,
+    setTopAppBarPayment: (payment: Pagamento) -> Unit,
     onNavigateUp: () -> Unit
 ) {
     val factory = remember {
@@ -91,8 +96,10 @@ fun DetalhesPagamentoScreen(
     val detalhesPagamentoAlertType by detalhesPagamentoViewModel.alertType.observeAsState()
 
     val frequenciesArray = stringArrayResource(R.array.frequencias_pagamentos)
+    var originalPrice = paymentsUIState.latestPaymentHistory.preco // Guarda o valor original do preco para saber quando houve alteracao do nele (apenas para Pagamento com frequencia)
 
     LaunchedEffect(detalhesPagamentoViewModel) {
+        detalhesPagamentoViewModel.verifyPagamentoIsUpToDate(frequenciesArray)
         setTopAppBarActions {
             if (!paymentsUIState.isEditMode) {
                 IconButton(onClick = {
@@ -129,7 +136,10 @@ fun DetalhesPagamentoScreen(
             if (paymentsUIState.isEditMode) {
                 FloatingActionButton(
                     onClick = {
-                        if (!detalhesPagamentoViewModel.isNoFrequencyPayment(frequenciesArray) && !detalhesPagamentoViewModel.isMostRecentHistory(paymentsUIState.latestPaymentHistory)) {
+                        if (!detalhesPagamentoViewModel.isNoFrequencyPayment(frequenciesArray)
+                            && !detalhesPagamentoViewModel.isMostRecentHistory(paymentsUIState.latestPaymentHistory)
+                            && originalPrice != paymentsUIState.latestPaymentHistory.preco // Verifica se o preco mudou
+                        ) {
                             // Se o pagamento tiver alguma frequencia (not isNoFrequency) e o historico não for o mais recente do pagamento
                             // serve para atualizar todos os historicos criados apos este, ja que se o preco de um historico passado foi alterado, e possivel que os novos historicos precisem atualizar seus precos tambem
                             detalhesPagamentoViewModel.onShowAlertDialog(
@@ -140,10 +150,13 @@ fun DetalhesPagamentoScreen(
                             detalhesPagamentoViewModel.onClickSalvarEdicoes(
                                 modifiablePayment,
                                 modifiableHistory,
-                                true,
-                                isNoFrequencyPayment = detalhesPagamentoViewModel.isNoFrequencyPayment(frequenciesArray)
+                                false,
+                                isNoFrequencyPayment = detalhesPagamentoViewModel.isNoFrequencyPayment(
+                                    frequenciesArray
+                                )
                             )
                         }
+                        detalhesPagamentoViewModel.onUpdateAppTopBarTitle(setUpdateTopAppBarTitle = setTopAppBarPayment)
                     },
                 ) {
                     Icon(
@@ -230,7 +243,7 @@ fun DetalhesPagamentoScreen(
                         message = stringResource(R.string.detalhesPagamento_update_historicos_alertMessage),
                         affirmativeText = pluralStringResource(R.plurals.generic_Update, 1),
                         onAffirmativeRequest = {
-                            detalhesPagamentoViewModel.onUpdateHistoricosDoPagamento()
+                            detalhesPagamentoViewModel.onUpdateHistoricosDoPagamento(frequenciesArray)
                             detalhesPagamentoViewModel.toggleDialog()
                         },
                         onDismissRequest = detalhesPagamentoViewModel::toggleDialog,
@@ -265,7 +278,9 @@ fun DetalhesPagamentoScreen(
                                 pagamentoModificado = modifiablePayment,
                                 modifiedHistory = modifiableHistory,
                                 updateLaterHistories = true,
-                                isNoFrequencyPayment = detalhesPagamentoViewModel.isNoFrequencyPayment(frequenciesArray)
+                                isNoFrequencyPayment = detalhesPagamentoViewModel.isNoFrequencyPayment(
+                                    frequenciesArray
+                                )
                             )
                             detalhesPagamentoViewModel.toggleDialog()
                         },
@@ -318,8 +333,8 @@ fun DetalhesPagamentoScreenContent(
             payment = pagamento,
             history = ultimoHistorico,
             price = viewModel.getPriceToShow(
-                    paymentsHistories,
-                    isNoFrequencyPayment(pagamento.frequencia)
+                paymentsHistories,
+                isNoFrequencyPayment(pagamento.frequencia)
             ),
             editable = editable,
             onModifyPayment = onModifyPayment,
@@ -369,6 +384,7 @@ fun EditablePaymentFields(
                 payment.titulo = it
                 onModifyPayment(payment, null)
             },
+            enabled = editable,
             readOnly = !editable,
             modifier = modifier,
         )
@@ -376,6 +392,7 @@ fun EditablePaymentFields(
             value = getFormattedStringDate(payment.dataDeInicio),
             label = { Text(stringResource(R.string.detalhesPagamento_descricao_data)) },
             onValueChange = { },
+            enabled = false,
             readOnly = true,
             modifier = modifier
         )
@@ -383,34 +400,44 @@ fun EditablePaymentFields(
             value = payment.frequencia,
             label = { Text(stringResource(R.string.detalhesPagamento_descricao_frequencia)) },
             onValueChange = { },
+            enabled = false,
             readOnly = true,
             modifier = modifier,
         )
-        OutlinedTextField(
-            value = if (isNoFrequencyPayment(payment.frequencia)) formatReadablePrice(price) else formatReadablePrice(
-                editablePrice
-            ),
-            label = { Text(stringResource(R.string.detalhesPagamento_descricao_preco)) },
-            onValueChange = {
-                parseStringToDouble(it)?.let { convertedPrice ->
-                    editablePrice = convertedPrice
-                    history.preco = convertedPrice
-                    onModifyPayment(null, history)
-                }
-            },
-            enabled = !isNoFrequencyPayment(payment.frequencia), // disabled quando for pagamento sem frequencia
-            readOnly = isNoFrequencyPayment(payment.frequencia) || !editable, // se for pagamento sem frequencia OU não for editavel
-            trailingIcon = {
-                if (isNoFrequencyPayment(payment.frequencia) && editable) Icon(
-                    painter = painterResource(R.drawable.edit_24dp),
-                    contentDescription = stringResource(R.string.menu_detalhes_fragment_editar)
+        Box { // somente para encapsular o OutlinedTextFiled (por ele n aceitar content) e a Box para gerenciar o click para editar o preco em Pagamento sem frequencia
+            OutlinedTextField(
+                value = if (isNoFrequencyPayment(payment.frequencia)) formatReadablePrice(price) else formatReadablePrice(
+                    editablePrice
+                ),
+                label = { Text(stringResource(R.string.detalhesPagamento_descricao_preco)) },
+                onValueChange = {
+                    parseStringToDouble(it)?.let { convertedPrice ->
+                        editablePrice = convertedPrice
+                        history.preco = convertedPrice
+                        onModifyPayment(null, history)
+                    }
+                },
+                enabled = editable,
+                readOnly = isNoFrequencyPayment(payment.frequencia) || !editable, // se for pagamento sem frequencia OU não for editavel
+                trailingIcon = {
+                    if (isNoFrequencyPayment(payment.frequencia) && editable) Icon(
+                        painter = painterResource(R.drawable.edit_24dp),
+                        contentDescription = stringResource(R.string.menu_detalhes_fragment_editar)
+                    )
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = modifier
+            )
+            // Box para gerenciar o Click, quando for um Pagamento sem frequencia E for editavel de forma mais confiavel que usando modifier.clickable
+            if (isNoFrequencyPayment(payment.frequencia) && editable) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .alpha(0f)
+                        .clickable(onClick = { onClickNoFrequencyPrice() })
                 )
-            },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = if (isNoFrequencyPayment(payment.frequencia) && editable) modifier.clickable {
-                onClickNoFrequencyPrice()
-            } else modifier,
-        )
+            }
+        }
         LabeledSwitchField(
             title = stringResource(R.string.detalhesPagamento_descricao_manter_atualizado),
             checked = autoUpdatePayment,
@@ -451,6 +478,7 @@ fun LabeledSwitchField(
         OutlinedTextField(
             value = title,
             onValueChange = { },
+            enabled = false,
             readOnly = true,
         )
         Switch(

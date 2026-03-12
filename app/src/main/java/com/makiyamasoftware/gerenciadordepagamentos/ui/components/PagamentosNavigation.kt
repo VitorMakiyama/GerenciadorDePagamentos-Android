@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -120,6 +121,7 @@ fun PaymentsNavHost(
             )
         ) { backStackEntry ->
             val details: PaymentDetailsDestination = backStackEntry.toRoute()
+            topAppBarViewModel.setPayment(details.payment)
 
             DetalhesPagamentoScreen(
                 dataSource = viewModel.database,
@@ -127,7 +129,10 @@ fun PaymentsNavHost(
                 latestPaymentHistory = details.history,
                 latestPerson = details.person,
                 setTopAppBarActions = topAppBarViewModel::setActions,
-                onNavigateUp = navController::navigateUp
+                setTopAppBarPayment = topAppBarViewModel::setPayment,
+                onNavigateUp = {
+                    navController.navigateUp()
+                }
             )
         }
     }

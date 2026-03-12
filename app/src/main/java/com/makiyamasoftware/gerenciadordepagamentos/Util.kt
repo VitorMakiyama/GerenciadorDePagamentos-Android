@@ -73,8 +73,8 @@ fun getPessoaCerta(pessoas: List<Pessoa>?, iD: Long): Pessoa {
 fun atualizarNovosHistoricosDePagamento(
 	ultimoHistorico: HistoricoDePagamento,
 	hoje: Calendar,
-	pag: Pagamento,
-	freqs: Array<String>,
+	pagamento: Pagamento,
+	arrayFrequecias: Array<String>,
 	pessoas: List<Pessoa>
 ): List<HistoricoDePagamento> {
 	val ultimaDataHist = convertStringToCalendar(ultimoHistorico.data)
@@ -89,9 +89,9 @@ fun atualizarNovosHistoricosDePagamento(
 	// variavel que guarda o ID do ultimo pagador
 	var ultimoPagadorId: Long = ultimoHistorico.pagadorId
 
-	when (pag.frequencia) {
+	when (pagamento.frequencia) {
 		// Diário
-		freqs[1] -> {
+		arrayFrequecias[1] -> {
 			if (anos > 0) {
 				// Logica para acrescentar um dia no caso do ano bissexto (ocorre quando o ano é divisivel por 4)
 				for (i in 0..anos) {
@@ -107,7 +107,7 @@ fun atualizarNovosHistoricosDePagamento(
 				ultimaDataHist.add(Calendar.DAY_OF_YEAR, 1)
 				val h = HistoricoDePagamento(
 					data = convertCalendarToString(ultimaDataHist),
-					pagamentoId = pag.id,
+					pagamentoId = pagamento.id,
 					pagadorId = getProximaPessoa(ultimoPagadorId, pessoas).id,
 					preco = ultimoHistorico.preco
 				)
@@ -117,7 +117,7 @@ fun atualizarNovosHistoricosDePagamento(
 			return novosHistoricos
 		}
 		// Mensal
-		freqs[2] -> {
+		arrayFrequecias[2] -> {
 			if (anos > 0) {
 				// adiciona o numero de anos faltantes (em meses)
 				meses += anos * 12
@@ -126,7 +126,7 @@ fun atualizarNovosHistoricosDePagamento(
 			for (n in 1..meses) {
 				ultimaDataHist.add(Calendar.MONTH, 1)
 				val h = HistoricoDePagamento(
-					data = convertCalendarToString(ultimaDataHist), pagamentoId = pag.id,
+					data = convertCalendarToString(ultimaDataHist), pagamentoId = pagamento.id,
 					pagadorId = getProximaPessoa(ultimoPagadorId, pessoas).id,
 					preco = ultimoHistorico.preco
 				)
@@ -136,7 +136,7 @@ fun atualizarNovosHistoricosDePagamento(
 			return novosHistoricos
 		}
 		// Semestral
-		freqs[3] -> {
+		arrayFrequecias[3] -> {
 			// converte os meses em semestres
 			meses /= 6
 			if (anos > 0) {
@@ -147,7 +147,7 @@ fun atualizarNovosHistoricosDePagamento(
 			for (n in 1..meses) {
 				ultimaDataHist.add(Calendar.MONTH, 6)
 				val h = HistoricoDePagamento(
-					data = convertCalendarToString(ultimaDataHist), pagamentoId = pag.id,
+					data = convertCalendarToString(ultimaDataHist), pagamentoId = pagamento.id,
 					pagadorId = getProximaPessoa(ultimoPagadorId, pessoas).id,
 					preco = ultimoHistorico.preco
 				)
@@ -157,12 +157,12 @@ fun atualizarNovosHistoricosDePagamento(
 			return novosHistoricos
 		}
 		// Anual
-		freqs[4] -> {
+		arrayFrequecias[4] -> {
 			// cria os historicos
 			for (n in 1..anos) {
 				ultimaDataHist.add(Calendar.YEAR, 1)
 				val h = HistoricoDePagamento(
-					data = convertCalendarToString(ultimaDataHist), pagamentoId = pag.id,
+					data = convertCalendarToString(ultimaDataHist), pagamentoId = pagamento.id,
 					pagadorId = getProximaPessoa(ultimoPagadorId, pessoas).id,
 					preco = ultimoHistorico.preco
 				)

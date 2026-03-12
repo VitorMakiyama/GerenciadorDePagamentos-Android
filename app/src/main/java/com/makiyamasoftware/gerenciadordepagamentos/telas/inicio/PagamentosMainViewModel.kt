@@ -27,10 +27,10 @@ open class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val appl
     private val _uiState = MutableStateFlow(MainPaymentsUIState())
     val uiState: StateFlow<MainPaymentsUIState> = _uiState.asStateFlow()
 
-    fun updateMainPaymentsState() {
+    fun updateMainPaymentsUIState() {
         _uiState.update { currentState ->
             currentState.copy(
-                paymentsList = pagamentos.value,
+                paymentsList = payments.value,
                 paymentsHistories = latestHistories.value,
                 paymentsPeople = latestPeople.value
             )
@@ -65,7 +65,7 @@ open class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val appl
 
     // Lista de Pagamentos, deve ser atualizada conforme o DB
     private val _payments = MutableStateFlow<List<Pagamento>>(listOf())
-    val pagamentos: StateFlow<List<Pagamento>> = _payments
+    val payments: StateFlow<List<Pagamento>> = _payments
 
     // StateFlow that encapsulates the List of latest histories of the payments (historicos atuais)
     private val _latestHistories = MutableStateFlow<List<HistoricoDePagamento>>(listOf())
@@ -87,20 +87,22 @@ open class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val appl
         }
     }
 
-    // Suspend function to get all people from database
-    suspend fun getAllPessoas(): List<Pessoa> {
-        return withContext(Dispatchers.IO) {
-            database.getAllPessoas()
-        }
-    }
-
     /** Provisoria: para zerar o DB
      * **/
     fun onClearAll() {
         uiScope.launch {
             zerarODB()
         }
+        onUpdateUIStateAfterClearAll()
     }
+
+    private fun onUpdateUIStateAfterClearAll() {
+        _payments.value = emptyList()
+        _latestHistories.value = emptyList()
+        _latestPeople.value = emptyList()
+        updateMainPaymentsUIState()
+    }
+
     private suspend fun zerarODB() {
         withContext(Dispatchers.IO) {
             database.clearHistoricoDePagamentos()
@@ -145,7 +147,7 @@ open class PagamentosMainViewModel(val database: PagamentosDatabaseDao, val appl
     }
     fun doneNavigating() {
         _navigateToCriarPagamento.value = false
-        Log.i("Test","${pagamentos.value.isNullOrEmpty()}")
+        Log.i("Test","${payments.value.isNullOrEmpty()}")
     }
 
 }

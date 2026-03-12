@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,11 +31,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -45,7 +46,6 @@ import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
 import com.makiyamasoftware.gerenciadordepagamentos.pagamentosMainViewModelFake
 import com.makiyamasoftware.gerenciadordepagamentos.ui.components.AlertDialogComponent
-import com.makiyamasoftware.gerenciadordepagamentos.ui.components.DynamicTopAppBarViewModel
 import com.makiyamasoftware.gerenciadordepagamentos.ui.theme.GerenciadorDePagamentosTheme
 
 private const val DEBUG_TAG = "PagamentosMainScreen"
@@ -62,11 +62,11 @@ fun PagamentosMainScreen(
     Log.d(DEBUG_TAG, "mainPaymentsUIState: ${mainPaymentsUIState.paymentsList}")
 
     LaunchedEffect(
-        viewModel.pagamentos,
+        viewModel.payments,
         viewModel.latestHistories,
         viewModel.latestPeople
     ) {
-        viewModel.updateMainPaymentsState()
+        viewModel.updateMainPaymentsUIState()
     }
 
     LaunchedEffect(viewModel) {
@@ -127,27 +127,43 @@ fun PagamentosMainContent(
     onNavigateToDetails: (Pagamento, HistoricoDePagamento, Pessoa) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(modifier.fillMaxSize().padding(horizontal = dimensionResource(R.dimen.margin_normal)), verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.margin_normal))) {
-        items(items = paymentsList) { payment ->
-            val history = viewModel.getHistoricoCerto(payment.id)
-            val person = viewModel.getPessoaCerta(history?.pagadorId ?: 0L)
-                    PaymentCard(
-                        payment = payment,
-                        history = history?: HistoricoDePagamento(
-                            data = "2026-03-07",
-                            preco = -1.0,
-                            pagadorId = 0L,
-                            pagamentoId = payment.id
-                        ),
-                        onClick = onNavigateToDetails,
-                        person = person?: Pessoa(
-                            nome = "NULL",
-                            ordem = 0,
-                            pagamentoId = payment.id
-                        ),
-                    )
-                }
+    if (paymentsList.isEmpty()) {
+        // Centered Text com o Texto provisorio quando nao tem nenhum Pagamento
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center, // Centers children vertically
+            horizontalAlignment = Alignment.CenterHorizontally // Centers children horizontally
+        ) {
+            Text(text = stringResource(R.string.fragment_pagamentos_main_provisorio))
+        }
+    } else {
+        LazyColumn(
+            modifier
+                .fillMaxSize()
+                .padding(horizontal = dimensionResource(R.dimen.margin_normal)),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.margin_normal))
+        ) {
+            items(items = paymentsList) { payment ->
+                val history = viewModel.getHistoricoCerto(payment.id)
+                val person = viewModel.getPessoaCerta(history?.pagadorId ?: 0L)
+                PaymentCard(
+                    payment = payment,
+                    history = history ?: HistoricoDePagamento(
+                        data = "2026-03-07",
+                        preco = -1.0,
+                        pagadorId = 0L,
+                        pagamentoId = payment.id
+                    ),
+                    onClick = onNavigateToDetails,
+                    person = person ?: Pessoa(
+                        nome = "NULL",
+                        ordem = 0,
+                        pagamentoId = payment.id
+                    ),
+                )
             }
+        }
+    }
 }
 
 @Composable
