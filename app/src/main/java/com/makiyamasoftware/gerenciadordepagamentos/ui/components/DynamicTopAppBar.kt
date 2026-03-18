@@ -2,6 +2,7 @@ package com.makiyamasoftware.gerenciadordepagamentos.ui.components
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -16,6 +17,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -61,9 +63,9 @@ fun DynamicTopAppBar(
                 ),
                 title = {
                     Text(
-                        if (currentDestination?.hasRoute(PaymentsListDestination::class) == true) {
+                        if (currentDestination?.hasRoute(MainPaymentsList::class) == true) {
                             stringResource(R.string.topAppBar_Main_title)
-                        } else if (currentDestination?.hasRoute(PaymentDetailsDestination::class) == true) {
+                        } else if (currentDestination?.hasRoute(PaymentDetails::class) == true) {
                             selectedPayment.titulo
                         } else { "" },
                         maxLines = 1,
@@ -71,7 +73,7 @@ fun DynamicTopAppBar(
                     )
                 },
                 navigationIcon = {
-                    if (currentDestination?.hasRoute(PaymentsListDestination::class) == false)
+                    if (currentDestination?.hasRoute(MainPaymentsList::class) == false)
                         IconButton(onClick = { navController.navigateUp() }) {
                             Icon(
                                 painter = painterResource(R.drawable.arrow_back_24dp),
@@ -80,8 +82,12 @@ fun DynamicTopAppBar(
                         }
                 },
                 actions = actions,
+                modifier = Modifier,
+                windowInsets = WindowInsets(
+                    top = dimensionResource(R.dimen.size_zero_dp),
+                    bottom = dimensionResource(R.dimen.size_zero_dp)
+                ),
                 scrollBehavior = scrollBehavior,
-                modifier = modifier
             )
         },
     ) { innerPadding ->

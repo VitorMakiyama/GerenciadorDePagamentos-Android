@@ -10,4 +10,5 @@
 
     <dimen name="cardView6dp">6dp</dimen>
     <dimen name="cardViewHeight">200dp</dimen>
+    <dimen name="size_zero_dp">0dp</dimen>
 </resources>

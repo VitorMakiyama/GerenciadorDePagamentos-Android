@@ -169,12 +169,11 @@ class DetalhesPagamentoViewModel(
     }
 
     /** Essa funcao atualiza as váriaveis da UIState, que estao sendo observadas como estados no layout Compose..
-     * Assim essa funcao tbm deve ser chamada por ambos os observers, assim o ultimo a receber os dados os atualiza.
      **/
     fun updateLatestHistory() {
         if (paymentPeople.value.isNotEmpty() && paymentHistories.value.isNotEmpty()) {
             val newLatestHistory = getHistoricoRecenteNaoPago()
-            val newLatestPerson = getPessoaCerta(paymentPeople.value, newLatestHistory.id)
+            val newLatestPerson = getPessoaCerta(paymentPeople.value, newLatestHistory.pagadorId)
             _uiState.update { currentState ->
                 currentState.copy(
                     latestPaymentHistory = newLatestHistory,
@@ -366,7 +365,7 @@ class DetalhesPagamentoViewModel(
             histories.indexOfFirst { h -> h.id == uh.id }.let { index ->
                 histories[index] = uh
             }
-            if (isMostRecentHistory(uh)) {
+            if (getHistoricoRecenteNaoPago().id == uh.id) { // Validar se o historico atualizado e o mais recente NAO PAGO
                 _uiState.update { currentState ->
                     currentState.copy(
                         latestPaymentHistory = uh
@@ -381,7 +380,7 @@ class DetalhesPagamentoViewModel(
 
     /**
      * Verifica se o Pagamento esta com os Historicos desatualizados (o historico mais recente é o da data atual,
-     *  de acordo com a sua frequencia - e.g.: mensal, tem que ter a data do mes corrente). Se estiver, gera um
+     *  conforme a sua frequencia - e.g.: mensal, tem que ter a data do mes corrente). Se estiver, gera um
      *  AlertDialogue perguntando para o usuario se ele quer atualiza-lo, gerando novos Historicos
      */
     fun verifyPagamentoIsUpToDate(frequenciesArray: Array<String>) {
