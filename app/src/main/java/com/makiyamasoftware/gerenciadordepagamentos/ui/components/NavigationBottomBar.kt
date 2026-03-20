@@ -19,6 +19,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.makiyamasoftware.gerenciadordepagamentos.R
+import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.home.EventsHomeScreen
 import com.makiyamasoftware.gerenciadordepagamentos.telas.inicio.PagamentosMainViewModel
 import kotlinx.serialization.Serializable
 
@@ -62,16 +63,9 @@ fun AppNavHost(
 
         // Events Manager
         composable<Events> {
+            EventsHomeScreen()
             Log.d("NavigationBottomBar", "Navigated to Events Manager")
         }
-//        BottomBarDestination.entries.forEach { destination ->
-//            composable(destination.route) {
-//                when (destination) {
-//                    BottomBarDestination.PAYMENTS -> TODO()
-//                    BottomBarDestination.EVENTS -> TODO()
-//                }
-//            }
-//        }
     }
 }
 

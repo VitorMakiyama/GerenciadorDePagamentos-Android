@@ -85,6 +85,7 @@ fun NavGraphBuilder.paymentsListDestination(
     topAppBarViewModel: DynamicTopAppBarViewModel,
     // Navigation events are exposed to the caller to be handled at a higher level
     onNavigateToPaymentDetails: (payment: Pagamento, history: HistoricoDePagamento, person: Pessoa) -> Unit,
+    modifier: Modifier
 ) {
     composable<MainPaymentsList> {
         PagamentosMainScreen(
@@ -92,7 +93,7 @@ fun NavGraphBuilder.paymentsListDestination(
             topAppBarViewModel::setActions,
             onNavigateToPaymentDetails,
             { Log.d("PagamentosMainPreview", "Navigated on Create New Payment") },
-            modifier = Modifier
+            modifier = modifier
         )
     }
 }
@@ -160,7 +161,9 @@ fun PaymentsNavHost(
             topAppBarViewModel = topAppBarViewModel,
             onNavigateToPaymentDetails = { payment, history, person ->
                 navController.navigateToPaymentDetails(payment, history, person)
-            })
+            },
+            modifier
+        )
 
         // Route to DetalhesPagamento
         detalhesPagamentoDestination(

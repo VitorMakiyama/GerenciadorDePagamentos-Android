@@ -90,6 +90,6 @@ class HistoricosPagamentoFragment : Fragment() {
         builder.setNegativeButton(R.string.generic_Nao) { _, _ ->}
         builder.show()
 
-        Log.i(TAG, "HISTORICOS ${viewModel.historicos}\nType: ${type}\nClicado: ${viewModel.getHistoricoClicado()}")
+        Log.i("HistoricosPagamentoFragment", "HISTORICOS ${viewModel.historicos}\nType: ${type}\nClicado: ${viewModel.getHistoricoClicado()}")
     }
 }

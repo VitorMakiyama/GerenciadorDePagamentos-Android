@@ -5,6 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import com.makiyamasoftware.gerenciadordepagamentos.R
 
@@ -14,12 +15,11 @@ fun GerenciadorDePagamentosTheme(
 	content: @Composable () -> Unit
 ) {
 	val customDarkColorScheme = darkColorScheme(
-		primaryContainer = colorResource(R.color.colorAccent),
-		secondaryContainer = colorResource(R.color.colorNaoPagoBackground)
+		tertiaryContainer = colorResource(R.color.colorAccent),
+		onTertiaryContainer = Color.Black
 	)
 	val customLightColorScheme = lightColorScheme(
-		primaryContainer = colorResource(R.color.colorAccent),
-		secondaryContainer = colorResource(R.color.colorNaoPagoBackground)
+		tertiaryContainer = colorResource(R.color.colorAccent),
 	)
 
 	MaterialTheme(

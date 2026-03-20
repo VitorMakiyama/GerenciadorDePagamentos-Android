@@ -13,6 +13,7 @@
     </plurals>
     <string name="generic_Pronto">Pronto</string>
     <string name="generic_Cancelar">Cancelar</string>
+    <string name="generic_no_connection">Sem conexão</string>
 
     <!-- Strings usadas no Inicio - PagamentosMain. -->
     <string name="fragment_pagamentos_main_provisorio">Seus futuros pagamentos serão\nlistados aqui! \o/</string>
@@ -87,5 +88,12 @@
         <item>Sem frequência</item>
     </string-array>
 
+    <!--    Strings usadas no EventHomeScreen-->
+    <string name="EventHomeScreen_eventID_label">ID do Evento</string>
+    <string name="EventHomeScreen_occurrencesNumber_label">Número de Ocorrências</string>
+    <string name="EventHomeScreen_submit_Button_label">Enviar</string>
+    <string name="EventHomeScreen_retry_Button_label">Reconectar</string>
+    <string name="EventHomeScreen_instructions_label">Insira ID do evento desejado, selecione data e hora, número de ocorrências e aperte o botão Enviar!</string>
+    <string name="EventHomeScreen_instructions_Error_label">Sem internet, tente reconectar!</string>
 
 </resources>

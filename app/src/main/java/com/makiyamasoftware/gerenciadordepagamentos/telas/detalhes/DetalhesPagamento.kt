@@ -1,7 +1,6 @@
 package com.makiyamasoftware.gerenciadordepagamentos.telas.detalhes
 
 import android.util.Log
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
@@ -25,13 +24,13 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -526,12 +525,17 @@ fun PaymentHistoryCardContent(
     frequency: String,
     personName: String,
 ) {
-    val animatedColor by animateColorAsState(
-        if (isPaid) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer,
+    val animatedBackgroundColor by animateColorAsState(
+        if (isPaid) colorScheme.tertiaryContainer else colorScheme.error,
         label = "statusColor",
         animationSpec = tween(
             durationMillis = 600
         )
+    )
+    val animatedTextColor by animateColorAsState(
+        targetValue = if (history.estaPago) colorScheme.onTertiaryContainer else colorScheme.onError,
+        label = "statusTextColor",
+        animationSpec = tween(durationMillis = 600)
     )
     Row(
         modifier = Modifier
@@ -539,7 +543,7 @@ fun PaymentHistoryCardContent(
             .height(100.dp), horizontalArrangement = Arrangement.Center
     ) {
         Surface(
-            color = animatedColor,//if (isPaid) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary,
+            color = animatedBackgroundColor,//if (isPaid) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary,
             //shape = CardDefaults.shape,
             modifier = Modifier
                 .weight(0.5f)
@@ -557,12 +561,14 @@ fun PaymentHistoryCardContent(
                         stringArrayResource(R.array.frequencias_pagamentos),
                         frequency
                     ),
-                    Modifier.padding(bottom = dimensionResource(R.dimen.margin_normal))
+                    Modifier.padding(bottom = dimensionResource(R.dimen.margin_normal)),
+                    color = animatedTextColor
                 )
                 Text(
                     text = if (isPaid) stringResource(R.string.blocoEstaPago_status_pago) else stringResource(
                         R.string.blocoEstaPago_status_naoPago
-                    )
+                    ),
+                    color = animatedTextColor
                 )
             }
         }

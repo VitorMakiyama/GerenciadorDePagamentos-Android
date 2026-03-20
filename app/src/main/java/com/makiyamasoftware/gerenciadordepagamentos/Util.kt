@@ -26,7 +26,7 @@ import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
-const val TAG = "UtilFunctions"
+private const val TAG = "UtilFunctions"
 
 @SuppressLint("SimpleDateFormat")
 fun convertCalendarToString(calendar: Calendar): String {

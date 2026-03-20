@@ -24,7 +24,7 @@ class FakePagamentosDao: PagamentosDatabaseDao {
         TODO("Not yet implemented")
     }
 
-    override fun getAllPagamentos(): LiveData<List<Pagamento>> {
+    override fun getAllPagamentos(): List<Pagamento> {
         TODO("Not yet implemented")
     }
 
@@ -60,10 +60,12 @@ class FakePagamentosDao: PagamentosDatabaseDao {
         TODO("Not yet implemented")
     }
 
-    override fun getPessoasDoPagamento(pagamentoID: Long): LiveData<List<Pessoa>> {
-        val _data = MutableLiveData(pessoasData.values.toList())
-        val data: LiveData<List<Pessoa>> = _data
-        return data
+    override fun getPessoasDoPagamento(pagamentoID: Long): List<Pessoa> {
+        return pessoasData.values.toList()
+    }
+
+    override fun getPessoasDoPagamentoLD(pagamentoID: Long): LiveData<List<Pessoa>> {
+        TODO("Not yet implemented")
     }
 
     override fun getAllPessoas(): List<Pessoa> {
@@ -92,17 +94,19 @@ class FakePagamentosDao: PagamentosDatabaseDao {
         historicosData[historicoDePagamento.id] = historicoDePagamento
     }
 
-    override fun getHistoricosDePagamento(pagamentoID: Long): LiveData<List<HistoricoDePagamento>> {
-        val _data = MutableLiveData(historicosData.values.toList().reversed())
-        val data: LiveData<List<HistoricoDePagamento>> = _data
-        return data
+    override fun getHistoricosDePagamento(pagamentoID: Long): List<HistoricoDePagamento> {
+        return historicosData.values.toList().reversed()
+    }
+
+    override fun getHistoricosDePagamentoLD(pagamentoID: Long): LiveData<List<HistoricoDePagamento>> {
+        TODO("Not yet implemented")
     }
 
     override fun getUltimoHistoricoDePagamento(pagamentoID: Long): LiveData<HistoricoDePagamento> {
         TODO("Not yet implemented")
     }
 
-    override fun getListaInicialHistoricoDePagamento(): LiveData<List<HistoricoDePagamento>> {
+    override fun getListaInicialHistoricoDePagamento(): List<HistoricoDePagamento> {
         TODO("Not yet implemented")
     }
 

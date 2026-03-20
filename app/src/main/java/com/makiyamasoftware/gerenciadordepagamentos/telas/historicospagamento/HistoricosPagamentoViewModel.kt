@@ -14,7 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-const val TAG = "HistoricosPagamentoViewModel"
+private const val TAG = "HistoricosPagamentoViewModel"
 
 class HistoricosPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
                                    val app: Application,

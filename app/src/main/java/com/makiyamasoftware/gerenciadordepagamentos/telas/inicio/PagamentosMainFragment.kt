@@ -13,16 +13,14 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.makiyamasoftware.gerenciadordepagamentos.R
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabase
 import com.makiyamasoftware.gerenciadordepagamentos.databinding.FragmentPagamentosMainBinding
 import com.makiyamasoftware.gerenciadordepagamentos.ui.components.NavigationBottomBar
-import com.makiyamasoftware.gerenciadordepagamentos.ui.components.PagamentosNavigation
 import com.makiyamasoftware.gerenciadordepagamentos.ui.theme.GerenciadorDePagamentosTheme
 
-const val TAG = "PagamentosMainFragment"
+private const val TAG = "PagamentosMainFragment"
 /**
  * O fragment inical, mostrará todos os pagamentos, na forma de CardViews, o
  * floating button serve para adicionar novos pagamentos

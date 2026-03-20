@@ -20,7 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Calendar
 
-const val TAG = "UpdatePagamentoWork"
+private const val TAG = "UpdatePagamentoWork"
 class UpdatePagamentoWork(appContext: Context, params: WorkerParameters) : CoroutineWorker(appContext, params) {
     // Nome unico do Work
     companion object {

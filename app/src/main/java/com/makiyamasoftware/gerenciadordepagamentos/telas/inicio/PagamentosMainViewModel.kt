@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
+private const val TAG = "PagamentosMainViewModel"
+
 data class MainPaymentsUIState(
     val paymentsList: List<Pagamento> = emptyList(),
     val paymentsHistories: List<HistoricoDePagamento> = emptyList(),

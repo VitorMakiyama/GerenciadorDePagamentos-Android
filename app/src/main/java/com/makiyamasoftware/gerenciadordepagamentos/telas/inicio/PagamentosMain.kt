@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -35,7 +35,6 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -115,7 +114,6 @@ fun PagamentosMainScreen(
             mainPaymentsUIState.paymentsList,
             viewModel,
             onNavigateToDetails,
-            modifier.padding(padding)
         )
     }
 }
@@ -140,6 +138,7 @@ fun PagamentosMainContent(
         LazyColumn(
             modifier
                 .fillMaxSize()
+                .padding(top = dimensionResource(R.dimen.margin_normal))
                 .padding(horizontal = dimensionResource(R.dimen.margin_normal)),
             verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.margin_normal))
         ) {
@@ -147,6 +146,7 @@ fun PagamentosMainContent(
                 val history = viewModel.getHistoricoCerto(payment.id)
                 val person = viewModel.getPessoaCerta(history?.pagadorId ?: 0L)
                 PaymentCard(
+//                    modifier = modifier,
                     payment = payment,
                     history = history ?: HistoricoDePagamento(
                         data = "2026-03-07",
@@ -184,7 +184,7 @@ fun PaymentCard(
                     history,
                     person
                 ) // Select this payment, should navigate to PaymentDetails using this Payment, History and Person
-            }
+            },
     ) {
         PaymentCardContent(
             history = history,
@@ -202,12 +202,15 @@ fun PaymentCardContent(
     personName: String,
     frequency: String
 ) {
-    val animatedColor by animateColorAsState(
-        if (history.estaPago) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer,
-        label = "statusColor",
-        animationSpec = tween(
-            durationMillis = 600
-        )
+    val animatedBackgroundColor by animateColorAsState(
+        if (history.estaPago) colorScheme.tertiaryContainer else colorScheme.error,
+        label = "statusBackgroundColor",
+        animationSpec = tween(durationMillis = 600)
+    )
+    val animatedTextColor by animateColorAsState(
+        targetValue = if (history.estaPago) colorScheme.onTertiaryContainer else colorScheme.onError,
+        label = "statusTextColor",
+        animationSpec = tween(durationMillis = 600)
     )
     Row(
         modifier = Modifier
@@ -215,7 +218,7 @@ fun PaymentCardContent(
             .height(110.dp), horizontalArrangement = Arrangement.Center
     ) {
         Surface(
-            color = animatedColor,//if (isPaid) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary,
+            color = animatedBackgroundColor,//if (isPaid) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary,
             //shape = CardDefaults.shape,
             modifier = Modifier
                 .weight(0.5f)
@@ -232,10 +235,12 @@ fun PaymentCardContent(
                     ),
                     Modifier
                         .padding(bottom = dimensionResource(R.dimen.margin_normal))
-                        .weight(0.5f)
+                        .weight(0.5f),
+                    color = animatedTextColor
                 )
                 Text(
-                    text = stringResource(history.getEstaPagoStringID())
+                    text = stringResource(history.getEstaPagoStringID()),
+                    color = animatedTextColor
                 )
             }
         }
