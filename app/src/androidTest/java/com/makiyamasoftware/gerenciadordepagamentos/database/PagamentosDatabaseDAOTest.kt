@@ -69,7 +69,7 @@ class PagamentosDatabaseDAOTest {
         val loaded = database.pagamentosDatabaseDao.getPagamento(1).getOrAwaitValue()
 
         //THEN - The loaded data contains the expected values
-        assertThat<Pagamento>(loaded as Pagamento, notNullValue())
+        assertThat(loaded, notNullValue())
         assertThat(loaded.id, `is`(pagamento.id))
         assertThat(loaded.titulo, `is`(pagamento.titulo))
         assertThat(loaded.dataDeInicio, `is`(pagamento.dataDeInicio))
@@ -107,7 +107,7 @@ class PagamentosDatabaseDAOTest {
 
         // 3. Check that when you get the task by its ID, it has the updated values.
         val updatedPagamento = database.pagamentosDatabaseDao.getPagamento(pagamento.id).getOrAwaitValue()
-        assertThat(updatedPagamento as Pagamento, notNullValue())
+        assertThat(updatedPagamento, notNullValue())
         assertThat(updatedPagamento.id, `is`(pagamento.id))
         assertThat(updatedPagamento.titulo, `is`(pagamentoToBeUpdated.titulo))
         assertThat(updatedPagamento.dataDeInicio, `is`(pagamentoToBeUpdated.dataDeInicio))

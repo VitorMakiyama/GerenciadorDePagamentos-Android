@@ -5,10 +5,13 @@
     <dimen name="defaultDivMargin">150dp</dimen>
     <dimen name="margin_small">8dp</dimen>
     <dimen name="margin_normal">16dp</dimen>
+    <dimen name="size_zero_dp">0dp</dimen>
+    <dimen name="loading_indicator_size">80dp</dimen>
+    <dimen name="loading_indicator_stroke_width">8dp</dimen>
 
     <dimen name="pagoLetter">24sp</dimen>
 
     <dimen name="cardView6dp">6dp</dimen>
     <dimen name="cardViewHeight">200dp</dimen>
-    <dimen name="size_zero_dp">0dp</dimen>
+
 </resources>

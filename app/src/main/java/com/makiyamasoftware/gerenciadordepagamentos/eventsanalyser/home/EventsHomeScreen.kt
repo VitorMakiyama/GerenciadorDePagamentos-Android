@@ -1,15 +1,18 @@
 package com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.home
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Arrangement.Center
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
@@ -24,6 +27,7 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -40,10 +44,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.makiyamasoftware.gerenciadordepagamentos.R
+import com.makiyamasoftware.gerenciadordepagamentos.ui.components.DatePickerFieldToModal
+import com.makiyamasoftware.gerenciadordepagamentos.ui.components.TimePickerFieldToModal
 import com.makiyamasoftware.gerenciadordepagamentos.ui.theme.GerenciadorDePagamentosTheme
+import java.time.ZonedDateTime
+
+private const val TAG = "EventsHomeScreen"
 
 @Composable
-fun EventsHomeScreen(viewModel: EventsHomeViewModel = viewModel()) {
+fun EventsHomeScreen(
+    viewModel: EventsHomeViewModel = viewModel(),
+    onShowSnackbar: (message: String, actionLabel: String?, duration: SnackbarDuration, onActionPerformed: () -> Unit, onDismissed: () -> Unit) -> Unit
+) {
     val uiState = viewModel.uiState
     val mediumPadding = dimensionResource(R.dimen.margin_normal)
 
@@ -57,69 +69,113 @@ fun EventsHomeScreen(viewModel: EventsHomeViewModel = viewModel()) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         when (uiState) {
-            is EventsHomeUiState.Success -> EventsHomeContent(
-                onKeyboardDone = { },
-                currentScrambledWord = "Photos fetched: ${uiState.events.size}",
-                isError = false,
-                eventID = uiState.eventID.toString(),
-                onEventIDChanged = { },
-                onClickSubmit = viewModel::submit,
-                occurrencesNumber = uiState.occurrencesNumber.toString(),
-                onOccurrencesNumberChanged = { },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(mediumPadding),
-            )
+            is EventsHomeUiState.Success -> {
+                EventsHomeContent(
+                    onKeyboardDone = { }, // Does something when keyboard is gone, not needed for now
+                    isConnectionError = false,
+                    isSubjectIDNotFound = uiState.subjectIDNotFound,
+                    subjectID = uiState.subjectID.toString(),
+                    onSubjectIDChanged = viewModel::onSubjectIDChanged,
+                    onClickSubmit = viewModel::submit,
+                    occurrencesNumber = uiState.occurrencesNumber.toString(),
+                    onOccurrencesNumberChanged = viewModel::onOccurrencesNumberChanged,
+                    eventDateTime = uiState.eventLocalDateTime,
+                    onEventDateChanged = viewModel::onEventDateChanged,
+                    onEventTimeChanged = viewModel::onEventTimeChanged,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(mediumPadding),
+                )
+                if (uiState.createdEvent != null) {
+                    // Recebeu como response da API um event criado
+                    if (uiState.eventAlreadyExists) {
+                        // Recebeu um erro, esperado e tratável, da API: 409 Conflict, podemos sugerir ao user que envie um UPDATE à entrada encontrada no backend
+                        Log.d(TAG, "Showing snackbar EventAlreadyExists with message: ${uiState.createdEvent}")
+                        onShowSnackbar(
+                            stringResource(
+                                R.string.EventHomeScreen_Error_409_Conflict_snackbar_message,
+                                uiState.createdEvent.insertTS.toString(),
+                                uiState.createdEvent.occurrences,
+                                uiState.occurrencesNumber
+                            ),
+                            stringResource(R.string.EventHomeScreen_Error_409_Conflict_snackbar_action_label),
+                            SnackbarDuration.Indefinite,
+                            viewModel::onPutEventNewOccurrenceNumber
+                        ) {
+                            viewModel.updateUIState(uiState.copy(createdEvent = null, eventAlreadyExists = false)) // Para mostrar o snackbar novamente, caso a pessoa o remova e depois de submit com as mesmas infos
+                        }
+                    } else if (uiState.subjectIDNotFound) {
+                        Log.d(TAG, "Showing snackbar SubjectIDNotFound")
+                        onShowSnackbar(
+                            stringResource(R.string.EventHomeScreen_Error_404_Not_Found_subject_id_message),
+                            null,
+                            SnackbarDuration.Long,
+                            {},
+                            {
+                                // Para mostrar o snackbar apenas uma vez
+                                viewModel.updateUIState(uiState.copy(createdEvent = null))
+                            }
+                        )
+                    } else {
+                        // Recebeu um evento criado com sucesso: 201 Created
+                        Log.d(TAG, "Showing snackbar EventCreated with message: ${uiState.createdEvent}")
+                        onShowSnackbar(
+                            stringResource(
+                                R.string.EventHomeScreen_event_created_snackbar_message,
+                                uiState.createdEvent.toString()
+                            ),
+                            null,
+                            SnackbarDuration.Long,
+                            {},
+                            {
+                                // Para mostrar o snackbar apenas uma vez
+                                viewModel.updateUIState(uiState.copy(createdEvent = null))
+                            }
+                        )
+                    }
+                }
+            }
 
-            is EventsHomeUiState.Loading -> LoadingOverlay(isLoading = true)
+            is EventsHomeUiState.Loading -> LoadingOverlay(
+                modifier = Modifier.fillMaxSize(),
+                isLoading = true
+            )
 
             is EventsHomeUiState.Error -> {
                 EventsHomeContent(
                     onKeyboardDone = { },
-                    currentScrambledWord = "Photos fetched: no connection",
-                    isError = true,
+                    isConnectionError = uiState.connectionError,
                     onClickRetry = viewModel::retry,
+                    eventDateTime = uiState.eventLocalDateTime,
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
                         .padding(mediumPadding)
                 )
+                onShowSnackbar(uiState.errorMessage, null, SnackbarDuration.Long, {}, {})
             }
         }
-
-//        GameStatus(score = 10, modifier = Modifier.padding(20.dp))
-    }
-}
-
-@Composable
-fun GameStatus(score: Int, modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier
-    ) {
-        Text(
-            text = "Score",// stringResource(R.string.score, score),
-            style = typography.headlineMedium,
-            modifier = Modifier.padding(8.dp)
-        )
-
     }
 }
 
 @Composable
 fun EventsHomeContent(
-    currentScrambledWord: String,
     modifier: Modifier = Modifier,
-    isError: Boolean,
-    eventID: String = "0",
-    onEventIDChanged: (String) -> Unit = {},
+    isConnectionError: Boolean,
+    isSubjectIDNotFound: Boolean = false,
+    subjectID: String = "0",
+    onSubjectIDChanged: (String) -> Unit = {},
     occurrencesNumber: String = "1",
     onOccurrencesNumberChanged: (String) -> Unit = {},
+    eventDateTime: ZonedDateTime,
+    onEventDateChanged: (Long?) -> Unit = {},
+    onEventTimeChanged: (Int, Int, Boolean, Boolean) -> Unit = { _, _, _, _ -> },
     onClickSubmit: () -> Unit = {},
     onClickRetry: () -> Unit = {},
     onKeyboardDone: () -> Unit
 ) {
-    val mediumPadding = dimensionResource(R.dimen.margin_normal)
+    val mediumPadding = dimensionResource(R.dimen.margin_small)
 
     Card(
         modifier = modifier,
@@ -131,7 +187,7 @@ fun EventsHomeContent(
             modifier = Modifier.padding(mediumPadding)
         ) {
             Text(
-                modifier = if (isError) Modifier // Escolhe a cor do chip do modifier dependendo se for ou nao erro
+                modifier = if (isConnectionError) Modifier // Escolhe a cor do chip do modifier dependendo se for ou nao erro
                     .clip(shapes.medium)
                     .background(colorScheme.error)
                     .padding(horizontal = 10.dp, vertical = 4.dp)
@@ -139,26 +195,22 @@ fun EventsHomeContent(
                 else
                     Modifier
                         .clip(shapes.medium)
-                        .background(colorScheme.tertiary)
+                        .background(colorScheme.tertiaryContainer)
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                         .align(alignment = Alignment.End),
-                text = if (isError) "Ping: ❌ Pong" else "Ping: Pong!",
+                text = if (isConnectionError) "Ping: ❌ Pong" else "Ping: Pong!",
                 style = typography.titleMedium,
-                color = if (isError) colorScheme.onError else colorScheme.onTertiary
-            )
-            Text( //TODO: remover depois de trocar para a minha API
-                text = currentScrambledWord,
-                style = typography.displaySmall
+                color = if (isConnectionError) colorScheme.onError else colorScheme.onTertiary
             )
             Text(
-                text = if (isError) stringResource(R.string.EventHomeScreen_instructions_Error_label) else stringResource(
+                text = if (isConnectionError) stringResource(R.string.EventHomeScreen_instructions_Error_label) else stringResource(
                     R.string.EventHomeScreen_instructions_label
                 ),
                 textAlign = TextAlign.Center,
                 style = typography.titleLarge
             )
             OutlinedTextField(
-                value = eventID,
+                value = subjectID,
                 singleLine = true,
                 shape = shapes.large,
                 modifier = Modifier.fillMaxWidth(),
@@ -167,15 +219,16 @@ fun EventsHomeContent(
                     unfocusedContainerColor = colorScheme.surface,
                     disabledContainerColor = colorScheme.surface,
                 ),
-                onValueChange = onEventIDChanged,
+                onValueChange = onSubjectIDChanged,
                 label = {
                     Text(
-                        if (isError) stringResource(R.string.generic_no_connection)
-                        else stringResource(R.string.EventHomeScreen_eventID_label)
+                        if (isConnectionError) stringResource(R.string.generic_connection_error)
+                        else if (isSubjectIDNotFound) stringResource(R.string.EventHomeScreen_subjectID_not_found_label)
+                        else stringResource(R.string.EventHomeScreen_subjectID_label)
                     )
                 },
-                isError = isError,
-                enabled = !isError,
+                isError = isSubjectIDNotFound,
+                enabled = !isConnectionError,
                 keyboardOptions = KeyboardOptions.Default.copy(
                     imeAction = ImeAction.Done,
                     keyboardType = KeyboardType.Number
@@ -197,12 +250,12 @@ fun EventsHomeContent(
                 onValueChange = onOccurrencesNumberChanged,
                 label = {
                     Text(
-                        text = if (isError) stringResource(R.string.generic_no_connection)
+                        text = if (isConnectionError) stringResource(R.string.generic_connection_error)
                         else stringResource(R.string.EventHomeScreen_occurrencesNumber_label)
                     )
                 },
-                isError = isError,
-                enabled = !isError,
+                isError = isConnectionError,
+                enabled = !isConnectionError,
                 keyboardOptions = KeyboardOptions.Default.copy(
                     imeAction = ImeAction.Done,
                     keyboardType = KeyboardType.Number
@@ -211,6 +264,25 @@ fun EventsHomeContent(
                     onDone = { onKeyboardDone() }
                 )
             )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(mediumPadding),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                DatePickerFieldToModal(
+                    enabled = !isConnectionError,
+                    currentDate = eventDateTime.toInstant()
+                        .toEpochMilli(), // Converte para UTC, pois o DatePicker sempre retorna UTC
+                    onDateSelected = onEventDateChanged,
+                    modifier = Modifier.weight(0.55f)
+                )
+                TimePickerFieldToModal(
+                    enabled = !isConnectionError,
+                    currentTime = eventDateTime.toLocalTime(),
+                    onTimeSelected = onEventTimeChanged,
+                    modifier = Modifier.weight(0.45f)
+                )
+            }
         }
     }
 
@@ -225,7 +297,7 @@ fun EventsHomeContent(
         Button(
             modifier = Modifier.fillMaxWidth(),
             onClick = onClickSubmit,
-            enabled = !isError
+            enabled = !isConnectionError
         ) {
             Text(
                 text = stringResource(R.string.EventHomeScreen_submit_Button_label),
@@ -233,7 +305,7 @@ fun EventsHomeContent(
             )
         }
 
-        if (isError) Button(
+        if (isConnectionError) Button(
             onClick = onClickRetry,
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -247,17 +319,23 @@ fun EventsHomeContent(
 
 @Composable
 fun LoadingOverlay(
+    modifier: Modifier = Modifier,
     isLoading: Boolean,
     content: @Composable () -> Unit = {}
 ) {
     content()
     if (isLoading) {
         Box(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxSize(),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
-            CircularProgressIndicator()
+            CircularProgressIndicator(
+                modifier = Modifier.size(dimensionResource(R.dimen.loading_indicator_size)),
+                color = colorScheme.primary,
+                strokeWidth = dimensionResource(R.dimen.loading_indicator_stroke_width),
+                trackColor = colorScheme.secondary,
+            )
         }
     }
 }
@@ -266,9 +344,17 @@ fun LoadingOverlay(
 @Composable
 fun GameScreenPreview() {
     val viewModel: EventsHomeViewModel = viewModel()
-    viewModel.updateUIState(EventsHomeUiState.Success(listOf()))
+    viewModel.updateUIState(EventsHomeUiState.Loading)
 
     GerenciadorDePagamentosTheme {
-        EventsHomeScreen()
+        EventsHomeScreen(onShowSnackbar = { _, _, _, _, _ -> })
+    }
+}
+
+@Preview()
+@Composable
+fun LoadingOverlayPreview() {
+    GerenciadorDePagamentosTheme {
+        LoadingOverlay(isLoading = true)
     }
 }

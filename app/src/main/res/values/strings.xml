@@ -13,7 +13,7 @@
     </plurals>
     <string name="generic_Pronto">Pronto</string>
     <string name="generic_Cancelar">Cancelar</string>
-    <string name="generic_no_connection">Sem conexão</string>
+    <string name="generic_connection_error">Erro de conexão</string>
 
     <!-- Strings usadas no Inicio - PagamentosMain. -->
     <string name="fragment_pagamentos_main_provisorio">Seus futuros pagamentos serão\nlistados aqui! \o/</string>
@@ -89,11 +89,20 @@
     </string-array>
 
     <!--    Strings usadas no EventHomeScreen-->
-    <string name="EventHomeScreen_eventID_label">ID do Evento</string>
+    <string name="EventHomeScreen_subjectID_label">ID do Subject</string>
+    <string name="EventHomeScreen_subjectID_not_found_label">ID do Subject não encontrado</string>
     <string name="EventHomeScreen_occurrencesNumber_label">Número de Ocorrências</string>
     <string name="EventHomeScreen_submit_Button_label">Enviar</string>
     <string name="EventHomeScreen_retry_Button_label">Reconectar</string>
     <string name="EventHomeScreen_instructions_label">Insira ID do evento desejado, selecione data e hora, número de ocorrências e aperte o botão Enviar!</string>
-    <string name="EventHomeScreen_instructions_Error_label">Sem internet, tente reconectar!</string>
+    <string name="EventHomeScreen_instructions_Error_label">Erro de conexão, tente reconectar!</string>
+    <string name="EventHomeScreen_Error_409_Conflict_snackbar_message">Evento do dia %1$s já possui uma entrada com %2$d ocorrências, deseja atualizar com o novo valor de ocorrências (%3$d)?</string>
+    <string name="EventHomeScreen_Error_409_Conflict_snackbar_action_label">Atualizar</string>
+    <string name="EventHomeScreen_Error_404_Not_Found_subject_id_message">Subject ID não encontrado no servidor</string>
+<!--    <string name="EventHomeScreen_Error_404_Not_Found_event_id_message">Event ID não encontrado no servidor</string>-->
+    <string name="EventHomeScreen_event_created_snackbar_message">Evento %1$s criado com sucesso!</string>
 
+    <!--    DatePickerFieldToModal and TimePickerFieldToModal -->
+    <string name="DatePickerFieldToModal_field_label">Data</string>
+    <string name="TimePickerFieldToModal_field_label">Hora</string>
 </resources>
