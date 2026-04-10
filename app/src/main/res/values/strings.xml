@@ -100,7 +100,8 @@
     <string name="EventHomeScreen_Error_409_Conflict_snackbar_action_label">Atualizar</string>
     <string name="EventHomeScreen_Error_404_Not_Found_subject_id_message">Subject ID não encontrado no servidor</string>
 <!--    <string name="EventHomeScreen_Error_404_Not_Found_event_id_message">Event ID não encontrado no servidor</string>-->
-    <string name="EventHomeScreen_event_created_snackbar_message">Evento %1$s criado com sucesso!</string>
+    <string name="EventHomeScreen_event_created_snackbar_message">Evento %1$s\ncriado com sucesso!</string>
+    <string name="EventHomeScreen_event_updated_snackbar_message">Evento %1$s\natualizado com sucesso!</string>
 
     <!--    DatePickerFieldToModal and TimePickerFieldToModal -->
     <string name="DatePickerFieldToModal_field_label">Data</string>

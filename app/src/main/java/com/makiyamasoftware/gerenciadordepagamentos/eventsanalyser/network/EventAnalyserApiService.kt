@@ -10,6 +10,8 @@ import retrofit2.Retrofit
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Query
 import kotlin.time.Instant
 
 private const val BASE_URL = BuildConfig.EventsServiceBaseURL // Comes from local.properties
@@ -48,6 +50,9 @@ interface EventAnalyserApiService {
 
     @POST("events")
     suspend fun postEvent(@Body eventRequest: EventRequest): EventResponse
+
+    @PUT("events")
+    suspend fun putEvent(@Query("id") id: Int, @Body eventRequest: EventRequest): EventResponse
 }
 
 object EventAnalyserApi {

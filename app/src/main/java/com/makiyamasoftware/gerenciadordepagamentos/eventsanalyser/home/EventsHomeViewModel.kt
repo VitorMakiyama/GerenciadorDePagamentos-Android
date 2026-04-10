@@ -14,7 +14,6 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import okio.IOException
 import retrofit2.HttpException
-import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -32,7 +31,15 @@ data class Event(
     val lastUpdate: ZonedDateTime,
 ) {
     override fun toString(): String {
-        return "Event(id=$id, subjectID=$subjectID, occurrences=$occurrences, insertTS=$insertTS, lastUpdate=$lastUpdate)"
+        return "Event(id=$id, subjectID=$subjectID, occurrences=$occurrences,\ninsertTS=${
+            insertTS.format(
+                DateTimeFormatter.ISO_OFFSET_DATE_TIME
+            )
+        },\nlastUpdate=${
+            lastUpdate.format(
+                DateTimeFormatter.ISO_OFFSET_DATE_TIME
+            )
+        })"
     }
 }
 
@@ -42,8 +49,10 @@ sealed interface EventsHomeUiState {
         val subjectID: Int = 0,
         val occurrencesNumber: Int = 1,
         val eventLocalDateTime: ZonedDateTime = ZonedDateTime.now(),
+        val showCreatedEventSnackbar: Boolean = false,
         val eventAlreadyExists: Boolean = false,
         val subjectIDNotFound: Boolean = false,
+        val eventUpdated: Boolean = false
     ) : EventsHomeUiState
 
     object Loading : EventsHomeUiState
@@ -64,6 +73,31 @@ class EventsHomeViewModel : ViewModel() {
 
     fun updateUIState(newState: EventsHomeUiState) {
         uiState = newState
+    }
+
+    fun updateSuccessUIState(
+        createdEvent: Event? = null,
+        subjectID: Int? = null,
+        occurrencesNumber: Int? = null,
+        eventLocalDateTime: ZonedDateTime? = null,
+        showCreatedEventSnackbar: Boolean? = null,
+        eventAlreadyExists: Boolean? = null,
+        subjectIDNotFound: Boolean? = null,
+        eventUpdated: Boolean? = null
+    ) {
+        val currentState = (uiState as EventsHomeUiState.Success)
+        val updatedState = currentState.copy(
+            createdEvent = createdEvent ?: currentState.createdEvent,
+            subjectID = subjectID ?: currentState.subjectID,
+            occurrencesNumber = occurrencesNumber ?: currentState.occurrencesNumber,
+            eventLocalDateTime = eventLocalDateTime ?: currentState.eventLocalDateTime,
+            showCreatedEventSnackbar = showCreatedEventSnackbar
+                ?: currentState.showCreatedEventSnackbar,
+            eventAlreadyExists = eventAlreadyExists ?: currentState.eventAlreadyExists,
+            subjectIDNotFound = subjectIDNotFound ?: currentState.subjectIDNotFound,
+            eventUpdated = eventUpdated ?: currentState.eventUpdated
+        )
+        uiState = updatedState
     }
 
     fun pingEventsAnalyserServer() {
@@ -118,6 +152,10 @@ class EventsHomeViewModel : ViewModel() {
                         response.insertTS.toJavaInstant(),
                         ZoneId.systemDefault()
                     ),
+                    showCreatedEventSnackbar = true,
+                    eventAlreadyExists = false,
+                    subjectIDNotFound = false,
+                    eventUpdated = false,
                 )
             } catch (e: HttpException) {
                 if (e.code() == 409) {
@@ -132,8 +170,10 @@ class EventsHomeViewModel : ViewModel() {
                             fromInstantUTCToCalendarLocal(responseErr.insertTS),
                             fromInstantUTCToCalendarLocal(responseErr.lastUpdate)
                         ),
+                        showCreatedEventSnackbar = false,
                         eventAlreadyExists = true,
-                        subjectIDNotFound = false
+                        subjectIDNotFound = false,
+                        eventUpdated = false,
                     )
                 } else if (e.code() == 404) {
                     Log.e(TAG, "Error: ${e.message}. $e")
@@ -146,8 +186,10 @@ class EventsHomeViewModel : ViewModel() {
                             insertTS = ZonedDateTime.now(),
                             lastUpdate = ZonedDateTime.now()
                         ),
+                        showCreatedEventSnackbar = false,
                         eventAlreadyExists = false,
-                        subjectIDNotFound = true
+                        subjectIDNotFound = true,
+                        eventUpdated = false,
                     )
                 } else {
                     // e.code() == 400 || e.code() == 500
@@ -168,38 +210,46 @@ class EventsHomeViewModel : ViewModel() {
 
     fun onSubjectIDChanged(subjectID: String) {
         val newSubjectID = subjectID.toIntOrNull()
-        newSubjectID?.let {
-            uiState = (uiState as EventsHomeUiState.Success).copy(
-                subjectID = newSubjectID,
-                createdEvent = null
-            )
-        }
+        uiState = (uiState as EventsHomeUiState.Success).copy(
+            subjectID = newSubjectID ?: 0,
+        )
     }
 
     fun onOccurrencesNumberChanged(occurrencesNumber: String) {
         val newOccurrencesNumber = occurrencesNumber.toIntOrNull()
-        newOccurrencesNumber?.let {
-            uiState = (uiState as EventsHomeUiState.Success).copy(
-                occurrencesNumber = newOccurrencesNumber,
-                createdEvent = null
-            )
-        }
+        uiState = (uiState as EventsHomeUiState.Success).copy(
+            occurrencesNumber = newOccurrencesNumber ?: 0,
+        )
     }
 
     fun onEventDateChanged(eventDateMillis: Long?) {
         eventDateMillis?.let {
-            // 'eventDate' é um Long representando a data em milissegundos UTC
-            val localDateTime = LocalDateTime.ofInstant(
+            // 'eventDateMillis' é um Long representando a data em milissegundos UTC
+            val dateTime = ZonedDateTime.ofInstant(
                 Instant.fromEpochMilliseconds(eventDateMillis).toJavaInstant(),
-                ZoneOffset.UTC
+                ZoneOffset.UTC // Must be interpreted as UTC because the DatePicker returns in UTC YYYY-MM-DDT00:00:00Z format, meaning negative timezones (e.g.: GMT-3) would change the day
             )
 
-            val updatedDateTime = (uiState as EventsHomeUiState.Success).eventLocalDateTime
-                .withYear(localDateTime.year)
-                .withMonth(localDateTime.monthValue)
-                .withDayOfMonth(localDateTime.dayOfMonth)
+            var currentUIState = (uiState as EventsHomeUiState.Success)
 
-            uiState = (uiState as EventsHomeUiState.Success).copy(
+            if (dateTime.format(DateTimeFormatter.ISO_DATE) == currentUIState.eventLocalDateTime.format(
+                    DateTimeFormatter.ISO_DATE
+                )
+            ) {
+                // If new date is the same as old date...
+                Log.d(
+                    TAG,
+                    "onEventDateChanged: Changed date, so updating UIState.eventAlreadyExists to false"
+                )
+                currentUIState = currentUIState.copy(eventAlreadyExists = false)
+            }
+
+            val updatedDateTime = currentUIState.eventLocalDateTime
+                .withYear(dateTime.year)
+                .withMonth(dateTime.monthValue)
+                .withDayOfMonth(dateTime.dayOfMonth)
+
+            uiState = currentUIState.copy(
                 eventLocalDateTime = updatedDateTime,
                 createdEvent = null
             )
@@ -217,7 +267,52 @@ class EventsHomeViewModel : ViewModel() {
     }
 
     fun onPutEventNewOccurrenceNumber() {
-        Log.d(TAG, "PUT new occurrence number on event $uiState")
+        viewModelScope.launch(Dispatchers.IO) {
+            val createdEvent = (uiState as EventsHomeUiState.Success).createdEvent
+            Log.i(TAG, "Trying to update Event ${createdEvent?.id}. ... $uiState")
+            createdEvent?.let {
+                uiState = try {
+                    val response = EventAnalyserApi.retrofitService.putEvent(
+                        id = createdEvent.id,
+                        eventRequest = EventRequest(
+                            subjectID = (uiState as EventsHomeUiState.Success).subjectID,
+                            occurrences = (uiState as EventsHomeUiState.Success).occurrencesNumber,
+                            insertTS = (uiState as EventsHomeUiState.Success).eventLocalDateTime.format(
+                                DateTimeFormatter.ISO_OFFSET_DATE_TIME
+                            ) // Format equivalent to RFC3339
+                        )
+                    )
+                    Log.i(TAG, "Event updated successfully: $response")
+                    EventsHomeUiState.Success(
+                        createdEvent = Event(
+                            response.id,
+                            response.subjectID,
+                            response.occurrences,
+                            fromInstantUTCToCalendarLocal(response.insertTS),
+                            fromInstantUTCToCalendarLocal(response.lastUpdate)
+                        ),
+                        subjectID = response.subjectID,
+                        occurrencesNumber = response.occurrences,
+                        eventLocalDateTime = ZonedDateTime.ofInstant(
+                            response.insertTS.toJavaInstant(),
+                            ZoneId.systemDefault()
+                        ),
+                        showCreatedEventSnackbar = false,
+                        eventAlreadyExists = false,
+                        subjectIDNotFound = false,
+                        eventUpdated = true,
+                    )
+                } catch (e: HttpException) {
+                    val errorMessage = "Could not update event ${createdEvent}. Error: ${e.message}"
+                    Log.e(TAG, errorMessage)
+                    EventsHomeUiState.Error(
+                        errorMessage,
+                        connectionError = false,
+                        eventLocalDateTime = (uiState as EventsHomeUiState.Success).eventLocalDateTime
+                    )
+                }
+            }
+        }
     }
 
     fun fromInstantUTCToCalendarLocal(instant: Instant): ZonedDateTime {

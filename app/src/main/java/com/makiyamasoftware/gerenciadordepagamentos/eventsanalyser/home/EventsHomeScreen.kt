@@ -47,6 +47,7 @@ import com.makiyamasoftware.gerenciadordepagamentos.R
 import com.makiyamasoftware.gerenciadordepagamentos.ui.components.DatePickerFieldToModal
 import com.makiyamasoftware.gerenciadordepagamentos.ui.components.TimePickerFieldToModal
 import com.makiyamasoftware.gerenciadordepagamentos.ui.theme.GerenciadorDePagamentosTheme
+import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
 private const val TAG = "EventsHomeScreen"
@@ -73,7 +74,6 @@ fun EventsHomeScreen(
                 EventsHomeContent(
                     onKeyboardDone = { }, // Does something when keyboard is gone, not needed for now
                     isConnectionError = false,
-                    isSubjectIDNotFound = uiState.subjectIDNotFound,
                     subjectID = uiState.subjectID.toString(),
                     onSubjectIDChanged = viewModel::onSubjectIDChanged,
                     onClickSubmit = viewModel::submit,
@@ -87,11 +87,37 @@ fun EventsHomeScreen(
                         .wrapContentHeight()
                         .padding(mediumPadding),
                 )
-                if (uiState.createdEvent != null) {
-                    // Recebeu como response da API um event criado
-                    if (uiState.eventAlreadyExists) {
-                        // Recebeu um erro, esperado e tratável, da API: 409 Conflict, podemos sugerir ao user que envie um UPDATE à entrada encontrada no backend
-                        Log.d(TAG, "Showing snackbar EventAlreadyExists with message: ${uiState.createdEvent}")
+                if (uiState.showCreatedEventSnackbar) {
+                    Log.i(TAG, "Created event: updating UI...")
+                    uiState.createdEvent?.let {
+                        Log.d(
+                            TAG,
+                            "Showing snackbar EventCreated with message: ${uiState.createdEvent}"
+                        )
+                        onShowSnackbar(
+                            stringResource(
+                                R.string.EventHomeScreen_event_created_snackbar_message,
+                                uiState.createdEvent.toString()
+                            ),
+                            null,
+                            SnackbarDuration.Long,
+                            {},
+                            {
+                                // Para mostrar o snackbar apenas uma vez
+                                viewModel.updateSuccessUIState(
+                                    showCreatedEventSnackbar = false
+                                )
+                            }
+                        )
+                    }
+                } else if (uiState.eventAlreadyExists) {
+                    // Recebeu um erro, esperado e tratável, da API: 409 Conflict, podemos sugerir ao user que envie um UPDATE à entrada encontrada no backend
+                    Log.i(TAG, "Event with date conflict: updating UI...")
+                    uiState.createdEvent?.let {
+                        Log.d(
+                            TAG,
+                            "Showing snackbar EventAlreadyExists with message: ${uiState.createdEvent}"
+                        )
                         onShowSnackbar(
                             stringResource(
                                 R.string.EventHomeScreen_Error_409_Conflict_snackbar_message,
@@ -103,26 +129,34 @@ fun EventsHomeScreen(
                             SnackbarDuration.Indefinite,
                             viewModel::onPutEventNewOccurrenceNumber
                         ) {
-                            viewModel.updateUIState(uiState.copy(createdEvent = null, eventAlreadyExists = false)) // Para mostrar o snackbar novamente, caso a pessoa o remova e depois de submit com as mesmas infos
+                            // Para mostrar o snackbar novamente, não settamos eventAlreadyExists=false, para o caso em que a pessoa o remova e depois de submit com as mesmas infos
+                            // Isso deve ser feito após uma mudança na data do evento a ser cadastrado OU após atualizar com sucesso o evento
                         }
-                    } else if (uiState.subjectIDNotFound) {
-                        Log.d(TAG, "Showing snackbar SubjectIDNotFound")
-                        onShowSnackbar(
-                            stringResource(R.string.EventHomeScreen_Error_404_Not_Found_subject_id_message),
-                            null,
-                            SnackbarDuration.Long,
-                            {},
-                            {
-                                // Para mostrar o snackbar apenas uma vez
-                                viewModel.updateUIState(uiState.copy(createdEvent = null))
-                            }
+                    }
+                } else if (uiState.subjectIDNotFound) {
+                    // Recebeu um erro, esperado e tratável, da API: 404 Not found
+                    Log.i(TAG, "Subject ID not found: updating UI...")
+                    Log.d(TAG, "Showing snackbar SubjectIDNotFound")
+                    onShowSnackbar(
+                        stringResource(R.string.EventHomeScreen_Error_404_Not_Found_subject_id_message),
+                        null,
+                        SnackbarDuration.Long,
+                        {},
+                        {
+                            // Para mostrar o snackbar apenas uma vez
+                            viewModel.updateSuccessUIState(subjectIDNotFound = false)
+                        }
+                    )
+                } else if (uiState.eventUpdated) {
+                    Log.i(TAG, "Updated event: updating UI...")
+                    uiState.createdEvent?.let {
+                        Log.d(
+                            TAG,
+                            "Showing snackbar EventCreated with message: ${uiState.createdEvent}"
                         )
-                    } else {
-                        // Recebeu um evento criado com sucesso: 201 Created
-                        Log.d(TAG, "Showing snackbar EventCreated with message: ${uiState.createdEvent}")
                         onShowSnackbar(
                             stringResource(
-                                R.string.EventHomeScreen_event_created_snackbar_message,
+                                R.string.EventHomeScreen_event_updated_snackbar_message,
                                 uiState.createdEvent.toString()
                             ),
                             null,
@@ -130,7 +164,9 @@ fun EventsHomeScreen(
                             {},
                             {
                                 // Para mostrar o snackbar apenas uma vez
-                                viewModel.updateUIState(uiState.copy(createdEvent = null))
+                                viewModel.updateSuccessUIState(
+                                    eventUpdated = false,
+                                )
                             }
                         )
                     }
@@ -271,8 +307,8 @@ fun EventsHomeContent(
             ) {
                 DatePickerFieldToModal(
                     enabled = !isConnectionError,
-                    currentDate = eventDateTime.toInstant()
-                        .toEpochMilli(), // Converte para UTC, pois o DatePicker sempre retorna UTC
+                    currentDate = eventDateTime.toLocalDateTime().toInstant(ZoneOffset.UTC)
+                        .toEpochMilli(), // Converte para LocalDate (perde o fuso horario) e depois em UTC, pois o DatePicker sempre retorna UTC
                     onDateSelected = onEventDateChanged,
                     modifier = Modifier.weight(0.55f)
                 )
