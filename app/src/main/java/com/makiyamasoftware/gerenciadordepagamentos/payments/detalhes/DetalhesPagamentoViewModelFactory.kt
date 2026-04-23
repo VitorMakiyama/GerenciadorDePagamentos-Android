@@ -1,6 +1,5 @@
-package com.makiyamasoftware.gerenciadordepagamentos.telas.detalhes
+package com.makiyamasoftware.gerenciadordepagamentos.payments.detalhes
 
-import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagamento

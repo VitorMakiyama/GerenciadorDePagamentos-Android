@@ -1,4 +1,4 @@
-package com.makiyamasoftware.gerenciadordepagamentos.telas.historicospagamento
+package com.makiyamasoftware.gerenciadordepagamentos.payments.historicospagamento
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider

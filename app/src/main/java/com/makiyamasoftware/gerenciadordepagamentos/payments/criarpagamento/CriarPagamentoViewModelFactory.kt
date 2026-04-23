@@ -1,4 +1,4 @@
-package com.makiyamasoftware.gerenciadordepagamentos.telas.criarpagamento
+package com.makiyamasoftware.gerenciadordepagamentos.payments.criarpagamento
 
 import android.app.Application
 import androidx.lifecycle.ViewModel

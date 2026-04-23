@@ -2,10 +2,12 @@ package com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.makiyamasoftware.gerenciadordepagamentos.BuildConfig
+import com.makiyamasoftware.gerenciadordepagamentos.settings.SettingsRepository
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -15,11 +17,6 @@ import retrofit2.http.Query
 import kotlin.time.Instant
 
 private const val BASE_URL = BuildConfig.EventsServiceBaseURL // Comes from local.properties
-
-private val retrofit = Retrofit.Builder()
-    .addConverterFactory(Json.asConverterFactory("application/json".toMediaType()))
-    .baseUrl(BASE_URL)
-    .build()
 
 @Serializable
 data class EventRequest(
@@ -56,7 +53,20 @@ interface EventAnalyserApiService {
 }
 
 object EventAnalyserApi {
-    val retrofitService: EventAnalyserApiService by lazy {
-        retrofit.create(EventAnalyserApiService::class.java)
+    fun getService(settingsRepository: SettingsRepository): EventAnalyserApiService {
+        val client = OkHttpClient.Builder()
+            .addInterceptor(BaseURLInterceptor(settingsRepository))
+            .build()
+
+        val retrofit = Retrofit.Builder()
+            .addConverterFactory(Json.asConverterFactory("application/json".toMediaType()))
+            .baseUrl(BASE_URL)
+            .client(client)
+            .build()
+        val retrofitService: EventAnalyserApiService by lazy {
+            retrofit.create(EventAnalyserApiService::class.java)
+        }
+        return retrofitService
     }
+    fun getBaseURLConst(): String = BASE_URL
 }

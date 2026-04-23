@@ -17,9 +17,9 @@ import androidx.navigation.toRoute
 import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
-import com.makiyamasoftware.gerenciadordepagamentos.telas.detalhes.DetalhesPagamentoScreen
-import com.makiyamasoftware.gerenciadordepagamentos.telas.inicio.PagamentosMainScreen
-import com.makiyamasoftware.gerenciadordepagamentos.telas.inicio.PagamentosMainViewModel
+import com.makiyamasoftware.gerenciadordepagamentos.payments.detalhes.DetalhesPagamentoScreen
+import com.makiyamasoftware.gerenciadordepagamentos.payments.inicio.PagamentosMainScreen
+import com.makiyamasoftware.gerenciadordepagamentos.payments.inicio.PagamentosMainViewModel
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.reflect.typeOf
@@ -97,6 +97,7 @@ fun NavGraphBuilder.paymentsListDestination(
         )
     }
 }
+
 fun NavController.navigateToPaymentDetails(
     payment: Pagamento,
     history: HistoricoDePagamento,
@@ -174,7 +175,10 @@ fun PaymentsNavHost(
     }
 }
 
-fun NavGraphBuilder.mainPagamentosDestination(paymentsViewModel: PagamentosMainViewModel, modifier: Modifier) {
+fun NavGraphBuilder.mainPagamentosDestination(
+    paymentsViewModel: PagamentosMainViewModel,
+    modifier: Modifier
+) {
     composable<Payments> {
         PagamentosNavigation(paymentsViewModel = paymentsViewModel, modifier = modifier)
     }

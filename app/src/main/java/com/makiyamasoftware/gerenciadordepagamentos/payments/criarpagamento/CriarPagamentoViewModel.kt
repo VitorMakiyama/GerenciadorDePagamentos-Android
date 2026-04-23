@@ -1,4 +1,4 @@
-package com.makiyamasoftware.gerenciadordepagamentos.telas.criarpagamento
+package com.makiyamasoftware.gerenciadordepagamentos.payments.criarpagamento
 
 import android.annotation.SuppressLint
 import android.app.Application

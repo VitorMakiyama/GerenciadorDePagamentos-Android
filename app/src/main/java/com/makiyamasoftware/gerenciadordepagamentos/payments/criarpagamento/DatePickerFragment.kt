@@ -1,4 +1,4 @@
-package com.makiyamasoftware.gerenciadordepagamentos.telas.criarpagamento
+package com.makiyamasoftware.gerenciadordepagamentos.payments.criarpagamento
 
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.DatePicker
 import androidx.fragment.app.DialogFragment
-import java.text.SimpleDateFormat
 import java.util.*
 
 private const val TAG = "DatePicker"

@@ -6,7 +6,7 @@
     <data>
         <variable
             name="pagamentosMainViewModel"
-            type="com.makiyamasoftware.gerenciadordepagamentos.telas.inicio.PagamentosMainViewModel" />
+            type="com.makiyamasoftware.gerenciadordepagamentos.payments.inicio.PagamentosMainViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

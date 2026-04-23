@@ -17,7 +17,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -26,30 +30,53 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.makiyamasoftware.gerenciadordepagamentos.R
 import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.home.EventsHomeScreen
-import com.makiyamasoftware.gerenciadordepagamentos.telas.inicio.PagamentosMainViewModel
+import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.home.EventsHomeViewModel
+import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network.EventAnalyserApi
+import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network.EventAnalyserApiService
+import com.makiyamasoftware.gerenciadordepagamentos.payments.inicio.PagamentosMainViewModel
+import com.makiyamasoftware.gerenciadordepagamentos.settings.SettingsRepository
+import com.makiyamasoftware.gerenciadordepagamentos.settings.SettingsScreen
+import com.makiyamasoftware.gerenciadordepagamentos.settings.SettingsViewModel
+import com.makiyamasoftware.gerenciadordepagamentos.settings.dataStore
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
+private const val TAG = "NavigationBottomBar"
+
 @Serializable
-open class BottomBarDestination
+open class BottomBarDestination(
+    val label: String,
+    val icon: Int,
+    val contentDescription: String
+)
 
 // Route for nested graph for Payments Manager
 @Serializable
 class Payments(
     val route: String = "Payments",
-    val label: String = "Payments Manager",
-    public val icon: Int = R.drawable.credit_card_gear_24dp,
-    val contentDescription: String = "Payments Manager"
-) : BottomBarDestination()
+) : BottomBarDestination(
+    label = "Payments Manager",
+    icon = R.drawable.credit_card_gear_24dp,
+    contentDescription = "Payments Manager"
+)
 
 // Route for Events Manager
 @Serializable
 class Events(
     val route: String = "Events",
-    val label: String = "Events Manager",
-    val icon: Int = R.drawable.event_24dp,
-    val contentDescription: String = "Events Manager"
-) : BottomBarDestination()
+) : BottomBarDestination(
+    label = "Events Manager",
+    icon = R.drawable.event_24dp,
+    contentDescription = "Events Manager"
+)
+
+// Route for app settings
+@Serializable
+private class Settings() : BottomBarDestination(
+    label = "Settings",
+    icon = R.drawable.settings_24dp,
+    contentDescription = "Settings"
+)
 
 @Composable
 fun AppNavHost(
@@ -59,6 +86,8 @@ fun AppNavHost(
     modifier: Modifier = Modifier,
     onShowSnackbar: (message: String, actionLabel: String?, duration: SnackbarDuration, onActionPerformed: () -> Unit, onDismissed: () -> Unit) -> Unit
 ) {
+    val repository = SettingsRepository(LocalContext.current.dataStore)
+
     NavHost(
         navController,
         startDestination = startBottomBarDestination
@@ -71,8 +100,28 @@ fun AppNavHost(
 
         // Events Manager
         composable<Events> {
-            EventsHomeScreen(onShowSnackbar = onShowSnackbar)
-            Log.d("NavigationBottomBar", "Navigated to Events Manager")
+            val viewModel: EventsHomeViewModel =
+                viewModel(factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return EventsHomeViewModel(EventAnalyserApi.getService(repository)) as T
+                    }
+                })
+            EventsHomeScreen(
+                viewModel = viewModel,
+                onShowSnackbar = onShowSnackbar
+            )
+            Log.d(TAG, "Navigated to Events Manager")
+        }
+
+        composable<Settings> {
+            val viewModel: SettingsViewModel =
+                viewModel(factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return SettingsViewModel(repository) as T
+                    }
+                })
+            SettingsScreen(viewModel)
+            Log.d(TAG, "Navigated to Settings")
         }
     }
 }
@@ -86,6 +135,7 @@ fun NavigationBottomBar(
 
     val paymentsBottomDestination = Payments()
     val eventsBottomDestination = Events()
+    val settingsBottomDestination = Settings()
 
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
@@ -116,7 +166,6 @@ fun NavigationBottomBar(
         },
         bottomBar = {
             NavigationBar(windowInsets = NavigationBarDefaults.windowInsets) {
-//                BottomBarDestination.entries.forEachIndexed { index, destination ->
                 NavigationBarItem(
                     selected = currentDestination?.hasRoute(Payments::class) ?: false,
                     onClick = {
@@ -143,7 +192,19 @@ fun NavigationBottomBar(
                     },
                     label = { Text(eventsBottomDestination.label) }
                 )
-//                }
+                NavigationBarItem(
+                    selected = currentDestination?.hasRoute(Settings::class) ?: false,
+                    onClick = {
+                        navController.navigate(route = settingsBottomDestination)
+                    },
+                    icon = {
+                        Icon(
+                            painter = painterResource(settingsBottomDestination.icon),
+                            contentDescription = settingsBottomDestination.contentDescription
+                        )
+                    },
+                    label = { Text(settingsBottomDestination.label) }
+                )
             }
         }
     ) { contentPadding ->

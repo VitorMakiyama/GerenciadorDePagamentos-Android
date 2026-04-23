@@ -6,7 +6,7 @@
     <data>
         <variable
             name="participanteAux"
-            type="com.makiyamasoftware.gerenciadordepagamentos.telas.criarpagamento.ParticipanteAux" />
+            type="com.makiyamasoftware.gerenciadordepagamentos.payments.criarpagamento.ParticipanteAux" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

@@ -7,8 +7,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network.EventAnalyserApi
+import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network.EventAnalyserApiService
 import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network.EventRequest
 import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network.EventResponse
+import com.makiyamasoftware.gerenciadordepagamentos.settings.SettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -63,7 +65,7 @@ sealed interface EventsHomeUiState {
     ) : EventsHomeUiState
 }
 
-class EventsHomeViewModel : ViewModel() {
+class EventsHomeViewModel(val retrofitService: EventAnalyserApiService) : ViewModel() {
     var uiState: EventsHomeUiState by mutableStateOf(EventsHomeUiState.Loading)
         private set // Makes the setter private works like the _uiState pattern
 
@@ -103,7 +105,7 @@ class EventsHomeViewModel : ViewModel() {
     fun pingEventsAnalyserServer() {
         viewModelScope.launch(Dispatchers.IO) {
             uiState = try {
-                val pong = EventAnalyserApi.retrofitService.ping()
+                val pong = retrofitService.ping()
                 Log.d(TAG, pong)
                 EventsHomeUiState.Success()
             } catch (e: IOException) {
@@ -128,7 +130,7 @@ class EventsHomeViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             uiState = try {
                 Log.i(TAG, "Trying to submit data... $uiState")
-                val response = EventAnalyserApi.retrofitService.postEvent(
+                val response = retrofitService.postEvent(
                     EventRequest(
                         subjectID = (uiState as EventsHomeUiState.Success).subjectID,
                         occurrences = (uiState as EventsHomeUiState.Success).occurrencesNumber,
@@ -272,7 +274,7 @@ class EventsHomeViewModel : ViewModel() {
             Log.i(TAG, "Trying to update Event ${createdEvent?.id}. ... $uiState")
             createdEvent?.let {
                 uiState = try {
-                    val response = EventAnalyserApi.retrofitService.putEvent(
+                    val response = retrofitService.putEvent(
                         id = createdEvent.id,
                         eventRequest = EventRequest(
                             subjectID = (uiState as EventsHomeUiState.Success).subjectID,

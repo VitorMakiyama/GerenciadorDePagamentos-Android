@@ -106,4 +106,8 @@
     <!--    DatePickerFieldToModal and TimePickerFieldToModal -->
     <string name="DatePickerFieldToModal_field_label">Data</string>
     <string name="TimePickerFieldToModal_field_label">Hora</string>
+
+<!--   Settings Screen -->
+    <string name="SettingScreen_Settings_Headline">Configurações</string>
+    <string name="SettingScreen_baseURL_title">URL Base</string>
 </resources>

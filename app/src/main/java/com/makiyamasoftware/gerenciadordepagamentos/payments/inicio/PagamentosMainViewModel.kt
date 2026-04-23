@@ -1,4 +1,4 @@
-package com.makiyamasoftware.gerenciadordepagamentos.telas.inicio
+package com.makiyamasoftware.gerenciadordepagamentos.payments.inicio
 
 import android.app.Application
 import android.util.Log

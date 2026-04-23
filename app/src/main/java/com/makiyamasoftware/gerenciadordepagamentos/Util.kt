@@ -12,7 +12,6 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.os.bundleOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavDeepLinkBuilder
@@ -20,7 +19,7 @@ import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagament
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabaseDao
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
-import com.makiyamasoftware.gerenciadordepagamentos.telas.inicio.PagamentosMainViewModel
+import com.makiyamasoftware.gerenciadordepagamentos.payments.inicio.PagamentosMainViewModel
 import java.text.DateFormat.getDateInstance
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat

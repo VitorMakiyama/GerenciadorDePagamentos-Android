@@ -1,4 +1,4 @@
-package com.makiyamasoftware.gerenciadordepagamentos.telas.historicospagamento
+package com.makiyamasoftware.gerenciadordepagamentos.payments.historicospagamento
 
 import android.app.Application
 import androidx.lifecycle.ViewModel

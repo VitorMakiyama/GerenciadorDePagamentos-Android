@@ -16,7 +16,7 @@ android {
         minSdkVersion 26
         targetSdkVersion 36
         versionCode 1
-        versionName "1.3.2"
+        versionName "1.3.3"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -72,12 +72,17 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
 
     // Retrofit with Kotlin serialization Converter and Internet access
     implementation("com.squareup.retrofit2:retrofit:$retrofitVersion")
     implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:$serializationConverterVersion")
     implementation("com.squareup.okhttp3:okhttp:$okHTTPVersion")
+
+    // Preferences DataStore (SharedPreferences like APIs)
+    implementation "androidx.datastore:datastore-preferences:1.2.1"
+    // Alternatively - without an Android dependency.
+    implementation "androidx.datastore:datastore-preferences-core:1.2.1"
 
     // Android KTX
     implementation "androidx.core:core-ktx:$coreVersion"

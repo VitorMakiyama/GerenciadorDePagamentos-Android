@@ -1,4 +1,4 @@
-package com.makiyamasoftware.gerenciadordepagamentos.telas.detalhes
+package com.makiyamasoftware.gerenciadordepagamentos.payments.detalhes
 
 import android.util.Log
 import androidx.compose.animation.animateColorAsState
