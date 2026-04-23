@@ -59,6 +59,7 @@ fun EventsHomeScreen(
 ) {
     val uiState = viewModel.uiState
     val mediumPadding = dimensionResource(R.dimen.margin_normal)
+    val isLoading = uiState is EventsHomeUiState.Loading
 
     Column(
         modifier = Modifier
@@ -173,10 +174,9 @@ fun EventsHomeScreen(
                 }
             }
 
-            is EventsHomeUiState.Loading -> LoadingOverlay(
-                modifier = Modifier.fillMaxSize(),
-                isLoading = true
-            )
+            is EventsHomeUiState.Loading -> {
+                // Nothing here so LoadingOverlay stays outside Column
+            }
 
             is EventsHomeUiState.Error -> {
                 EventsHomeContent(
@@ -193,6 +193,11 @@ fun EventsHomeScreen(
             }
         }
     }
+
+    LoadingOverlay(
+        modifier = Modifier.fillMaxSize(),
+        isLoading = isLoading
+    )
 }
 
 @Composable
@@ -213,142 +218,146 @@ fun EventsHomeContent(
 ) {
     val mediumPadding = dimensionResource(R.dimen.margin_small)
 
-    Card(
-        modifier = modifier,
-        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
+    Column(
+        verticalArrangement = Arrangement.spacedBy(mediumPadding)
     ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(mediumPadding),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(mediumPadding)
+        Card(
+            modifier = modifier,
+            elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
         ) {
-            Text(
-                modifier = if (isConnectionError) Modifier // Escolhe a cor do chip do modifier dependendo se for ou nao erro
-                    .clip(shapes.medium)
-                    .background(colorScheme.error)
-                    .padding(horizontal = 10.dp, vertical = 4.dp)
-                    .align(alignment = Alignment.End)
-                else
-                    Modifier
-                        .clip(shapes.medium)
-                        .background(colorScheme.tertiaryContainer)
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                        .align(alignment = Alignment.End),
-                text = if (isConnectionError) "Ping: ❌ Pong" else "Ping: Pong!",
-                style = typography.titleMedium,
-                color = if (isConnectionError) colorScheme.onError else colorScheme.onTertiary
-            )
-            Text(
-                text = if (isConnectionError) stringResource(R.string.EventHomeScreen_instructions_Error_label) else stringResource(
-                    R.string.EventHomeScreen_instructions_label
-                ),
-                textAlign = TextAlign.Center,
-                style = typography.titleLarge
-            )
-            OutlinedTextField(
-                value = subjectID,
-                singleLine = true,
-                shape = shapes.large,
-                modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = colorScheme.surface,
-                    unfocusedContainerColor = colorScheme.surface,
-                    disabledContainerColor = colorScheme.surface,
-                ),
-                onValueChange = onSubjectIDChanged,
-                label = {
-                    Text(
-                        if (isConnectionError) stringResource(R.string.generic_connection_error)
-                        else if (isSubjectIDNotFound) stringResource(R.string.EventHomeScreen_subjectID_not_found_label)
-                        else stringResource(R.string.EventHomeScreen_subjectID_label)
-                    )
-                },
-                isError = isSubjectIDNotFound,
-                enabled = !isConnectionError,
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    imeAction = ImeAction.Done,
-                    keyboardType = KeyboardType.Number
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = { onKeyboardDone() }
-                )
-            )
-            OutlinedTextField(
-                value = occurrencesNumber,
-                singleLine = true,
-                shape = shapes.large,
-                modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = colorScheme.surface,
-                    unfocusedContainerColor = colorScheme.surface,
-                    disabledContainerColor = colorScheme.surface,
-                ),
-                onValueChange = onOccurrencesNumberChanged,
-                label = {
-                    Text(
-                        text = if (isConnectionError) stringResource(R.string.generic_connection_error)
-                        else stringResource(R.string.EventHomeScreen_occurrencesNumber_label)
-                    )
-                },
-                isError = isConnectionError,
-                enabled = !isConnectionError,
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    imeAction = ImeAction.Done,
-                    keyboardType = KeyboardType.Number
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = { onKeyboardDone() }
-                )
-            )
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(mediumPadding),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+            Column(
+                verticalArrangement = Arrangement.spacedBy(mediumPadding),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(mediumPadding)
             ) {
-                DatePickerFieldToModal(
-                    enabled = !isConnectionError,
-                    currentDate = eventDateTime.toLocalDateTime().toInstant(ZoneOffset.UTC)
-                        .toEpochMilli(), // Converte para LocalDate (perde o fuso horario) e depois em UTC, pois o DatePicker sempre retorna UTC
-                    onDateSelected = onEventDateChanged,
-                    modifier = Modifier.weight(0.55f)
+                Text(
+                    modifier = if (isConnectionError) Modifier // Escolhe a cor do chip do modifier dependendo se for ou nao erro
+                        .clip(shapes.medium)
+                        .background(colorScheme.error)
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                        .align(alignment = Alignment.End)
+                    else
+                        Modifier
+                            .clip(shapes.medium)
+                            .background(colorScheme.tertiaryContainer)
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                            .align(alignment = Alignment.End),
+                    text = if (isConnectionError) "Ping: ❌ Pong" else "Ping: Pong!",
+                    style = typography.titleMedium,
+                    color = if (isConnectionError) colorScheme.onError else colorScheme.onTertiary
                 )
-                TimePickerFieldToModal(
-                    enabled = !isConnectionError,
-                    currentTime = eventDateTime.toLocalTime(),
-                    onTimeSelected = onEventTimeChanged,
-                    modifier = Modifier.weight(0.45f)
+                Text(
+                    text = if (isConnectionError) stringResource(R.string.EventHomeScreen_instructions_Error_label) else stringResource(
+                        R.string.EventHomeScreen_instructions_label
+                    ),
+                    textAlign = TextAlign.Center,
+                    style = typography.titleLarge
                 )
+                OutlinedTextField(
+                    value = subjectID,
+                    singleLine = true,
+                    shape = shapes.large,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = colorScheme.surface,
+                        unfocusedContainerColor = colorScheme.surface,
+                        disabledContainerColor = colorScheme.surface,
+                    ),
+                    onValueChange = onSubjectIDChanged,
+                    label = {
+                        Text(
+                            if (isConnectionError) stringResource(R.string.generic_connection_error)
+                            else if (isSubjectIDNotFound) stringResource(R.string.EventHomeScreen_subjectID_not_found_label)
+                            else stringResource(R.string.EventHomeScreen_subjectID_label)
+                        )
+                    },
+                    isError = isSubjectIDNotFound,
+                    enabled = !isConnectionError,
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Done,
+                        keyboardType = KeyboardType.Number
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = { onKeyboardDone() }
+                    )
+                )
+                OutlinedTextField(
+                    value = occurrencesNumber,
+                    singleLine = true,
+                    shape = shapes.large,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = colorScheme.surface,
+                        unfocusedContainerColor = colorScheme.surface,
+                        disabledContainerColor = colorScheme.surface,
+                    ),
+                    onValueChange = onOccurrencesNumberChanged,
+                    label = {
+                        Text(
+                            text = if (isConnectionError) stringResource(R.string.generic_connection_error)
+                            else stringResource(R.string.EventHomeScreen_occurrencesNumber_label)
+                        )
+                    },
+                    isError = isConnectionError,
+                    enabled = !isConnectionError,
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Done,
+                        keyboardType = KeyboardType.Number
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = { onKeyboardDone() }
+                    )
+                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(mediumPadding),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    DatePickerFieldToModal(
+                        enabled = !isConnectionError,
+                        currentDate = eventDateTime.toLocalDateTime().toInstant(ZoneOffset.UTC)
+                            .toEpochMilli(), // Converte para LocalDate (perde o fuso horario) e depois em UTC, pois o DatePicker sempre retorna UTC
+                        onDateSelected = onEventDateChanged,
+                        modifier = Modifier.weight(0.55f)
+                    )
+                    TimePickerFieldToModal(
+                        enabled = !isConnectionError,
+                        currentTime = eventDateTime.toLocalTime(),
+                        onTimeSelected = onEventTimeChanged,
+                        modifier = Modifier.weight(0.45f)
+                    )
+                }
             }
         }
-    }
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(mediumPadding),
-        verticalArrangement = Arrangement.spacedBy(mediumPadding),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = onClickSubmit,
-            enabled = !isConnectionError
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(mediumPadding),
+            verticalArrangement = Arrangement.spacedBy(mediumPadding),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = stringResource(R.string.EventHomeScreen_submit_Button_label),
-                fontSize = 16.sp
-            )
-        }
 
-        if (isConnectionError) Button(
-            onClick = onClickRetry,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = stringResource(R.string.EventHomeScreen_retry_Button_label),
-                fontSize = 16.sp
-            )
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onClickSubmit,
+                enabled = !isConnectionError
+            ) {
+                Text(
+                    text = stringResource(R.string.EventHomeScreen_submit_Button_label),
+                    fontSize = 16.sp
+                )
+            }
+
+            if (isConnectionError) Button(
+                onClick = onClickRetry,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(R.string.EventHomeScreen_retry_Button_label),
+                    fontSize = 16.sp
+                )
+            }
         }
     }
 }
@@ -378,16 +387,34 @@ fun LoadingOverlay(
 
 @Preview(showBackground = true, uiMode = UI_MODE_NIGHT_YES)
 @Composable
-fun GameScreenPreview() {
-    val viewModel: EventsHomeViewModel = viewModel()
-    viewModel.updateUIState(EventsHomeUiState.Loading)
+fun EventsHomeContentPreview() {
+    val mediumPadding = dimensionResource(R.dimen.margin_normal)
+
+    val eventDate = ZonedDateTime.now()
 
     GerenciadorDePagamentosTheme {
-        EventsHomeScreen(onShowSnackbar = { _, _, _, _, _ -> })
+        EventsHomeContent(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(mediumPadding),
+            isConnectionError = false,
+            isSubjectIDNotFound = false,
+            subjectID = "1",
+            onSubjectIDChanged = { },
+            occurrencesNumber = "11",
+            onOccurrencesNumberChanged = { },
+            eventDateTime = eventDate,
+            onEventDateChanged = { },
+            onEventTimeChanged = { _, _, _, _ -> },
+            onClickSubmit = { },
+            onClickRetry = { },
+            onKeyboardDone = { }
+        )
     }
 }
 
-@Preview()
+@Preview
 @Composable
 fun LoadingOverlayPreview() {
     GerenciadorDePagamentosTheme {

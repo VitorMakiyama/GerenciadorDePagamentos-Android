@@ -14,7 +14,7 @@ import java.io.IOException
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
-class SettingsRepository(private val dataStore: DataStore<Preferences>) {
+open class SettingsRepository(private val dataStore: DataStore<Preferences>) {
 
     private object PreferencesKeys {
         val BASE_URL = stringPreferencesKey("base_url")

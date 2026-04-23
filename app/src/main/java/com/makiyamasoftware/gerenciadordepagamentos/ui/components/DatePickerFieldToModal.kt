@@ -65,6 +65,7 @@ fun DatePickerFieldToModal(
 
     if (showModal) {
         DatePickerModal(
+            selectedDate = selectedDate,
             onDateSelected = {
                 selectedDate = it
                 onDateSelected(it)
@@ -76,10 +77,11 @@ fun DatePickerFieldToModal(
 
 @Composable
 private fun DatePickerModal(
+    selectedDate: Long?,
     onDateSelected: (Long?) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val datePickerState = rememberDatePickerState()
+    val datePickerState = rememberDatePickerState(selectedDate)
 
     DatePickerDialog(
         onDismissRequest = onDismiss,

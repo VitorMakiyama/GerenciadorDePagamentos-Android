@@ -2,19 +2,19 @@
 buildscript {
     ext {
         // App dependencies
-        kotlinVersion = '2.3.10'
-        KSPVersion = '2.2.10-2.0.2'
+        kotlinVersion = '2.3.20'
+        KSPVersion = '2.3.2'
         coreVersion = "1.17.0"
         coroutinesVersion = "1.10.2"
-        navVersion = '2.9.7'
+        navVersion = '2.9.8'
         navigationComposeVersion = "2.9.7"
         constraintLayoutVersion = "2.2.1"
-        gradleVersion = '9.0.1'
+        gradleVersion = '9.2.0'
         lifecycleExtensionsVersion = "2.2.0"
         roomVersion = "2.8.4"
         appcompatVersion = "1.7.1"
         fragmentVersion = "1.8.9"
-        workVersion = "2.11.1"
+        workVersion = "2.11.2"
         composeBomVersion = "2026.03.00"
         viewModelComposeVersion = "2.10.0"
         activityComposeVersion = "1.13.0"

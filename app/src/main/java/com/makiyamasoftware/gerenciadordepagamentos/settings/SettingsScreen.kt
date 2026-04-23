@@ -23,6 +23,23 @@ import com.makiyamasoftware.gerenciadordepagamentos.ui.theme.GerenciadorDePagame
 fun SettingsScreen(viewModel: SettingsViewModel = viewModel()) {
     val uiState = viewModel.uiState
 
+    SettingsScreen(
+        baseURL = viewModel.uiState.baseURL,
+        showEditBaseURLDialog = viewModel::showEditBaseURLDialog,
+        editBaseURL = uiState.editBaseURL,
+        setNewBaseURL = viewModel::setNewBaseURL,
+        dismissEditBaseURLDialog = viewModel::dismissEditBaseURLDialog
+    )
+}
+
+@Composable
+fun SettingsScreen(
+    baseURL: String,
+    showEditBaseURLDialog: () -> Unit,
+    editBaseURL: Boolean,
+    setNewBaseURL: (String) -> Unit,
+    dismissEditBaseURLDialog: () -> Unit
+) {
     Column(
         verticalArrangement = Arrangement.SpaceEvenly,
         modifier = Modifier.padding(dimensionResource(R.dimen.margin_normal))
@@ -33,18 +50,18 @@ fun SettingsScreen(viewModel: SettingsViewModel = viewModel()) {
         )
         SettingsItem(
             stringResource(R.string.SettingScreen_baseURL_title),
-            viewModel.uiState.baseURL,
-            onClickItem = viewModel::showEditBaseURLDialog
+            baseURL,
+            onClickItem = showEditBaseURLDialog
         )
         AppVersionText()
 
-        if (uiState.editBaseURL) {
+        if (editBaseURL) {
             EditTextDialog(
                 modifier = Modifier,
                 title = stringResource(R.string.SettingScreen_baseURL_title),
-                value = uiState.baseURL,
-                onAffirmativeRequest = viewModel::setNewBaseURL,
-                onDismissRequest = viewModel::dismissEditBaseURLDialog
+                value = baseURL,
+                onAffirmativeRequest = setNewBaseURL,
+                onDismissRequest = dismissEditBaseURLDialog
             )
         }
     }
@@ -66,6 +83,12 @@ fun AppVersionText() {
 @Composable
 fun SettingsScreenPreview() {
     GerenciadorDePagamentosTheme {
-        SettingsScreen()
+        SettingsScreen(
+            baseURL = "teste.com.br",
+            showEditBaseURLDialog = {},
+            editBaseURL = false,
+            setNewBaseURL = { _ -> },
+            dismissEditBaseURLDialog = {},
+        )
     }
 }

@@ -68,18 +68,25 @@ fun PagamentosMainScreen(
         viewModel.updateMainPaymentsUIState()
     }
 
-    LaunchedEffect(viewModel) {
-        setTopAppBarActions {
-            IconButton(onClick = {
-                viewModel.toggleDialog()
-                Log.d(DEBUG_TAG, "mainPaymentsUIState: ${mainPaymentsUIState.paymentsList}")
-            }) {
-                Icon(
-                    painter = painterResource(R.drawable.delete_forever_24dp),
-                    contentDescription = stringResource(R.string.topAppBar_DeleteForever_description)
-                )
+    LaunchedEffect(mainPaymentsUIState.paymentsList) {
+        if (mainPaymentsUIState.paymentsList.isEmpty()) {
+            // If the list is empty, renders no buttons
+            setTopAppBarActions {}
+        } else {
+            // Only renders the Delete all button if the list is not empty
+            setTopAppBarActions {
+                IconButton(onClick = {
+                    viewModel.toggleDialog()
+                    Log.d(DEBUG_TAG, "mainPaymentsUIState: ${mainPaymentsUIState.paymentsList}")
+                }) {
+                    Icon(
+                        painter = painterResource(R.drawable.delete_forever_24dp),
+                        contentDescription = stringResource(R.string.topAppBar_DeleteForever_description)
+                    )
+                }
             }
         }
+
     }
 
     SideEffect {

@@ -32,7 +32,6 @@ import com.makiyamasoftware.gerenciadordepagamentos.R
 import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.home.EventsHomeScreen
 import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.home.EventsHomeViewModel
 import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network.EventAnalyserApi
-import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network.EventAnalyserApiService
 import com.makiyamasoftware.gerenciadordepagamentos.payments.inicio.PagamentosMainViewModel
 import com.makiyamasoftware.gerenciadordepagamentos.settings.SettingsRepository
 import com.makiyamasoftware.gerenciadordepagamentos.settings.SettingsScreen
