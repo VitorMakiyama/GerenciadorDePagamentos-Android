@@ -21,6 +21,7 @@ buildscript {
         retrofitVersion = "3.0.0"
         serializationConverterVersion = "1.0.0"
         okHTTPVersion = "5.3.2"
+        moshiCoreVersion = "1.15.2"
 
         // Tests
         junitVersion = '4.13.2'

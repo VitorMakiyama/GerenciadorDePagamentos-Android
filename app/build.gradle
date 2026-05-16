@@ -5,7 +5,7 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.compose'
     id 'com.google.devtools.ksp'
     // Kotlin serialization plugin for type safe routes, navigation arguments and Retrofit responses
-    id 'org.jetbrains.kotlin.plugin.serialization' version '2.3.20'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '2.3.21'
     // Plugin to get secrets from local.properties
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
 }
@@ -14,9 +14,9 @@ android {
     defaultConfig {
         applicationId "com.makiyamasoftware.gerenciadordepagamentos"
         minSdkVersion 26
-        targetSdkVersion 36
+        targetSdkVersion 37
         versionCode 1
-        versionName "1.3.4"
+        versionName "1.4.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -48,7 +48,7 @@ android {
 
     namespace = 'com.makiyamasoftware.gerenciadordepagamentos'
     compileSdk {
-        version = release(36)
+        version = release(37)
     }
 }
 
@@ -78,6 +78,13 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:$retrofitVersion")
     implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:$serializationConverterVersion")
     implementation("com.squareup.okhttp3:okhttp:$okHTTPVersion")
+    // Moshi for JSON Serialization
+    implementation  "com.squareup.moshi:moshi:$moshiCoreVersion"
+    implementation "com.squareup.retrofit2:converter-moshi:3.0.0"
+    // To use the PolymorphicJsonAdapterFactory
+    implementation("com.squareup.moshi:moshi-adapters:$moshiCoreVersion")
+    // For converting Kotlin classes to/from Json using reflection
+    implementation "com.squareup.moshi:moshi-kotlin:$moshiCoreVersion"
 
     // Preferences DataStore (SharedPreferences like APIs)
     implementation "androidx.datastore:datastore-preferences:1.2.1"
@@ -135,4 +142,10 @@ dependencies {
     androidTestImplementation "androidx.test.espresso:espresso-contrib:$espressoVersion" // This library is made up of external contributions (hence the name) which contain testing code for more advanced views, such as DatePicker and RecyclerView. It also contains Accessibility checks and class called CountingIdlingResource that is covered later.
     androidTestImplementation "androidx.arch.core:core-testing:$archTestingVersion" // for testing Room
     androidTestImplementation "androidx.work:work-testing:$workVersion"
+
+    // Test Retrofit and API
+    testImplementation "com.squareup.okhttp3:mockwebserver:5.3.2"
+    // For complex assertions
+    testImplementation "com.google.truth:truth:1.4.5"
+    kspTest "com.squareup.moshi:moshi-kotlin-codegen:1.15.2"
 }

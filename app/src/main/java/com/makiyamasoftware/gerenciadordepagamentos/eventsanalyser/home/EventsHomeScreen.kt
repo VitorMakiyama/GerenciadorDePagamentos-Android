@@ -55,7 +55,8 @@ private const val TAG = "EventsHomeScreen"
 @Composable
 fun EventsHomeScreen(
     viewModel: EventsHomeViewModel = viewModel(),
-    onShowSnackbar: (message: String, actionLabel: String?, duration: SnackbarDuration, onActionPerformed: () -> Unit, onDismissed: () -> Unit) -> Unit
+    onShowSnackbar: (message: String, actionLabel: String?, duration: SnackbarDuration, onActionPerformed: () -> Unit, onDismissed: () -> Unit) -> Unit,
+    onNavigateToEventsReports: () -> Unit,
 ) {
     val uiState = viewModel.uiState
     val mediumPadding = dimensionResource(R.dimen.margin_normal)
@@ -87,6 +88,7 @@ fun EventsHomeScreen(
                         .fillMaxWidth()
                         .wrapContentHeight()
                         .padding(mediumPadding),
+                    onNavigateToEventsReports = onNavigateToEventsReports
                 )
                 if (uiState.showCreatedEventSnackbar) {
                     Log.i(TAG, "Created event: updating UI...")
@@ -187,7 +189,8 @@ fun EventsHomeScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
-                        .padding(mediumPadding)
+                        .padding(mediumPadding),
+                    onNavigateToEventsReports = {}
                 )
                 onShowSnackbar(uiState.errorMessage, null, SnackbarDuration.Long, {}, {})
             }
@@ -214,6 +217,7 @@ fun EventsHomeContent(
     onEventTimeChanged: (Int, Int, Boolean, Boolean) -> Unit = { _, _, _, _ -> },
     onClickSubmit: () -> Unit = {},
     onClickRetry: () -> Unit = {},
+    onNavigateToEventsReports: () -> Unit,
     onKeyboardDone: () -> Unit
 ) {
     val mediumPadding = dimensionResource(R.dimen.margin_small)
@@ -358,6 +362,17 @@ fun EventsHomeContent(
                     fontSize = 16.sp
                 )
             }
+
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onNavigateToEventsReports,
+                enabled = !isConnectionError
+            ) {
+                Text(
+                    text = stringResource(R.string.EventHomeScreen_reports_Button_label),
+                    fontSize = 16.sp
+                )
+            }
         }
     }
 }
@@ -409,7 +424,8 @@ fun EventsHomeContentPreview() {
             onEventTimeChanged = { _, _, _, _ -> },
             onClickSubmit = { },
             onClickRetry = { },
-            onKeyboardDone = { }
+            onKeyboardDone = { },
+            onNavigateToEventsReports = {}
         )
     }
 }

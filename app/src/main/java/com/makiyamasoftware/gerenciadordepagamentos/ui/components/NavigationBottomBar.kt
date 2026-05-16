@@ -98,19 +98,11 @@ fun AppNavHost(
 
 
         // Events Manager
-        composable<Events> {
-            val viewModel: EventsHomeViewModel =
-                viewModel(factory = object : ViewModelProvider.Factory {
-                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        return EventsHomeViewModel(EventAnalyserApi.getService(repository)) as T
-                    }
-                })
-            EventsHomeScreen(
-                viewModel = viewModel,
-                onShowSnackbar = onShowSnackbar
-            )
-            Log.d(TAG, "Navigated to Events Manager")
-        }
+        eventsAnalyserDestination(
+            modifier = modifier,
+            onShowSnackbar = onShowSnackbar,
+            repository = repository
+        )
 
         composable<Settings> {
             val viewModel: SettingsViewModel =
