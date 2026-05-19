@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
@@ -28,6 +29,7 @@ class MainActivity : AppCompatActivity() {
 	private var hasRequestedPermissions = false
 
 	override fun onCreate(savedInstanceState: Bundle?) {
+		enableEdgeToEdge()
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_main)
 

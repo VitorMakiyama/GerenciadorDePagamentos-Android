@@ -5,6 +5,7 @@ import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,7 +43,9 @@ fun SettingsScreen(
 ) {
     Column(
         verticalArrangement = Arrangement.SpaceEvenly,
-        modifier = Modifier.padding(dimensionResource(R.dimen.margin_normal))
+        modifier = Modifier
+            .statusBarsPadding()
+            .padding(dimensionResource(R.dimen.margin_normal))
     ) {
         Text(
             text = stringResource(R.string.SettingScreen_Settings_Headline),

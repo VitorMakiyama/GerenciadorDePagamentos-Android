@@ -5,6 +5,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -51,6 +55,10 @@ fun EventsReportsContent(
     var selectedReport by remember { mutableStateOf(reportOptions.first()) }
 
     Column(
+        modifier = Modifier
+            .statusBarsPadding()
+            .verticalScroll(rememberScrollState()) // When editing, allows user to scroll when keyboard covers screen content
+            .safeDrawingPadding(),
         verticalArrangement = Arrangement.spacedBy(smallPadding)
     ) {
         if (isConnectionError) {

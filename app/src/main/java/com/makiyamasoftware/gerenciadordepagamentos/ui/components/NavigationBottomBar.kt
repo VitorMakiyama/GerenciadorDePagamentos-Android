@@ -1,10 +1,12 @@
 package com.makiyamasoftware.gerenciadordepagamentos.ui.components
 
 import android.util.Log
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -29,9 +31,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.makiyamasoftware.gerenciadordepagamentos.R
-import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.home.EventsHomeScreen
-import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.home.EventsHomeViewModel
-import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network.EventAnalyserApi
 import com.makiyamasoftware.gerenciadordepagamentos.payments.inicio.PagamentosMainViewModel
 import com.makiyamasoftware.gerenciadordepagamentos.settings.SettingsRepository
 import com.makiyamasoftware.gerenciadordepagamentos.settings.SettingsScreen
@@ -156,7 +155,7 @@ fun NavigationBottomBar(
             SnackbarHost(hostState = snackbarHostState)
         },
         bottomBar = {
-            NavigationBar(windowInsets = NavigationBarDefaults.windowInsets) {
+            NavigationBar {
                 NavigationBarItem(
                     selected = currentDestination?.hasRoute(Payments::class) ?: false,
                     onClick = {
@@ -197,13 +196,14 @@ fun NavigationBottomBar(
                     label = { Text(settingsBottomDestination.label) }
                 )
             }
-        }
+        },
+        contentWindowInsets = WindowInsets.navigationBars
     ) { contentPadding ->
         AppNavHost(
             paymentsViewModel,
             navController,
             paymentsBottomDestination,
-            modifier = Modifier.padding(contentPadding),
+            modifier = Modifier.padding(contentPadding).consumeWindowInsets(contentPadding),
             onShowSnackbar
         )
     }

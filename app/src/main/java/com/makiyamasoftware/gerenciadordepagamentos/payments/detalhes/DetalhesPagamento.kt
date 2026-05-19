@@ -7,12 +7,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -166,7 +166,7 @@ fun DetalhesPagamentoScreen(
             }
         },
         floatingActionButtonPosition = FabPosition.End,
-    ) { padding ->
+    ) { _ ->
         val onModifyPayment = { p: Pagamento?, h: HistoricoDePagamento? ->
             if (p != null) {
                 modifiablePayment = p
@@ -202,7 +202,6 @@ fun DetalhesPagamentoScreen(
                     "Click All Histories"
                 )
             },
-            padding = padding,
             modifier = Modifier.padding(all = dimensionResource(R.dimen.margin_small))
         )
         if (paymentsUIState.showDialog) {
@@ -319,14 +318,13 @@ fun DetalhesPagamentoScreenContent(
     onClickNoFrequencyPrice: () -> Unit,
     onChangeStatus: () -> Unit,
     onClickAllHistories: () -> Unit,
-    padding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .verticalScroll(rememberScrollState()) // Allows scroll, recommended for few items! For more items use LazyColumn
-            .padding(padding)
+            .imePadding() // This adds padding at the bottom of the view equal to the keyboard's height.
     ) {
         EditablePaymentFields(
             payment = pagamento,
