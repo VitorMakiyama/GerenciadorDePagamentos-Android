@@ -2,7 +2,7 @@ package com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.makiyamasoftware.gerenciadordepagamentos.BuildConfig
-import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.reports.EventsReports
+import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.reports.EventsReportType
 import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.reports.EventsReportsData
 import com.makiyamasoftware.gerenciadordepagamentos.settings.SettingsRepository
 import com.squareup.moshi.JsonClass
@@ -77,7 +77,7 @@ object EventAnalyserApi {
                 "type"
             ) // "type" is the key inside JSON
                 // 2. Maps JSON value for each corresponding Kotlin class
-                .withSubtype(EventsReportsData.BasicReportData::class.java, EventsReports.BASIC.name)
+                .withSubtype(EventsReportsData.BasicReportData::class.java, EventsReportType.BASIC.name)
 //                .withSubtype(EventsReportsData.ChartReportData::class.java, EventsReports.CHART.name)
         )
         .addLast(KotlinJsonAdapterFactory())

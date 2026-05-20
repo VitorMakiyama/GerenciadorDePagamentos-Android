@@ -94,7 +94,7 @@
     <string name="EventHomeScreen_occurrencesNumber_label">Número de Ocorrências</string>
     <string name="EventHomeScreen_submit_Button_label">Enviar</string>
     <string name="EventHomeScreen_retry_Button_label">Reconectar</string>
-    <string name="EventHomeScreen_instructions_label">Insira ID do evento desejado, selecione data e hora, número de ocorrências e aperte o botão Enviar!</string>
+    <string name="EventHomeScreen_instructions_label">Insira ID do subject desejado, selecione data e hora, número de ocorrências e aperte o botão Enviar!</string>
     <string name="EventHomeScreen_instructions_Error_label">Erro de conexão, tente reconectar!</string>
     <string name="EventHomeScreen_Error_409_Conflict_snackbar_message">Evento do dia %1$s já possui uma entrada com %2$d ocorrências, deseja atualizar com o novo valor de ocorrências (%3$d)?</string>
     <string name="EventHomeScreen_Error_409_Conflict_snackbar_action_label">Atualizar</string>
@@ -109,7 +109,7 @@
     <string name="TimePickerFieldToModal_field_label">Hora</string>
 
     <!--    Strings usadas no EventReports-->
-
+    <string name="EventReports_subjectDropdownMenu_label">Subject ID</string>
 
 <!--   Settings Screen -->
     <string name="SettingScreen_Settings_Headline">Configurações</string>

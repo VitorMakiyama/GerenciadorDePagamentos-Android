@@ -19,7 +19,7 @@ import com.makiyamasoftware.gerenciadordepagamentos.ui.theme.GerenciadorDePagame
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
-enum class EventsReports {
+enum class EventsReportType {
     BASIC,
     CHART;
 }
@@ -48,7 +48,7 @@ fun EventsReportsRenderer(
     reportData: EventsReportsData
 ) {
     when (selectedReport.uppercase()) {
-        EventsReports.BASIC.name -> {
+        EventsReportType.BASIC.name -> {
             val basicReportData = reportData as EventsReportsData.BasicReportData
             BasicEventReport(
                 basicReportData.weekly,
@@ -59,7 +59,11 @@ fun EventsReportsRenderer(
             )
         }
 
-        EventsReports.CHART.name -> {}
+        EventsReportType.CHART.name -> {
+            // TODO: Redo this
+            val chartReportData = reportData as EventsReportsData.ChartReportData
+            Text(text = chartReportData.data)
+        }
     }
 }
 

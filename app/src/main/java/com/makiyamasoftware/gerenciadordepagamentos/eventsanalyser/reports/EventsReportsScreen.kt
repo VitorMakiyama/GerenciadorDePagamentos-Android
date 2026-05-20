@@ -12,6 +12,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,28 +37,35 @@ import com.makiyamasoftware.gerenciadordepagamentos.ui.theme.GerenciadorDePagame
 
 @Composable
 fun EventsReportsScreen() {
-    val reportOptions = arrayOf("BASIC", "CHART", "T3")
-    val reportData = EventsReportsData.BasicReportData(
+    var reportOptions = arrayOf<String>()
+    EventsReportType.entries.forEach {
+        reportOptions = reportOptions.plus(it.name)
+    }
+    val reportData = mapOf<String, EventsReportsData>(Pair(EventsReportType.BASIC.name, EventsReportsData.BasicReportData(
         weekly = "1,0",
         monthly = "4,0",
         sigma = "0,5",
         startDate = "2026-05-16",
         totalOccurrences = "10",
+    )),
+        Pair(EventsReportType.CHART.name, EventsReportsData.ChartReportData(data = "Teste"))
     )
+    var selectedOption by remember { mutableStateOf(reportOptions.first()) }
 
-    EventsReportsContent(modifier = Modifier, false, reportOptions, reportData)
+    EventsReportsContent(modifier = Modifier, false, {}, {s -> selectedOption = s}, selectedOption, reportOptions, reportData[selectedOption]!!)
 }
 
 @Composable
 fun EventsReportsContent(
     modifier: Modifier,
     isConnectionError: Boolean,
+    onChangeSubjectID: (String) -> Unit,
+    onChangeReportType: (String) -> Unit,
+    selectedReport: String,
     reportOptions: Array<String>,
     reportData: EventsReportsData
 ) {
     val smallPadding = dimensionResource(R.dimen.margin_small)
-
-    var selectedReport by remember { mutableStateOf(reportOptions.first()) }
 
     Column(
         modifier = Modifier
@@ -81,13 +94,57 @@ fun EventsReportsContent(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.padding(smallPadding)
                 ) {
+                    SubjectSelectionDropdown(arrayOf("Teste 1", "teste2", "teste32"), onChangeSubjectID)
                     MultipleFilterChip(
                         chipLabels = reportOptions,
-                        onClickChip = { newReport -> selectedReport = newReport },
+                        onClickChip = { newReportType -> onChangeReportType(newReportType) },
                         selected = selectedReport
                     )
                     EventsReportsRenderer(selectedReport, reportData)
                 }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SubjectSelectionDropdown(
+    options: Array<String>,
+    onChangeSubjectID: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var selectedOption by remember {mutableStateOf(options.first())}
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier = modifier.fillMaxWidth()
+    ) {
+        OutlinedTextField(
+            value = selectedOption,
+            label = { Text(text = stringResource(R.string.EventReports_subjectDropdownMenu_label)) },
+            onValueChange = { s: String ->
+                selectedOption = s
+                onChangeSubjectID(s)
+            },
+            readOnly = true,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option) },
+                    onClick = {
+                        selectedOption = option
+                        expanded = false
+                    }
+                )
             }
         }
     }
@@ -109,6 +166,9 @@ fun EventsReportsContentPreview() {
         EventsReportsContent(
             modifier = Modifier,
             isConnectionError = false,
+            onChangeSubjectID = {},
+            onChangeReportType = {},
+            selectedReport = reportOptions.first(),
             reportOptions = reportOptions,
             reportData = reportData
         )

@@ -2,7 +2,7 @@ package com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network
 
 import com.google.common.truth.Truth.assertThat
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
-import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.reports.EventsReports
+import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.reports.EventsReportType
 import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.reports.EventsReportsData
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
@@ -48,11 +48,11 @@ class EventAnalyserApiTest {
                     // 2. Maps JSON value for each corresponding Kotlin class
                     .withSubtype(
                         EventsReportsData.BasicReportData::class.java,
-                        EventsReports.BASIC.name
+                        EventsReportType.BASIC.name
                     )
                     .withSubtype(
                         EventsReportsData.ChartReportData::class.java,
-                        EventsReports.CHART.name
+                        EventsReportType.CHART.name
                     )
             )
             .addLast(KotlinJsonAdapterFactory())
@@ -100,7 +100,7 @@ class EventAnalyserApiTest {
         server.enqueue(MockResponse().setBody("""{"type": "BASIC", "weekly":"1,0","monthly":"4,0","sigma":"0,5","start_date":"2026-05-16","total_occurrences":"10"}"""))
 
         val retrofit = getRetrofitService(server.url("/"))
-        val result = retrofit.getReportData(EventsReports.BASIC.name)
+        val result = retrofit.getReportData(EventsReportType.BASIC.name)
 
         val request = server.takeRequest()
 
@@ -121,7 +121,7 @@ class EventAnalyserApiTest {
         server.enqueue(MockResponse().setBody("""{"type": "CHART", "data":"TODO: REMAKE THIS DATA STRUCTURE"}"""))
 
         val retrofit = getRetrofitService(server.url("/"))
-        val result = retrofit.getReportData(EventsReports.CHART.name)
+        val result = retrofit.getReportData(EventsReportType.CHART.name)
 
         val request = server.takeRequest()
 
