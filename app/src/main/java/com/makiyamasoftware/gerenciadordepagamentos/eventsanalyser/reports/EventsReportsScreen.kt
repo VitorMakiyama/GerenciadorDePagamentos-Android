@@ -20,6 +20,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,27 +33,65 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.makiyamasoftware.gerenciadordepagamentos.R
+import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.home.LoadingOverlay
 import com.makiyamasoftware.gerenciadordepagamentos.ui.components.MultipleFilterChip
 import com.makiyamasoftware.gerenciadordepagamentos.ui.theme.GerenciadorDePagamentosTheme
 
 @Composable
-fun EventsReportsScreen() {
-    var reportOptions = arrayOf<String>()
-    EventsReportType.entries.forEach {
-        reportOptions = reportOptions.plus(it.name)
+fun EventsReportsScreen(viewModel: EventsReportsViewModel) {
+    val uiState = viewModel.uiState
+
+    LaunchedEffect(uiState) {
+        val success = (uiState as? EventsReportsUIState.Success)
+        if (success?.reportsData != null) {
+            viewModel.getReportData(
+                reportType = viewModel.selectedReportType,
+                subjectID = viewModel.selectedSubjectID
+            )
+        }
     }
-    val reportData = mapOf<String, EventsReportsData>(Pair(EventsReportType.BASIC.name, EventsReportsData.BasicReportData(
-        weekly = "1,0",
-        monthly = "4,0",
-        sigma = "0,5",
-        startDate = "2026-05-16",
-        totalOccurrences = "10",
-    )),
+
+    val reportData = mapOf<String, EventsReportsData>(
+        Pair(
+            EventsReportType.BASIC.name, EventsReportsData.BasicReportData(
+                weekly = "1,0",
+                monthly = "4,0",
+                sigma = "0,5",
+                startDate = "2026-05-16",
+                totalOccurrences = "10",
+            )
+        ),
         Pair(EventsReportType.CHART.name, EventsReportsData.ChartReportData(data = "Teste"))
     )
-    var selectedOption by remember { mutableStateOf(reportOptions.first()) }
 
-    EventsReportsContent(modifier = Modifier, false, {}, {s -> selectedOption = s}, selectedOption, reportOptions, reportData[selectedOption]!!)
+    when (uiState) {
+        is EventsReportsUIState.Success -> {
+            EventsReportsContent(
+                modifier = Modifier,
+                isConnectionError = false,
+                onChangeSubjectID = viewModel::onChangeSubjectID,
+                onChangeReportType = viewModel::onChangeReportType,
+                selectedReport = viewModel.selectedReportType,
+                reportOptions = uiState.reportTypes,
+                subjectIDs = uiState.subjectIDs,
+                reportData = reportData[viewModel.selectedReportType]!!,
+            )
+        }
+
+        is EventsReportsUIState.Error -> EventsReportsContent(
+            modifier = Modifier,
+            isConnectionError = true,
+            onChangeSubjectID = { },
+            onChangeReportType = { },
+            selectedReport = viewModel.selectedReportType,
+            reportOptions = listOf(),
+            subjectIDs = listOf(),
+            reportData = EventsReportsData.ChartReportData(data = ""),
+            onClickRetry = viewModel::pingEventsAnalyserServer
+        )
+
+        is EventsReportsUIState.Loading -> LoadingOverlay(isLoading = true)
+    }
 }
 
 @Composable
@@ -62,8 +101,10 @@ fun EventsReportsContent(
     onChangeSubjectID: (String) -> Unit,
     onChangeReportType: (String) -> Unit,
     selectedReport: String,
-    reportOptions: Array<String>,
-    reportData: EventsReportsData
+    reportOptions: List<String>,
+    subjectIDs: List<String>,
+    reportData: EventsReportsData,
+    onClickRetry: () -> Unit = {}
 ) {
     val smallPadding = dimensionResource(R.dimen.margin_small)
 
@@ -75,14 +116,19 @@ fun EventsReportsContent(
         verticalArrangement = Arrangement.spacedBy(smallPadding)
     ) {
         if (isConnectionError) {
-            Button(
-                onClick = { /*onClickRetry*/ },
-                modifier = Modifier.fillMaxWidth()
+            Card(
+                modifier = modifier.padding(smallPadding),
+                elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
             ) {
-                Text(
-                    text = stringResource(R.string.EventHomeScreen_retry_Button_label),
-                    fontSize = 16.sp
-                )
+                Button(
+                    onClick = onClickRetry,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(R.string.EventHomeScreen_retry_Button_label),
+                        fontSize = 16.sp
+                    )
+                }
             }
         } else {
             Card(
@@ -94,7 +140,10 @@ fun EventsReportsContent(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.padding(smallPadding)
                 ) {
-                    SubjectSelectionDropdown(arrayOf("Teste 1", "teste2", "teste32"), onChangeSubjectID)
+                    SubjectSelectionDropdown(
+                        options = subjectIDs,
+                        onChangeSubjectID = onChangeSubjectID
+                    )
                     MultipleFilterChip(
                         chipLabels = reportOptions,
                         onClickChip = { newReportType -> onChangeReportType(newReportType) },
@@ -110,11 +159,11 @@ fun EventsReportsContent(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubjectSelectionDropdown(
-    options: Array<String>,
+    options: List<String>,
     onChangeSubjectID: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var selectedOption by remember {mutableStateOf(options.first())}
+    var selectedOption by remember { mutableStateOf(options.first()) }
     var expanded by remember { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(
@@ -127,11 +176,12 @@ fun SubjectSelectionDropdown(
             label = { Text(text = stringResource(R.string.EventReports_subjectDropdownMenu_label)) },
             onValueChange = { s: String ->
                 selectedOption = s
-                onChangeSubjectID(s)
             },
             readOnly = true,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
+            modifier = modifier
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                .fillMaxWidth()
         )
         ExposedDropdownMenu(
             expanded = expanded,
@@ -143,6 +193,7 @@ fun SubjectSelectionDropdown(
                     onClick = {
                         selectedOption = option
                         expanded = false
+                        onChangeSubjectID(option)
                     }
                 )
             }
@@ -153,7 +204,14 @@ fun SubjectSelectionDropdown(
 @Preview(showBackground = true, uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun EventsReportsContentPreview() {
-    val reportOptions = arrayOf("Basic", "Chart", "Teste 3", "Teste 4", "Teste 5", "Teste 6")
+    val reportOptions = listOf(
+        EventsReportType.BASIC.name,
+        EventsReportType.CHART.name,
+        "Teste 3",
+        "Teste 4",
+        "Teste 5",
+        "Teste 6"
+    )
     val reportData = EventsReportsData.BasicReportData(
         weekly = "1,0",
         monthly = "4,0",
@@ -170,7 +228,9 @@ fun EventsReportsContentPreview() {
             onChangeReportType = {},
             selectedReport = reportOptions.first(),
             reportOptions = reportOptions,
-            reportData = reportData
+            subjectIDs = listOf("Teste 1", "teste2", "teste32"),
+            reportData = reportData,
+            onClickRetry = {},
         )
     }
 }

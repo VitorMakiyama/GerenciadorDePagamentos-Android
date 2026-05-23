@@ -48,6 +48,12 @@ data class EventResponse(
     val lastUpdate: Instant,        // Comes in RFC3339, on backend's local time
 )
 
+@Serializable
+data class SubjectResponse(
+    val id: Int,
+    val name: String,
+    val description: String
+)
 
 interface EventAnalyserApiService {
     @GET("ping")
@@ -59,12 +65,15 @@ interface EventAnalyserApiService {
     @PUT("events")
     suspend fun putEvent(@Query("id") id: Int, @Body eventRequest: EventRequest): EventResponse
 
+    @GET("subjects")
+    suspend fun getAllSubjects(): List<SubjectResponse>
+
     // Reports
     @GET("reports/types")
-    suspend fun getReportTypes(): Array<String>
+    suspend fun getReportTypes(): List<String>
 
     @GET("reports")
-    suspend fun getReportData(@Query("type") type: String): EventsReportsData
+    suspend fun getReportData(@Query("type") type: String, @Query("subject_id") subjectID: Int): EventsReportsData
 }
 
 object EventAnalyserApi {
@@ -90,8 +99,8 @@ object EventAnalyserApi {
             .build()
 
         val retrofit = Retrofit.Builder()
-            .addConverterFactory(Json.asConverterFactory("application/json".toMediaType()))
             .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .addConverterFactory(Json.asConverterFactory("application/json".toMediaType()))
             .baseUrl(BASE_URL)
             .client(client)
             .build()

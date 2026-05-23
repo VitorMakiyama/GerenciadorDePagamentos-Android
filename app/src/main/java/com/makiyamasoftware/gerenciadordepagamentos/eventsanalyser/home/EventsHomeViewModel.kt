@@ -6,11 +6,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network.EventAnalyserApi
 import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network.EventAnalyserApiService
 import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network.EventRequest
 import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network.EventResponse
-import com.makiyamasoftware.gerenciadordepagamentos.settings.SettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json

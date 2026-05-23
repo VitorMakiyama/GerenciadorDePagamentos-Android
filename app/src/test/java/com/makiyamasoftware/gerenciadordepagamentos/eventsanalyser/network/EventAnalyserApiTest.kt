@@ -100,11 +100,11 @@ class EventAnalyserApiTest {
         server.enqueue(MockResponse().setBody("""{"type": "BASIC", "weekly":"1,0","monthly":"4,0","sigma":"0,5","start_date":"2026-05-16","total_occurrences":"10"}"""))
 
         val retrofit = getRetrofitService(server.url("/"))
-        val result = retrofit.getReportData(EventsReportType.BASIC.name)
+        val result = retrofit.getReportData(EventsReportType.BASIC.name, 1)
 
         val request = server.takeRequest()
 
-        assertThat(request.path).isEqualTo("/reports?type=BASIC")
+        assertThat(request.path).isEqualTo("/reports?type=BASIC&subject_id=1")
         assertThat(result).isEqualTo(
             EventsReportsData.BasicReportData(
                 "1,0",
@@ -121,11 +121,11 @@ class EventAnalyserApiTest {
         server.enqueue(MockResponse().setBody("""{"type": "CHART", "data":"TODO: REMAKE THIS DATA STRUCTURE"}"""))
 
         val retrofit = getRetrofitService(server.url("/"))
-        val result = retrofit.getReportData(EventsReportType.CHART.name)
+        val result = retrofit.getReportData(EventsReportType.CHART.name, 1)
 
         val request = server.takeRequest()
 
-        assertThat(request.path).isEqualTo("/reports?type=CHART")
+        assertThat(request.path).isEqualTo("/reports?type=CHART&subject_id=1")
         assertThat(result).isEqualTo(EventsReportsData.ChartReportData("TODO: REMAKE THIS DATA STRUCTURE"))
     }
 }

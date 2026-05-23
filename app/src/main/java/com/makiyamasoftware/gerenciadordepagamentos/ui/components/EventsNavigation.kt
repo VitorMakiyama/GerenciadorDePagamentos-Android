@@ -16,6 +16,7 @@ import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.home.EventsHo
 import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.home.EventsHomeViewModel
 import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network.EventAnalyserApi
 import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.reports.EventsReportsScreen
+import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.reports.EventsReportsViewModel
 import com.makiyamasoftware.gerenciadordepagamentos.settings.SettingsRepository
 import kotlinx.serialization.Serializable
 
@@ -87,7 +88,7 @@ fun EventsNavHost(
         )
 
         // Events Reports
-        eventsReportsDestination()
+        eventsReportsDestination(repository = repository)
     }
 }
 
@@ -112,9 +113,17 @@ fun NavGraphBuilder.eventsHomeDestination(
     }
 }
 
-fun NavGraphBuilder.eventsReportsDestination() {
+fun NavGraphBuilder.eventsReportsDestination(
+    repository: SettingsRepository
+) {
     composable<EventsReportsDestination> {
-        EventsReportsScreen()
+        val viewModel: EventsReportsViewModel =
+            viewModel(factory = object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return EventsReportsViewModel(EventAnalyserApi.getService(repository)) as T
+                }
+            })
+        EventsReportsScreen(viewModel)
     }
     Log.d(TAG, "Navigated to Events Reports")
 }

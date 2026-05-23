@@ -20,7 +20,7 @@ import com.makiyamasoftware.gerenciadordepagamentos.R
 
 @Composable
 fun MultipleFilterChip(
-    chipLabels: Array<String>,
+    chipLabels: List<String>,
     onClickChip: (String) -> Unit,
     selected: String
 ) {
