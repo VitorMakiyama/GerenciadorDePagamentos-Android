@@ -43,7 +43,8 @@ fun EventsReportsScreen(viewModel: EventsReportsViewModel) {
 
     LaunchedEffect(uiState) {
         val success = (uiState as? EventsReportsUIState.Success)
-        if (success?.reportsData != null) {
+        if (success != null && success.reportsData == null) {
+            // If uiState is Success and reportsData is null
             viewModel.getReportData(
                 reportType = viewModel.selectedReportType,
                 subjectID = viewModel.selectedSubjectID
@@ -51,21 +52,19 @@ fun EventsReportsScreen(viewModel: EventsReportsViewModel) {
         }
     }
 
-    val reportData = mapOf<String, EventsReportsData>(
-        Pair(
-            EventsReportType.BASIC.name, EventsReportsData.BasicReportData(
-                weekly = "1,0",
-                monthly = "4,0",
-                sigma = "0,5",
-                startDate = "2026-05-16",
-                totalOccurrences = "10",
-            )
-        ),
-        Pair(EventsReportType.CHART.name, EventsReportsData.ChartReportData(data = "Teste"))
-    )
-
     when (uiState) {
         is EventsReportsUIState.Success -> {
+            val reportData = uiState.reportsData ?: EventsReportsData.BasicReportData(
+                type = "",
+                details = BasicReport(
+                    weekly = "0",
+                    monthly = "0",
+                    sigma = "0",
+                    startDate = "",
+                    totalOccurrences = "0"
+                ),
+            )
+
             EventsReportsContent(
                 modifier = Modifier,
                 isConnectionError = false,
@@ -74,7 +73,7 @@ fun EventsReportsScreen(viewModel: EventsReportsViewModel) {
                 selectedReport = viewModel.selectedReportType,
                 reportOptions = uiState.reportTypes,
                 subjectIDs = uiState.subjectIDs,
-                reportData = reportData[viewModel.selectedReportType]!!,
+                reportData = reportData,
             )
         }
 
@@ -86,7 +85,7 @@ fun EventsReportsScreen(viewModel: EventsReportsViewModel) {
             selectedReport = viewModel.selectedReportType,
             reportOptions = listOf(),
             subjectIDs = listOf(),
-            reportData = EventsReportsData.ChartReportData(data = ""),
+            reportData = EventsReportsData.ChartReportData(type = "", details = ""),
             onClickRetry = viewModel::pingEventsAnalyserServer
         )
 
@@ -213,11 +212,14 @@ fun EventsReportsContentPreview() {
         "Teste 6"
     )
     val reportData = EventsReportsData.BasicReportData(
-        weekly = "1,0",
-        monthly = "4,0",
-        sigma = "0,5",
-        startDate = "2026-05-16",
-        totalOccurrences = "10",
+        type = "BASIC",
+        details = BasicReport(
+            weekly = "1,0",
+            monthly = "4,0",
+            sigma = "0,5",
+            startDate = "2026-05-16",
+            totalOccurrences = "10",
+        ),
     )
 
     GerenciadorDePagamentosTheme {

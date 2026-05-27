@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.makiyamasoftware.gerenciadordepagamentos.R
+import com.makiyamasoftware.gerenciadordepagamentos.beautifyText
 
 @Composable
 fun MultipleFilterChip(
@@ -36,7 +37,7 @@ fun MultipleFilterChip(
                 onClick = {
                     onClickChip(chipLabel)
                 },
-                label = { Text(text = chipLabel) },
+                label = { Text(text = beautifyText(chipLabel)) },
                 selected = selected == chipLabel,
                 trailingIcon = if (selected == chipLabel) {
                     {

@@ -339,6 +339,32 @@ fun parseStringToDouble(stringDouble: String): Double? {
 }
 
 /**
+ * Receives the following text: CAPITALIZED, WITH_UNDERSCORE. And converts it to
+ * a readable text as follows: Capitalized, With Underscore
+ */
+fun beautifyText(text: String): String {
+    var beautified = text.replace("_", " ")
+    beautified = beautified.lowercase()
+
+    val chars = beautified.toCharArray()
+    for (i in chars.indices) {
+        if (i == 0) {
+            chars[i] = chars[i].uppercaseChar()
+        }
+        if (chars[i] == ' ') {
+            // if is space (' '), replace the next char (may return error)
+            try {
+                chars[i + 1] = chars[i + 1].uppercaseChar()
+            } catch (e: IndexOutOfBoundsException) {
+                Log.e("Utils", "Could not replace next char after space ' ', nothing there! Text: '$text'")
+            }
+        }
+    }
+    beautified = String(chars)
+    return beautified
+}
+
+/**
  * Classes for Testing and previewing content
  */
 class ApplicationFake : Application()

@@ -47,7 +47,7 @@ class EventsReportsViewModel(val retrofitService: EventAnalyserApiService) : Vie
         uiState = try {
             val reportsTypes = retrofitService.getReportTypes()
             val subjects = retrofitService.getAllSubjects()
-
+            Log.i(TAG, "Got these types $reportsTypes and subjects $subjects from server")
             selectedReportType = reportsTypes.first()
             selectedSubjectID = subjects.first().id
 
@@ -71,7 +71,7 @@ class EventsReportsViewModel(val retrofitService: EventAnalyserApiService) : Vie
                 val result = retrofitService.getReportData(reportType, subjectID)
                 val success = uiState as EventsReportsUIState.Success
 
-                Log.e(TAG, "Got this report from server: $result")
+                Log.i(TAG, "Got this report from server: $result")
                 when(reportType) {
                     EventsReportType.BASIC.name -> {
                         EventsReportsUIState.Success(
@@ -103,12 +103,12 @@ class EventsReportsViewModel(val retrofitService: EventAnalyserApiService) : Vie
 
     fun onChangeReportType(newType: String) {
         selectedReportType = newType
-//        getReportData(selectedReportType, selectedSubjectID) TODO: once the endpoint is implemented
+        getReportData(selectedReportType, selectedSubjectID)
     }
 
     fun onChangeSubjectID(newID: String) {
         selectedSubjectID = newID.toInt()
-//        getReportData(selectedReportType, selectedSubjectID) TODO: once the endpoint is implemented
+        getReportData(selectedReportType, selectedSubjectID)
     }
 
     fun pingEventsAnalyserServer() {

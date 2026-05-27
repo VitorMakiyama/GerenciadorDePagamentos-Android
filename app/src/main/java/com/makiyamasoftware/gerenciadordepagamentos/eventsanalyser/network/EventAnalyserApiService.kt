@@ -73,7 +73,10 @@ interface EventAnalyserApiService {
     suspend fun getReportTypes(): List<String>
 
     @GET("reports")
-    suspend fun getReportData(@Query("type") type: String, @Query("subject_id") subjectID: Int): EventsReportsData
+    suspend fun getReportData(
+        @Query("type") type: String,
+        @Query("subject_id") subjectID: Int
+    ): EventsReportsData
 }
 
 object EventAnalyserApi {
@@ -86,8 +89,14 @@ object EventAnalyserApi {
                 "type"
             ) // "type" is the key inside JSON
                 // 2. Maps JSON value for each corresponding Kotlin class
-                .withSubtype(EventsReportsData.BasicReportData::class.java, EventsReportType.BASIC.name)
-//                .withSubtype(EventsReportsData.ChartReportData::class.java, EventsReports.CHART.name)
+                .withSubtype(
+                    EventsReportsData.BasicReportData::class.java,
+                    EventsReportType.BASIC.name
+                )
+                .withSubtype(
+                    EventsReportsData.ChartReportData::class.java,
+                    EventsReportType.CHART.name
+                )
         )
         .addLast(KotlinJsonAdapterFactory())
         .build()

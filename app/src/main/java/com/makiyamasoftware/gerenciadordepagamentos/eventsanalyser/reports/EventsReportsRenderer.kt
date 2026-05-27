@@ -25,22 +25,30 @@ enum class EventsReportType {
 }
 
 sealed class EventsReportsData {
+    abstract val type: String
     @JsonClass(generateAdapter = true)
     data class BasicReportData(
-        val weekly: String,
-        val monthly: String,
-        val sigma: String,
-        @param:Json(name = "start_date")
-        val startDate: String,
-        @param:Json(name = "total_occurrences")
-        val totalOccurrences: String
+        override val type: String,
+        val details: BasicReport
     ) : EventsReportsData()
 
     // TODO: Enhance this type of report
     data class ChartReportData(
-        val data: String
+        override val type: String,
+        val details: String
     ) : EventsReportsData()
 }
+
+@JsonClass(generateAdapter = true)
+data class BasicReport(
+    val weekly: String,
+    val monthly: String,
+    val sigma: String,
+    @param:Json(name = "start_date")
+    val startDate: String,
+    @param:Json(name = "total_occurrences")
+    val totalOccurrences: String
+)
 
 @Composable
 fun EventsReportsRenderer(
@@ -51,18 +59,18 @@ fun EventsReportsRenderer(
         EventsReportType.BASIC.name -> {
             val basicReportData = reportData as EventsReportsData.BasicReportData
             BasicEventReport(
-                basicReportData.weekly,
-                basicReportData.monthly,
-                basicReportData.sigma,
-                basicReportData.startDate,
-                basicReportData.totalOccurrences
+                basicReportData.details.weekly,
+                basicReportData.details.monthly,
+                basicReportData.details.sigma,
+                basicReportData.details.startDate,
+                basicReportData.details.totalOccurrences
             )
         }
 
         EventsReportType.CHART.name -> {
             // TODO: Redo this
             val chartReportData = reportData as EventsReportsData.ChartReportData
-            Text(text = chartReportData.data)
+            Text(text = chartReportData.details)
         }
     }
 }
