@@ -88,7 +88,10 @@ fun EventsNavHost(
         )
 
         // Events Reports
-        eventsReportsDestination(repository = repository)
+        eventsReportsDestination(
+            repository = repository,
+            onShowSnackbar = onShowSnackbar
+        )
     }
 }
 
@@ -114,7 +117,8 @@ fun NavGraphBuilder.eventsHomeDestination(
 }
 
 fun NavGraphBuilder.eventsReportsDestination(
-    repository: SettingsRepository
+    repository: SettingsRepository,
+    onShowSnackbar: (message: String, actionLabel: String?, duration: SnackbarDuration, onActionPerformed: () -> Unit, onDismissed: () -> Unit) -> Unit,
 ) {
     composable<EventsReportsDestination> {
         val viewModel: EventsReportsViewModel =
@@ -123,7 +127,10 @@ fun NavGraphBuilder.eventsReportsDestination(
                     return EventsReportsViewModel(EventAnalyserApi.getService(repository)) as T
                 }
             })
-        EventsReportsScreen(viewModel)
+        EventsReportsScreen(
+            viewModel = viewModel,
+            onShowSnackbar = onShowSnackbar,
+        )
     }
     Log.d(TAG, "Navigated to Events Reports")
 }

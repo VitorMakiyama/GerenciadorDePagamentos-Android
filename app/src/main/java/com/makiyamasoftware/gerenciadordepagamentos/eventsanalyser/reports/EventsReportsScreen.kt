@@ -18,6 +18,7 @@ import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,7 +39,10 @@ import com.makiyamasoftware.gerenciadordepagamentos.ui.components.MultipleFilter
 import com.makiyamasoftware.gerenciadordepagamentos.ui.theme.GerenciadorDePagamentosTheme
 
 @Composable
-fun EventsReportsScreen(viewModel: EventsReportsViewModel) {
+fun EventsReportsScreen(
+    viewModel: EventsReportsViewModel,
+    onShowSnackbar: (message: String, actionLabel: String?, duration: SnackbarDuration, onActionPerformed: () -> Unit, onDismissed: () -> Unit) -> Unit,
+) {
     val uiState = viewModel.uiState
 
     LaunchedEffect(uiState) {
@@ -54,17 +58,6 @@ fun EventsReportsScreen(viewModel: EventsReportsViewModel) {
 
     when (uiState) {
         is EventsReportsUIState.Success -> {
-            val reportData = uiState.reportsData ?: EventsReportsData.BasicReportData(
-                type = "",
-                details = BasicReport(
-                    weekly = "0",
-                    monthly = "0",
-                    sigma = "0",
-                    startDate = "",
-                    totalOccurrences = "0"
-                ),
-            )
-
             EventsReportsContent(
                 modifier = Modifier,
                 isConnectionError = false,
@@ -72,24 +65,37 @@ fun EventsReportsScreen(viewModel: EventsReportsViewModel) {
                 onChangeReportType = viewModel::onChangeReportType,
                 selectedReport = viewModel.selectedReportType,
                 reportOptions = uiState.reportTypes,
+                selectedSubjectID = viewModel.selectedSubjectID.toString(),
                 subjectIDs = uiState.subjectIDs,
-                reportData = reportData,
+                reportData = uiState.reportsData,
             )
         }
 
         is EventsReportsUIState.Error -> EventsReportsContent(
             modifier = Modifier,
-            isConnectionError = true,
-            onChangeSubjectID = { },
-            onChangeReportType = { },
+            isConnectionError = uiState.connectionError,
+            isReportDataRetrieveError = uiState.reportDataRetrieveError,
+            onChangeSubjectID = viewModel::onChangeSubjectID,
+            onChangeReportType = viewModel::onChangeReportType,
             selectedReport = viewModel.selectedReportType,
-            reportOptions = listOf(),
-            subjectIDs = listOf(),
-            reportData = EventsReportsData.ChartReportData(type = "", details = ""),
+            reportOptions = viewModel.reportsTypes,
+            selectedSubjectID = viewModel.selectedSubjectID.toString(),
+            subjectIDs = viewModel.subjectsIDs,
+            reportData = null,
             onClickRetry = viewModel::pingEventsAnalyserServer
         )
 
         is EventsReportsUIState.Loading -> LoadingOverlay(isLoading = true)
+    }
+
+    if (uiState.showSnackbar) {
+        onShowSnackbar(
+            uiState.snackbarMessage,
+            null,
+            SnackbarDuration.Long,
+            {},
+            viewModel::finishedShowingSnackbar
+        )
     }
 }
 
@@ -97,12 +103,14 @@ fun EventsReportsScreen(viewModel: EventsReportsViewModel) {
 fun EventsReportsContent(
     modifier: Modifier,
     isConnectionError: Boolean,
+    isReportDataRetrieveError: Boolean = false,
     onChangeSubjectID: (String) -> Unit,
     onChangeReportType: (String) -> Unit,
     selectedReport: String,
     reportOptions: List<String>,
+    selectedSubjectID: String,
     subjectIDs: List<String>,
-    reportData: EventsReportsData,
+    reportData: EventsReportsData?,
     onClickRetry: () -> Unit = {}
 ) {
     val smallPadding = dimensionResource(R.dimen.margin_small)
@@ -141,6 +149,7 @@ fun EventsReportsContent(
                 ) {
                     SubjectSelectionDropdown(
                         options = subjectIDs,
+                        selectedOption = selectedSubjectID,
                         onChangeSubjectID = onChangeSubjectID
                     )
                     MultipleFilterChip(
@@ -148,7 +157,10 @@ fun EventsReportsContent(
                         onClickChip = { newReportType -> onChangeReportType(newReportType) },
                         selected = selectedReport
                     )
-                    EventsReportsRenderer(selectedReport, reportData)
+                    reportData?.let {
+                        // If reportData is not null, there is data, so show it!
+                        EventsReportsRenderer(selectedReport, reportData, isReportDataRetrieveError)
+                    }
                 }
             }
         }
@@ -159,10 +171,10 @@ fun EventsReportsContent(
 @Composable
 fun SubjectSelectionDropdown(
     options: List<String>,
+    selectedOption: String,
     onChangeSubjectID: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var selectedOption by remember { mutableStateOf(options.first()) }
     var expanded by remember { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(
@@ -173,9 +185,7 @@ fun SubjectSelectionDropdown(
         OutlinedTextField(
             value = selectedOption,
             label = { Text(text = stringResource(R.string.EventReports_subjectDropdownMenu_label)) },
-            onValueChange = { s: String ->
-                selectedOption = s
-            },
+            onValueChange = {},
             readOnly = true,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = modifier
@@ -190,7 +200,6 @@ fun SubjectSelectionDropdown(
                 DropdownMenuItem(
                     text = { Text(option) },
                     onClick = {
-                        selectedOption = option
                         expanded = false
                         onChangeSubjectID(option)
                     }
@@ -230,6 +239,7 @@ fun EventsReportsContentPreview() {
             onChangeReportType = {},
             selectedReport = reportOptions.first(),
             reportOptions = reportOptions,
+            selectedSubjectID = "Teste 1",
             subjectIDs = listOf("Teste 1", "teste2", "teste32"),
             reportData = reportData,
             onClickRetry = {},

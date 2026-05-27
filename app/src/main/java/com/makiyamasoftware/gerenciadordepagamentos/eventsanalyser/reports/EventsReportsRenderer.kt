@@ -26,6 +26,7 @@ enum class EventsReportType {
 
 sealed class EventsReportsData {
     abstract val type: String
+
     @JsonClass(generateAdapter = true)
     data class BasicReportData(
         override val type: String,
@@ -53,24 +54,29 @@ data class BasicReport(
 @Composable
 fun EventsReportsRenderer(
     selectedReport: String,
-    reportData: EventsReportsData
+    reportData: EventsReportsData,
+    reportDataRetrieveError: Boolean
 ) {
-    when (selectedReport.uppercase()) {
-        EventsReportType.BASIC.name -> {
-            val basicReportData = reportData as EventsReportsData.BasicReportData
-            BasicEventReport(
-                basicReportData.details.weekly,
-                basicReportData.details.monthly,
-                basicReportData.details.sigma,
-                basicReportData.details.startDate,
-                basicReportData.details.totalOccurrences
-            )
-        }
+    if (!reportDataRetrieveError) {
+        when (selectedReport.uppercase()) {
+            EventsReportType.BASIC.name -> {
+                val basicReportData = reportData as? EventsReportsData.BasicReportData
+                basicReportData?.let {
+                    BasicEventReport(
+                        basicReportData.details.weekly,
+                        basicReportData.details.monthly,
+                        basicReportData.details.sigma,
+                        basicReportData.details.startDate,
+                        basicReportData.details.totalOccurrences
+                    )
+                }
+            }
 
-        EventsReportType.CHART.name -> {
-            // TODO: Redo this
-            val chartReportData = reportData as EventsReportsData.ChartReportData
-            Text(text = chartReportData.details)
+            EventsReportType.CHART.name -> {
+                // TODO: Redo this
+                val chartReportData = reportData as? EventsReportsData.ChartReportData
+                Text(text = chartReportData?.details ?: "")
+            }
         }
     }
 }
