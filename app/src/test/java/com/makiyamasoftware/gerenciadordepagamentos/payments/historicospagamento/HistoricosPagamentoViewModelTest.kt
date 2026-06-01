@@ -88,31 +88,7 @@ class HistoricosPagamentoViewModelTest {
         pagamentosRepository.inserirHistoricoDePagamento(historico2)
         pagamentosRepository.inserirHistoricoDePagamento(historico3)
 
-        historicosPagamentoViewModel = HistoricosPagamentoViewModel(pagamentosRepository, ApplicationProvider.getApplicationContext(), pagamento)
-    }
-
-    @Test
-    fun getHistoricoAt_getsHistoricoAtCorrectIndex() {
-        // When trying to get an history at an index 0 and 1
-        val history0 = historicosPagamentoViewModel.getHistoricoAt(0)
-        val history1 = historicosPagamentoViewModel.getHistoricoAt(1)
-
-        // Then the returned histories are the expected ones (the most recent history should be the first in the list)
-        val expectedLatestHistory = pagamentosRepository.historicosData[3]
-        assertEquals(expectedLatestHistory?.id, history0.id)
-        assertEquals(expectedLatestHistory?.data, history0.data)
-        assertEquals(expectedLatestHistory?.preco, history0.preco)
-        assertEquals(expectedLatestHistory?.pagadorId, history0.pagadorId)
-        assertEquals(expectedLatestHistory?.pagamentoId, history0.pagamentoId)
-        assertEquals(expectedLatestHistory?.estaPago, history0.estaPago)
-
-        val expectedSecondLatestHistory = pagamentosRepository.historicosData[2]
-        assertEquals(expectedSecondLatestHistory?.id, history1.id)
-        assertEquals(expectedSecondLatestHistory?.data, history1.data)
-        assertEquals(expectedSecondLatestHistory?.preco, history1.preco)
-        assertEquals(expectedSecondLatestHistory?.pagadorId, history1.pagadorId)
-        assertEquals(expectedSecondLatestHistory?.pagamentoId, history1.pagamentoId)
-        assertEquals(expectedSecondLatestHistory?.estaPago, history1.estaPago)
+        historicosPagamentoViewModel = HistoricosPagamentoViewModel(pagamentosRepository,pagamento)
     }
 
     @Test
@@ -120,7 +96,7 @@ class HistoricosPagamentoViewModelTest {
         // When trying to get an history at an index out of bounds
         val oobIndex = 100
         val exception = assertThrows(IndexOutOfBoundsException::class.java) {
-            historicosPagamentoViewModel.getHistoricoAt(oobIndex)
+            historicosPagamentoViewModel.uiState.value.histories[oobIndex]
         }
 
         // Then throws IndexOutOfBoundsException with message
@@ -132,47 +108,51 @@ class HistoricosPagamentoViewModelTest {
 
     @Test
     fun onClickStatus_isSingleStatusChange() {
+        val histories = pagamentosRepository.getHistoricosDePagamento(1)
         // When click to change history status that has NO updatable previous histories
-        historicosPagamentoViewModel.onClickStatus(2)
+        historicosPagamentoViewModel.onClickStatus(histories[2])
 
         // Then the eventUpdateStatus is set to SINGULAR
-        assertEquals(StatusChangeType.SINGULAR, historicosPagamentoViewModel.eventUpdateStatus.getOrAwaitValue())
+        assertEquals(StatusChangeType.SINGULAR, historicosPagamentoViewModel.uiState.value.statusChangeType)
     }
 
     @Test
     fun onClickStatus_isMultipleStatusChange() {
+        val histories = pagamentosRepository.getHistoricosDePagamento(1)
         // When click to change history status that HAS updatable previous histories
-        historicosPagamentoViewModel.onClickStatus(0)
+        historicosPagamentoViewModel.onClickStatus(histories[0])
 
         // Then the eventUpdateStatus is set to MULTIPLE
-        assertEquals(StatusChangeType.MULTIPLE, historicosPagamentoViewModel.eventUpdateStatus.getOrAwaitValue())
+        assertEquals(StatusChangeType.MULTIPLE, historicosPagamentoViewModel.uiState.value.statusChangeType)
     }
 
     @Test
     fun onClickStatus_isMultipleStatusChange_whenAtLeastOnePreviousHistoryIsUnpaid() {
         // When click to change history status that HAS updatable previous histories
         pagamentosRepository.historicosData[2]?.estaPago = true
-        historicosPagamentoViewModel.onClickStatus(0)
+        historicosPagamentoViewModel.onClickStatus(pagamentosRepository.historicosData[2]!!)
 
         // Then the eventUpdateStatus is set to MULTIPLE
-        assertEquals(StatusChangeType.MULTIPLE, historicosPagamentoViewModel.eventUpdateStatus.getOrAwaitValue())
+        assertEquals(StatusChangeType.MULTIPLE, historicosPagamentoViewModel.uiState.value.statusChangeType)
     }
 
     @Test
     fun onClickStatus_isSingular_whenSelectedHistoryStatusAlreadyFalse() {
+        val histories = pagamentosRepository.getHistoricosDePagamento(1)
         // When click to change history status that HAS updatable previous histories, but the selected one is already 'paid'
         pagamentosRepository.historicosData[3]?.estaPago = true
-        historicosPagamentoViewModel.onClickStatus(0)
+        historicosPagamentoViewModel.onClickStatus(histories[0])
 
         // Then the eventUpdateStatus is set to SINGULAR
-        assertEquals(StatusChangeType.SINGULAR, historicosPagamentoViewModel.eventUpdateStatus.getOrAwaitValue())
+        assertEquals(StatusChangeType.SINGULAR, historicosPagamentoViewModel.uiState.value.statusChangeType)
     }
 
     @Test
     fun onAtualizarStatus_updateStatus() = runTest {
+        val histories = pagamentosRepository.getHistoricosDePagamento(1)
         // When updating (toggling) and saving one history status change
-        historicosPagamentoViewModel.onClickStatus(2)
-        historicosPagamentoViewModel.onAtualizarStatus()
+        historicosPagamentoViewModel.onClickStatus(histories[2])
+        historicosPagamentoViewModel.onUpdateSingleStatus()
 
         // Then the status should be changed
         val updatedHistory = pagamentosRepository.historicosData[1]
@@ -182,9 +162,10 @@ class HistoricosPagamentoViewModelTest {
 
     @Test
     fun onAtualizarMultiplosStatus_updateMultipleStatus_WhenAllAreUnpaid() = runTest {
+        val histories = pagamentosRepository.getHistoricosDePagamento(1)
         // When updating (toggling) and saving multiple history status change
-        historicosPagamentoViewModel.onClickStatus(0) // this should be the latest one
-        historicosPagamentoViewModel.onAtualizarMultiplosStatus()
+        historicosPagamentoViewModel.onClickStatus(histories[0]) // this should be the latest one
+        historicosPagamentoViewModel.onUpdateMultipleStatus()
 
         // Then all the status should have changed, except the one clicked (latest one)
         val updatedHistory1 = pagamentosRepository.historicosData[1]
@@ -200,10 +181,11 @@ class HistoricosPagamentoViewModelTest {
 
     @Test
     fun onAtualizarMultiplosStatus_updateMultipleStatus_WhenOneIsAlreadyPaid() = runTest {
+        val histories = pagamentosRepository.getHistoricosDePagamento(1)
         // When updating (toggling) and saving multiple history status change, but one is already paid
-        historicosPagamentoViewModel.onClickStatus(0) // this should be the latest one
+        historicosPagamentoViewModel.onClickStatus(histories[0]) // this should be the latest one
         pagamentosRepository.historicosData[2]?.estaPago = true
-        historicosPagamentoViewModel.onAtualizarMultiplosStatus()
+        historicosPagamentoViewModel.onUpdateMultipleStatus()
 
         // Then all the status should have changed, except the one clicked (latest one)
         val updatedHistory1 = pagamentosRepository.historicosData[1]
@@ -215,19 +197,5 @@ class HistoricosPagamentoViewModelTest {
         val updatedHistory3 = pagamentosRepository.historicosData[3]
         requireNotNull(updatedHistory3)
         assertEquals(false, updatedHistory3.estaPago)
-    }
-
-    @Test
-    fun getHistoricoClicado_errorSelectedHistoryNotSet() = runTest {
-        // When trying to get the selected history, if it was not set
-        val exception = assertThrows(UninitializedPropertyAccessException::class.java) {
-            historicosPagamentoViewModel.getHistoricoClicado()
-        }
-
-        // Then throws UninitializedPropertyAccessException with message
-        assertEquals(
-            "Acessando historico clicado sem seta-lo!",
-            exception.message
-        )
     }
 }

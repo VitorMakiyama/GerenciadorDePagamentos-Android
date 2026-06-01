@@ -35,7 +35,6 @@ data class EventRequest(
     val insertTS: String,
 )
 
-@JsonClass(generateAdapter = true)
 @Serializable
 data class EventResponse(
     val id: Int,

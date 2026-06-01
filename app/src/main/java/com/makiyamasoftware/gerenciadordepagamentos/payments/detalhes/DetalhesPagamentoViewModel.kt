@@ -65,19 +65,20 @@ class DetalhesPagamentoViewModel(
     val paymentPeople: StateFlow<List<Pessoa>> = _paymentPeople
 
     init {
-        viewModelScope.launch(Dispatchers.IO) {
-            fetchPeopleAndPaymentHistoriesFromDB()
-        }
+        fetchPeopleAndPaymentHistoriesFromDB()
     }
 
     fun fetchPeopleAndPaymentHistoriesFromDB() {
-        _paymentHistories.update {
-            dataSource.getHistoricosDePagamento(pagamentoSelecionado.id)
+        viewModelScope.launch(Dispatchers.IO) {
+            _paymentHistories.update {
+                dataSource.getHistoricosDePagamento(pagamentoSelecionado.id)
+            }
+            _paymentPeople.update {
+                dataSource.getPessoasDoPagamento(pagamentoSelecionado.id)
+            }
+            Log.i(TAG, "Requisitou os historicos e as pessoas do DB")
+            updateLatestHistory()
         }
-        _paymentPeople.update {
-            dataSource.getPessoasDoPagamento(pagamentoSelecionado.id)
-        }
-        Log.i(TAG, "Requisitou os historicos e as pessoas do DB")
     }
 
     fun toggleDialog() {

@@ -1,55 +1,76 @@
 package com.makiyamasoftware.gerenciadordepagamentos.payments.historicospagamento
 
-import android.app.Application
 import android.util.Log
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabaseDao
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 private const val TAG = "HistoricosPagamentoViewModel"
 
-class HistoricosPagamentoViewModel(private val dataSource: PagamentosDatabaseDao,
-                                   val app: Application,
-                                   val pagamentoSelecionado : Pagamento): AndroidViewModel(app) {
-    lateinit var historicos: LiveData<List<HistoricoDePagamento>>
-    lateinit var pessoas: LiveData<List<Pessoa>>
-    var historicoClicado: Int = -1
+data class PaymentHistoriesUIState(
+    val histories: List<HistoricoDePagamento>,
+    val people: List<Pessoa>,
+    val statusChangeType: StatusChangeType? = null,
+    val updateData: Boolean = false,
+)
+
+class HistoricosPagamentoViewModel(
+    private val dataSource: PagamentosDatabaseDao,
+    val pagamentoSelecionado: Pagamento
+) : ViewModel() {
+    private val _uiState = MutableStateFlow(PaymentHistoriesUIState(listOf(),listOf()))
+    val uiState: StateFlow<PaymentHistoriesUIState> = _uiState.asStateFlow()
+
+    var clickedHistoryIndex: Int = -1
 
     init {
-        viewModelScope.launch {
-            historicos = dataSource.getHistoricosDePagamentoLD(pagamentoSelecionado.id)
-            pessoas = dataSource.getPessoasDoPagamentoLD(pagamentoSelecionado.id)
+        updateDataFromDB()
+    }
+
+    fun updateDataFromDB() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val histories = dataSource.getHistoricosDePagamento(pagamentoSelecionado.id)
+            val people = dataSource.getPessoasDoPagamento(pagamentoSelecionado.id)
+            _uiState.update { currentState ->
+                currentState.copy(
+                    histories = histories,
+                    people = people,
+                    updateData = false
+                )
+            }
         }
     }
-
-    fun getHistoricoAt(index : Int) : HistoricoDePagamento {
-        Log.d(TAG, "HISTS SIZE: ${historicos.value!!.size} and index $index")
-        return historicos.value!![index]
-    }
-
-    private val _eventUpdateStatus = MutableLiveData<StatusChangeType>()
-    val eventUpdateStatus : LiveData<StatusChangeType>
-        get() = _eventUpdateStatus
 
     /** Função que gerencia o click e atualização do status de um historico,
      *      caso o historico clicado esteja NAO PAGO, verifica se existem
      *      historicos NAO PAGOS antes e pergunta se deseja marcar todos
      *      os historicos anteriores como pagos atraves de um AlertDialog
      * */
-    fun onClickStatus(position: Int) {
-        historicoClicado = position
+    fun onClickStatus(history: HistoricoDePagamento) {
+        clickedHistoryIndex = uiState.value.histories.indexOf(history)
         if (historicosAnterioresAtualizaveis() && !getHistoricoClicado().estaPago) {
-            _eventUpdateStatus.value = StatusChangeType.MULTIPLE
+            // opção de mostrar dialog para mudar multiplos Historicos
+            _uiState.update {
+                it.copy(
+                    statusChangeType = StatusChangeType.MULTIPLE
+                )
+            }
         } else {
-            _eventUpdateStatus.value = StatusChangeType.SINGULAR
+            _uiState.update {
+                it.copy(
+                    statusChangeType = StatusChangeType.SINGULAR
+                )
+            }
         }
     }
 
@@ -57,19 +78,26 @@ class HistoricosPagamentoViewModel(private val dataSource: PagamentosDatabaseDao
      *      retorna true em caso positivo.
      * */
     private fun historicosAnterioresAtualizaveis(): Boolean {
-        for (index in historicoClicado + 1..<historicos.value!!.size) {
+        for (index in clickedHistoryIndex + 1..< uiState.value.histories.size) {
             // Se achar um não pago, retorna true
-            if (!historicos.value!![index].estaPago) {
-                Log.d(TAG, "Historicos= ${historicos.value!![index]}")
+            if (!uiState.value.histories[index].estaPago) {
+                Log.d(TAG, "Previous unpaid history found= ${uiState.value.histories[index]}")
                 return true
             }
         }
         return false
     }
 
-    fun onAtualizarStatus() {
-        historicos.value!![historicoClicado].toogleStatus()
-        salvarNoBD(historicos.value!![historicoClicado])
+    fun onUpdateSingleStatus() {
+        val histories = _uiState.value.histories
+        histories[clickedHistoryIndex].toogleStatus()
+        _uiState.update {
+            it.copy(
+                histories = histories,
+                updateData = true
+            )
+        }
+        salvarNoBD(histories[clickedHistoryIndex])
     }
 
     private fun salvarNoBD(historico: HistoricoDePagamento) {
@@ -77,29 +105,40 @@ class HistoricosPagamentoViewModel(private val dataSource: PagamentosDatabaseDao
             salvarHistoricoNoBD(historico)
         }
     }
+
     private suspend fun salvarHistoricoNoBD(historico: HistoricoDePagamento) {
         withContext(Dispatchers.IO) {
             dataSource.updateHistoricoDePagamento(historico)
         }
     }
-    fun onAtualizarMultiplosStatus() {
+
+    fun onUpdateMultipleStatus() {
+        val histories = uiState.value.histories
         // começa a partir do item após o historico clicado
-        for (i in historicoClicado + 1..<historicos.value!!.size) {
-            if (!historicos.value!![i].estaPago) {
-                historicos.value!![i].toogleStatus()
-                salvarNoBD(historicos.value!![i])
+        for (i in clickedHistoryIndex + 1..< histories.size) {
+            if (!histories[i].estaPago) {
+                histories[i].toogleStatus()
+                salvarNoBD(histories[i])
             }
+        }
+        _uiState.update {
+            it.copy(
+                histories = histories
+            )
         }
     }
 
     fun getHistoricoClicado(): HistoricoDePagamento {
-        if (historicoClicado < 0) {
-            Log.e(TAG, "Erro, acessando historico clicado sem seta-lo!")
-            throw UninitializedPropertyAccessException("Acessando historico clicado sem seta-lo!")
-        } else {
-            return getHistoricoAt(historicoClicado)
+        return uiState.value.histories[clickedHistoryIndex]
+    }
+
+    fun onDismissChangeStatusAlertDialog() {
+        _uiState.update {
+            it.copy(
+                statusChangeType = null
+            )
         }
     }
 }
 
-enum class StatusChangeType { SINGULAR, MULTIPLE}
+enum class StatusChangeType { SINGULAR, MULTIPLE }

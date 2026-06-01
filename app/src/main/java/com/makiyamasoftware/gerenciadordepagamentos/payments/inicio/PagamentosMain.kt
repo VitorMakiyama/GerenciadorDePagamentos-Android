@@ -44,7 +44,7 @@ import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagament
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
 import com.makiyamasoftware.gerenciadordepagamentos.pagamentosMainViewModelFake
-import com.makiyamasoftware.gerenciadordepagamentos.ui.components.AlertDialogComponent
+import com.makiyamasoftware.gerenciadordepagamentos.ui.components.AlertDialog
 import com.makiyamasoftware.gerenciadordepagamentos.ui.theme.GerenciadorDePagamentosTheme
 
 private const val DEBUG_TAG = "PagamentosMainScreen"
@@ -107,7 +107,7 @@ fun PagamentosMainScreen(
         floatingActionButtonPosition = FabPosition.End,
     ) { padding ->
         if (mainPaymentsUIState.showDeleteDialog) {
-            AlertDialogComponent(
+            AlertDialog(
                 title = stringResource(R.string.clear_aviso_titulo),
                 message = stringResource(R.string.clear_aviso_mensagem),
                 onAffirmativeRequest = {

@@ -2,6 +2,7 @@ package com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network
 
 import com.google.common.truth.Truth.assertThat
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.reports.BasicReport
 import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.reports.EventsReportType
 import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.reports.EventsReportsData
 import com.squareup.moshi.Moshi
@@ -107,11 +108,14 @@ class EventAnalyserApiTest {
         assertThat(request.path).isEqualTo("/reports?type=BASIC&subject_id=1")
         assertThat(result).isEqualTo(
             EventsReportsData.BasicReportData(
-                "1,0",
-                "4,0",
-                "0,5",
-                "2026-05-16",
-                "10"
+                type = "BASIC",
+                details = BasicReport(
+                    "1,0",
+                    "4,0",
+                    "0,5",
+                    "2026-05-16",
+                    "10"
+                )
             )
         )
     }
@@ -126,7 +130,7 @@ class EventAnalyserApiTest {
         val request = server.takeRequest()
 
         assertThat(request.path).isEqualTo("/reports?type=CHART&subject_id=1")
-        assertThat(result).isEqualTo(EventsReportsData.ChartReportData("TODO: REMAKE THIS DATA STRUCTURE"))
+        assertThat(result).isEqualTo(EventsReportsData.ChartReportData(type = "CHART", details = "TODO: REMAKE THIS DATA STRUCTURE"))
     }
 }
 

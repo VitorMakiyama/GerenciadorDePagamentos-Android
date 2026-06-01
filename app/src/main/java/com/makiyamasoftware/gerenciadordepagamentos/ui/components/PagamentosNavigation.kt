@@ -16,8 +16,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
+import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabaseDao
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
 import com.makiyamasoftware.gerenciadordepagamentos.payments.detalhes.DetalhesPagamentoScreen
+import com.makiyamasoftware.gerenciadordepagamentos.payments.historicospagamento.HistoricosPagamentoScreen
 import com.makiyamasoftware.gerenciadordepagamentos.payments.inicio.PagamentosMainScreen
 import com.makiyamasoftware.gerenciadordepagamentos.payments.inicio.PagamentosMainViewModel
 import kotlinx.serialization.Serializable
@@ -78,6 +80,11 @@ data class PaymentDetails(
 ) : PaymentsDestination
 
 @Serializable
+data class AllPaymentHistories(
+    val payment: Pagamento
+) : PaymentsDestination
+
+@Serializable
 sealed interface PaymentsDestination
 
 fun NavGraphBuilder.paymentsListDestination(
@@ -116,10 +123,25 @@ fun NavController.navigateToPaymentDetails(
     )
 }
 
+fun NavController.navigateToAllHistories(
+    payment: Pagamento
+) {
+    Log.d(
+        "PagamentosMainPreview",
+        "Navigated to All Histories of $payment"
+    )
+    navigate(
+        route = AllPaymentHistories(
+            payment = payment,
+        )
+    )
+}
+
 fun NavGraphBuilder.detalhesPagamentoDestination(
     viewModel: PagamentosMainViewModel,
     topAppBarViewModel: DynamicTopAppBarViewModel,
-    onNavigateUp: () -> Unit
+    onNavigateUp: () -> Unit,
+    onNavigateToAllHistories: (Pagamento) -> Unit
 ) {
     composable<PaymentDetails>(
         typeMap = mapOf(
@@ -138,7 +160,25 @@ fun NavGraphBuilder.detalhesPagamentoDestination(
             latestPerson = details.person,
             setTopAppBarActions = topAppBarViewModel::setActions,
             setTopAppBarPayment = topAppBarViewModel::setPayment,
-            onNavigateUp = onNavigateUp
+            onNavigateUp = onNavigateUp,
+            onNavigateToAllHistories = { onNavigateToAllHistories(details.payment) }
+        )
+    }
+}
+
+fun NavGraphBuilder.historicosPagamentoDestination(
+    dataSource: PagamentosDatabaseDao,
+) {
+    composable<AllPaymentHistories>(
+        typeMap = mapOf(
+            typeOf<Pagamento>() to PaymentParameterType
+        )
+    ) { backStackEntry ->
+        val allHistories: AllPaymentHistories = backStackEntry.toRoute()
+
+        HistoricosPagamentoScreen(
+            dataSource = dataSource,
+            payment = allHistories.payment
         )
     }
 }
@@ -170,7 +210,15 @@ fun PaymentsNavHost(
         detalhesPagamentoDestination(
             viewModel = viewModel,
             topAppBarViewModel = topAppBarViewModel,
-            onNavigateUp = navController::navigateUp
+            onNavigateUp = navController::navigateUp,
+            onNavigateToAllHistories = { payment ->
+                navController.navigateToAllHistories(payment)
+            }
+        )
+
+        // Route to HistoricosPagamentoScreen
+        historicosPagamentoDestination(
+            dataSource = viewModel.database,
         )
     }
 }

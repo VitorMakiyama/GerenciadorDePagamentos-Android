@@ -10,12 +10,13 @@ import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabaseD
 /**
  * Cria o PagamentosDatabaseDao e o context para o o ViewModel
  * **/
-class HistoricosPagamentoViewModelFactory(private val dataSource : PagamentosDatabaseDao,
-                                          private val application: Application,
-                                          private val pagamento: Pagamento) : ViewModelProvider.Factory {
+class HistoricosPagamentoViewModelFactory(
+    private val dataSource: PagamentosDatabaseDao,
+    private val pagamento: Pagamento
+) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(HistoricosPagamentoViewModel::class.java)) {
-            return HistoricosPagamentoViewModel(dataSource, application, pagamento) as T
+            return HistoricosPagamentoViewModel(dataSource, pagamento) as T
         }
         throw IllegalArgumentException("ViewModel class desconhecida")
     }

@@ -38,7 +38,7 @@ import com.makiyamasoftware.gerenciadordepagamentos.ui.theme.GerenciadorDePagame
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AlertDialogComponent(
+fun AlertDialog(
 	modifier: Modifier = Modifier,
 	title: String = "",
 	message: String,
@@ -185,9 +185,9 @@ fun NoFrequencyPriceChangeAlertDialog(
 
 @Preview
 @Composable
-private fun AlertDialogComponentPreview() {
+private fun AlertDialogPreview() {
 	GerenciadorDePagamentosTheme {
-		AlertDialogComponent(
+		AlertDialog(
 			title = "Titulo",
 			message = stringResource(R.string.detalhesPagamento_status_alertMessage),
 			affirmativeText = pluralStringResource(R.plurals.generic_Update, 11),
