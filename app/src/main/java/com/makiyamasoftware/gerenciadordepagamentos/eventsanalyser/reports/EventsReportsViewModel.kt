@@ -8,11 +8,12 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network.EventAnalyserApiService
+import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network.EventsReportsApiService
 import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network.SubjectResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import okio.IOException
 import retrofit2.HttpException
+import java.io.IOException
 
 private const val TAG = "EventsReportsViewModel"
 
@@ -41,7 +42,10 @@ sealed class EventsReportsUIState {
     ) : EventsReportsUIState()
 }
 
-class EventsReportsViewModel(val retrofitService: EventAnalyserApiService) : ViewModel() {
+class EventsReportsViewModel(
+    val eventsReportsService: EventsReportsApiService,
+    val eventAnalyserService: EventAnalyserApiService
+) : ViewModel() {
     var uiState: EventsReportsUIState by mutableStateOf(EventsReportsUIState.Loading())
         private set
 
@@ -58,8 +62,8 @@ class EventsReportsViewModel(val retrofitService: EventAnalyserApiService) : Vie
 
     suspend fun getReportsTypesAndSubjectIDs() {
         uiState = try {
-            val types = retrofitService.getReportTypes()
-            val subjects = retrofitService.getAllSubjects()
+            val types = eventsReportsService.getReportTypes()
+            val subjects = eventAnalyserService.getAllSubjects()
             Log.i(TAG, "Got these types $types and subjects $subjects from server")
             selectedReportType = types.first()
             selectedSubjectID = subjects.first().id
@@ -71,6 +75,15 @@ class EventsReportsViewModel(val retrofitService: EventAnalyserApiService) : Vie
                 snackbarMessage = "",
                 reportTypes = types,
                 subjectIDs = subjectsIDs
+            )
+        } catch (e: IOException) {
+            val errorMessage = "IO Error: ${e.message}."
+            Log.e(TAG, "$errorMessage $e")
+            EventsReportsUIState.Error(
+                showSnackbar = true,
+                snackbarMessage = errorMessage,
+                connectionError = true,
+                reportDataRetrieveError = false
             )
         } catch (e: HttpException) {
             Log.e(TAG, "Error getting Report types or subject IDs: ${e.message}. $e")
@@ -90,7 +103,7 @@ class EventsReportsViewModel(val retrofitService: EventAnalyserApiService) : Vie
     fun getReportData(reportType: String, subjectID: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             uiState = try {
-                val result = retrofitService.getReportData(reportType, subjectID)
+                val result = eventsReportsService.getReportData(reportType, subjectID)
                 val success = uiState as EventsReportsUIState.Success
 
                 Log.i(TAG, "Got this report from server: $result")
@@ -125,6 +138,15 @@ class EventsReportsViewModel(val retrofitService: EventAnalyserApiService) : Vie
                         )
                     }
                 }
+            } catch (e: IOException) {
+                val errorMessage = "IO Error: ${e.message}."
+                Log.e(TAG, "$errorMessage $e")
+                EventsReportsUIState.Error(
+                    showSnackbar = true,
+                    snackbarMessage = errorMessage,
+                    connectionError = true,
+                    reportDataRetrieveError = false
+                )
             } catch (e: HttpException) {
                 Log.e(TAG, "Error getting report data: ${e.message}. $e")
                 val isConnectionError: Boolean = e.code() == 503
@@ -151,7 +173,7 @@ class EventsReportsViewModel(val retrofitService: EventAnalyserApiService) : Vie
     fun pingEventsAnalyserServer() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val pong = retrofitService.ping()
+                val pong = eventAnalyserService.ping()
                 Log.d(TAG, pong)
                 getReportsTypesAndSubjectIDs()
             } catch (e: IOException) {

@@ -12,8 +12,8 @@ import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network.Event
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import okio.IOException
 import retrofit2.HttpException
+import java.io.IOException
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -107,13 +107,13 @@ class EventsHomeViewModel(val retrofitService: EventAnalyserApiService) : ViewMo
                 Log.d(TAG, pong)
                 EventsHomeUiState.Success()
             } catch (e: IOException) {
-                Log.e(TAG, "Error: ${e.message}. $e")
+                Log.e(TAG, "IO Error: ${e.message}. $e")
                 EventsHomeUiState.Error(
                     e.message ?: "",
                     connectionError = true,
                 )
             } catch (e: HttpException) {
-                Log.e(TAG, "Error: ${e.message}. $e")
+                Log.e(TAG, "HTTP Error: ${e.message}. $e")
                 var errorMessage = e.message
                 if (e.code() == 502) errorMessage = "$errorMessage - server offline"
                 EventsHomeUiState.Error(errorMessage ?: "", connectionError = true)

@@ -104,7 +104,7 @@ fun NavGraphBuilder.eventsHomeDestination(
         val viewModel: EventsHomeViewModel =
             viewModel(factory = object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                    return EventsHomeViewModel(EventAnalyserApi.getService(repository)) as T
+                    return EventsHomeViewModel(EventAnalyserApi.getEventAnalyserService(repository)) as T
                 }
             })
         EventsHomeScreen(
@@ -124,7 +124,10 @@ fun NavGraphBuilder.eventsReportsDestination(
         val viewModel: EventsReportsViewModel =
             viewModel(factory = object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                    return EventsReportsViewModel(EventAnalyserApi.getService(repository)) as T
+                    return EventsReportsViewModel(
+                        EventAnalyserApi.getEventsReportsService(repository),
+                        EventAnalyserApi.getEventAnalyserService(repository)
+                    ) as T
                 }
             })
         EventsReportsScreen(

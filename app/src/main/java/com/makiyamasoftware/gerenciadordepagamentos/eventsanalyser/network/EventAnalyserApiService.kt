@@ -5,7 +5,6 @@ import com.makiyamasoftware.gerenciadordepagamentos.BuildConfig
 import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.reports.EventsReportType
 import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.reports.EventsReportsData
 import com.makiyamasoftware.gerenciadordepagamentos.settings.SettingsRepository
-import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -21,6 +20,7 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Query
+import java.util.concurrent.TimeUnit
 import kotlin.time.Instant
 
 private const val BASE_URL = BuildConfig.EventsServiceBaseURL // Comes from local.properties
@@ -66,7 +66,9 @@ interface EventAnalyserApiService {
 
     @GET("subjects")
     suspend fun getAllSubjects(): List<SubjectResponse>
+}
 
+interface EventsReportsApiService {
     // Reports
     @GET("reports/types")
     suspend fun getReportTypes(): List<String>
@@ -99,23 +101,58 @@ object EventAnalyserApi {
         )
         .addLast(KotlinJsonAdapterFactory())
         .build()
+    lateinit var client: OkHttpClient
+    lateinit var eventAnalyserAPI: EventAnalyserApiService
+    lateinit var eventsReportsAPI: EventsReportsApiService
 
-
-    fun getService(settingsRepository: SettingsRepository): EventAnalyserApiService {
-        val client = OkHttpClient.Builder()
-            .addInterceptor(BaseURLInterceptor(settingsRepository))
-            .build()
-
-        val retrofit = Retrofit.Builder()
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
-            .addConverterFactory(Json.asConverterFactory("application/json".toMediaType()))
-            .baseUrl(BASE_URL)
-            .client(client)
-            .build()
-        val retrofitService: EventAnalyserApiService by lazy {
-            retrofit.create(EventAnalyserApiService::class.java)
+    fun getEventAnalyserService(settingsRepository: SettingsRepository): EventAnalyserApiService {
+        if (!this::client.isInitialized) {
+            // if is not initialized, initialize it!
+            client = OkHttpClient.Builder()
+                .addInterceptor(BaseURLInterceptor(settingsRepository))
+                .connectTimeout(5, TimeUnit.SECONDS)
+                .readTimeout(5, TimeUnit.SECONDS)
+                .build()
         }
-        return retrofitService
+
+        if (!this::eventAnalyserAPI.isInitialized) {
+            val retrofit = Retrofit.Builder()
+                .addConverterFactory(Json.asConverterFactory("application/json".toMediaType()))
+                .baseUrl(BASE_URL)
+                .client(client)
+                .build()
+            val retrofitService: EventAnalyserApiService by lazy {
+                retrofit.create(EventAnalyserApiService::class.java)
+            }
+            eventAnalyserAPI = retrofitService
+            return eventAnalyserAPI
+        }
+        return eventAnalyserAPI
+    }
+
+    fun getEventsReportsService(settingsRepository: SettingsRepository): EventsReportsApiService {
+        if (!this::client.isInitialized) {
+            // if is not initialized, initialize it!
+            client = OkHttpClient.Builder()
+                .addInterceptor(BaseURLInterceptor(settingsRepository))
+                .connectTimeout(5, TimeUnit.SECONDS)
+                .readTimeout(5, TimeUnit.SECONDS)
+                .build()
+        }
+
+        if (!this::eventsReportsAPI.isInitialized) {
+            val retrofit = Retrofit.Builder()
+                .addConverterFactory(MoshiConverterFactory.create(moshi))
+                .baseUrl(BASE_URL)
+                .client(client)
+                .build()
+            val retrofitService: EventsReportsApiService by lazy {
+                retrofit.create(EventsReportsApiService::class.java)
+            }
+            eventsReportsAPI = retrofitService
+            return eventsReportsAPI
+        }
+        return eventsReportsAPI
     }
 
     fun getBaseURLConst(): String = BASE_URL
