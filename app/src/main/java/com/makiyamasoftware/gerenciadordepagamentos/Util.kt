@@ -450,10 +450,6 @@ class DaoFake : PagamentosDatabaseDao {
         return listOf(pessoas[pagamentoID.toInt()])
     }
 
-    override fun getPessoasDoPagamentoLD(pagamentoID: Long): LiveData<List<Pessoa>> {
-        TODO("Not yet implemented")
-    }
-
     override fun getAllPessoas(): List<Pessoa> {
         return pessoas
     }
@@ -480,10 +476,6 @@ class DaoFake : PagamentosDatabaseDao {
 
     override fun getHistoricosDePagamento(pagamentoID: Long): List<HistoricoDePagamento> {
         return listOf(historicoDePagamento[pagamentoID.toInt()])
-    }
-
-    override fun getHistoricosDePagamentoLD(pagamentoID: Long): LiveData<List<HistoricoDePagamento>> {
-        TODO("Not yet implemented")
     }
 
     override fun getUltimoHistoricoDePagamento(pagamentoID: Long): LiveData<HistoricoDePagamento> {

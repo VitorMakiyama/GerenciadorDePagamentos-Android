@@ -66,7 +66,7 @@ fun DetalhesPagamentoScreen(
     setTopAppBarActions: (actions: @Composable (RowScope.() -> Unit)) -> Unit,
     setTopAppBarPayment: (payment: Pagamento) -> Unit,
     onNavigateUp: () -> Unit,
-    onNavigateToAllHistories: () -> Unit
+    onNavigateToAllHistories: (payment: Pagamento) -> Unit
 ) {
     val factory = remember {
         DetalhesPagamentoViewModelFactory(
@@ -92,6 +92,7 @@ fun DetalhesPagamentoScreen(
 
     LaunchedEffect(detalhesPagamentoViewModel) {
         detalhesPagamentoViewModel.verifyPagamentoIsUpToDate(frequenciesArray)
+        setTopAppBarPayment(modifiablePayment)
         setTopAppBarActions {
             if (!paymentsUIState.isEditMode) {
                 IconButton(onClick = {
@@ -194,7 +195,7 @@ fun DetalhesPagamentoScreen(
                     DEBUG_TAG,
                     "Click All Histories"
                 )
-                onNavigateToAllHistories()
+                onNavigateToAllHistories(modifiablePayment)
             },
             modifier = Modifier.padding(all = dimensionResource(R.dimen.margin_small))
         )

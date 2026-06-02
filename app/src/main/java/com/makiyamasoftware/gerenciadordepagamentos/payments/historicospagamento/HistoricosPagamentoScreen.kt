@@ -1,6 +1,8 @@
 package com.makiyamasoftware.gerenciadordepagamentos.payments.historicospagamento
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,10 +29,14 @@ import com.makiyamasoftware.gerenciadordepagamentos.ui.components.AlertDialog
 import com.makiyamasoftware.gerenciadordepagamentos.ui.components.PaymentHistoryCard
 import com.makiyamasoftware.gerenciadordepagamentos.ui.theme.GerenciadorDePagamentosTheme
 
+private const val TAG = "HistoricosPagamentoScreen"
+
 @Composable
 fun HistoricosPagamentoScreen(
     dataSource: PagamentosDatabaseDao,
-    payment: Pagamento
+    payment: Pagamento,
+    setTopAppBarActions: (actions: @Composable (RowScope.() -> Unit)) -> Unit,
+    setTopAppBarPayment: (payment: Pagamento) -> Unit,
 ) {
     val factory = remember {
         HistoricosPagamentoViewModelFactory(
@@ -41,7 +47,18 @@ fun HistoricosPagamentoScreen(
     val viewModel: HistoricosPagamentoViewModel = viewModel(factory = factory)
     val uiState by viewModel.uiState.collectAsState()
 
+    LaunchedEffect(Unit) {
+        /**
+         * Runs a block of asynchronous code or suspend functions exactly once when a composable enters the composition
+         */
+        setTopAppBarPayment(payment)
+        setTopAppBarActions {
+            // If necessary, use this to populate the Top App Bar
+        }
+    }
+
     LaunchedEffect(uiState.updateData) {
+        Log.d(TAG, "Getting histories and people from DB...")
         viewModel.updateDataFromDB()
     }
 
@@ -105,9 +122,8 @@ fun PaymentHistoriesContent(
     LazyColumn(
         modifier
             .fillMaxSize()
-            .padding(top = dimensionResource(R.dimen.margin_normal))
             .padding(horizontal = dimensionResource(R.dimen.margin_normal)),
-        verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.margin_normal))
+        verticalArrangement = Arrangement.Top
     ) {
         items(histories) { history ->
             PaymentHistoryCard(
@@ -123,7 +139,7 @@ fun PaymentHistoriesContent(
     }
 }
 
-@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_YES)
+@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_YES, heightDp = 400)
 @Composable
 fun PaymentHistoriesContentPreview() {
     val payment = Pagamento(

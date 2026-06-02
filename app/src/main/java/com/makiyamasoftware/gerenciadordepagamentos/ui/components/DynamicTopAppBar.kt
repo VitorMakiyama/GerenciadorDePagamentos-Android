@@ -42,14 +42,10 @@ fun DynamicTopAppBar(
     val actions by viewModel.actions.collectAsState()
     val selectedPayment by viewModel.payment.collectAsState()
 
-
     // Observe the current back stack entry (the current page)
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
 
-    LaunchedEffect(currentDestination) {
-        viewModel.setPayment() // Para redefinir o payment da appTopBar com o valor default
-    }
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -63,8 +59,8 @@ fun DynamicTopAppBar(
                     Text(
                         if (currentDestination?.hasRoute(MainPaymentsList::class) == true) {
                             stringResource(R.string.topAppBar_Main_title)
-                        } else if (currentDestination?.hasRoute(PaymentDetails::class) == true) {
-                            selectedPayment.titulo
+                        } else if (currentDestination?.hasRoute(PaymentDetails::class) == true || currentDestination?.hasRoute(AllPaymentHistories::class) == true) {
+                            selectedPayment?.titulo ?: ""
                         } else {
                             ""
                         },
@@ -97,14 +93,12 @@ class DynamicTopAppBarViewModel : ViewModel() {
 
     private val _actions = MutableStateFlow<@Composable (RowScope.() -> Unit)>({})
     val actions: StateFlow<@Composable (RowScope.() -> Unit)> = _actions
+    private val _payment: MutableStateFlow<Pagamento?> = MutableStateFlow(null)
+    val payment: StateFlow<Pagamento?> = _payment
 
-    private val defaultPayment = Pagamento(-1L, "", "", 0, "")
-    private val _payment: MutableStateFlow<Pagamento> = MutableStateFlow(defaultPayment)
-    val payment: StateFlow<Pagamento> = _payment
-
-    fun setPayment(newPayment: Pagamento = defaultPayment) {
+    fun setPayment(newPayment: Pagamento? = null) {
         _payment.update {
-            newPayment.copy()
+            newPayment?.copy()
         }
     }
 

@@ -105,6 +105,55 @@ fun NavGraphBuilder.paymentsListDestination(
     }
 }
 
+fun NavGraphBuilder.detalhesPagamentoDestination(
+    viewModel: PagamentosMainViewModel,
+    topAppBarViewModel: DynamicTopAppBarViewModel,
+    onNavigateUp: () -> Unit,
+    onNavigateToAllHistories: (Pagamento) -> Unit
+) {
+    composable<PaymentDetails>(
+        typeMap = mapOf(
+            typeOf<Pagamento>() to PaymentParameterType,
+            typeOf<HistoricoDePagamento>() to HistoryParameterType,
+            typeOf<Pessoa>() to PersonParameterType
+        )
+    ) { backStackEntry ->
+        val details: PaymentDetails = backStackEntry.toRoute()
+
+        DetalhesPagamentoScreen(
+            dataSource = viewModel.database,
+            selectedPayment = details.payment,
+            latestPaymentHistory = details.history,
+            latestPerson = details.person,
+            setTopAppBarActions = topAppBarViewModel::setActions,
+            setTopAppBarPayment = topAppBarViewModel::setPayment,
+            onNavigateUp = onNavigateUp,
+            onNavigateToAllHistories = onNavigateToAllHistories
+        )
+    }
+}
+
+fun NavGraphBuilder.historicosPagamentoDestination(
+    dataSource: PagamentosDatabaseDao,
+    topAppBarViewModel: DynamicTopAppBarViewModel,
+) {
+    composable<AllPaymentHistories>(
+        typeMap = mapOf(
+            typeOf<Pagamento>() to PaymentParameterType
+        )
+    ) { backStackEntry ->
+        val allHistories: AllPaymentHistories = backStackEntry.toRoute()
+        topAppBarViewModel.setPayment(allHistories.payment)
+
+        HistoricosPagamentoScreen(
+            dataSource = dataSource,
+            payment = allHistories.payment,
+            setTopAppBarActions = topAppBarViewModel::setActions,
+            setTopAppBarPayment = topAppBarViewModel::setPayment,
+        )
+    }
+}
+
 fun NavController.navigateToPaymentDetails(
     payment: Pagamento,
     history: HistoricoDePagamento,
@@ -135,52 +184,6 @@ fun NavController.navigateToAllHistories(
             payment = payment,
         )
     )
-}
-
-fun NavGraphBuilder.detalhesPagamentoDestination(
-    viewModel: PagamentosMainViewModel,
-    topAppBarViewModel: DynamicTopAppBarViewModel,
-    onNavigateUp: () -> Unit,
-    onNavigateToAllHistories: (Pagamento) -> Unit
-) {
-    composable<PaymentDetails>(
-        typeMap = mapOf(
-            typeOf<Pagamento>() to PaymentParameterType,
-            typeOf<HistoricoDePagamento>() to HistoryParameterType,
-            typeOf<Pessoa>() to PersonParameterType
-        )
-    ) { backStackEntry ->
-        val details: PaymentDetails = backStackEntry.toRoute()
-        topAppBarViewModel.setPayment(details.payment)
-
-        DetalhesPagamentoScreen(
-            dataSource = viewModel.database,
-            selectedPayment = details.payment,
-            latestPaymentHistory = details.history,
-            latestPerson = details.person,
-            setTopAppBarActions = topAppBarViewModel::setActions,
-            setTopAppBarPayment = topAppBarViewModel::setPayment,
-            onNavigateUp = onNavigateUp,
-            onNavigateToAllHistories = { onNavigateToAllHistories(details.payment) }
-        )
-    }
-}
-
-fun NavGraphBuilder.historicosPagamentoDestination(
-    dataSource: PagamentosDatabaseDao,
-) {
-    composable<AllPaymentHistories>(
-        typeMap = mapOf(
-            typeOf<Pagamento>() to PaymentParameterType
-        )
-    ) { backStackEntry ->
-        val allHistories: AllPaymentHistories = backStackEntry.toRoute()
-
-        HistoricosPagamentoScreen(
-            dataSource = dataSource,
-            payment = allHistories.payment
-        )
-    }
 }
 
 @Composable
@@ -219,6 +222,7 @@ fun PaymentsNavHost(
         // Route to HistoricosPagamentoScreen
         historicosPagamentoDestination(
             dataSource = viewModel.database,
+            topAppBarViewModel = topAppBarViewModel,
         )
     }
 }
