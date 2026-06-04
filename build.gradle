@@ -4,12 +4,12 @@ buildscript {
         // App dependencies
         kotlinVersion = '2.3.20'
         KSPVersion = '2.3.2'
-        coreVersion = "1.17.0"
-        coroutinesVersion = "1.10.2"
+        coreVersion = "1.19.0"
+        coroutinesVersion = "1.11.0"
         navVersion = '2.9.8'
         navigationComposeVersion = "2.9.7"
         constraintLayoutVersion = "2.2.1"
-        gradleVersion = '9.2.0'
+        gradleVersion = '9.2.1'
         lifecycleExtensionsVersion = "2.2.0"
         roomVersion = "2.8.4"
         appcompatVersion = "1.7.1"

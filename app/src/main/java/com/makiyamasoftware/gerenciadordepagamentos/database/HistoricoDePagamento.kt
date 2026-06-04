@@ -1,15 +1,18 @@
 package com.makiyamasoftware.gerenciadordepagamentos.database
 
 import android.app.Application
+import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.makiyamasoftware.gerenciadordepagamentos.R
 import com.makiyamasoftware.gerenciadordepagamentos.convertStringDateToStringDay
 import com.makiyamasoftware.gerenciadordepagamentos.convertStringDateToStringMonth
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 @Serializable
+@Parcelize
 @Entity(tableName = "historico_de_pagamento_table")
 data class HistoricoDePagamento(
 	@PrimaryKey(autoGenerate = true)
@@ -27,7 +30,7 @@ data class HistoricoDePagamento(
 
 	@ColumnInfo(name = "esta_pago")
 	var estaPago: Boolean = false
-) {
+) : Parcelable {
 	fun toogleStatus() {
 		estaPago = !estaPago
 	}

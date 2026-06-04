@@ -7,19 +7,19 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Bundle
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.navigation.NavDeepLinkBuilder
 import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabaseDao
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
 import com.makiyamasoftware.gerenciadordepagamentos.payments.inicio.PagamentosMainViewModel
+import kotlinx.serialization.json.Json
 import java.text.DateFormat.getDateInstance
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
@@ -255,21 +255,25 @@ fun createNewHistoryNotification(
     textTitle: String,
     textContent: String,
     notificationId: Int,
-    pagamento: Pagamento
+    pagamento: Pagamento,
+    historico: HistoricoDePagamento,
+    pessoa: Pessoa,
 ) {
     if (pagamento.podeEnviarPush) {
-        // Create an explicit intent for an Activity in your app.
-        val intent = Intent(ctx, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        }
-        val pendingIntent: PendingIntent = NavDeepLinkBuilder(ctx)
-            .setGraph(R.navigation.main_navigation)
-            .setDestination(R.id.detalhesPagamentoFragment)
-            .setArguments(Bundle().apply {
-                putParcelable("pagamentoEscolhido", pagamento)
-            })
-            .createPendingIntent()// PendingIntent.getActivity(ctx, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+        // 1. Serialize to JSON, the expected format of Compose Navigation via NavType
+        val pJson = Json.encodeToString(pagamento)
+        val hJson = Json.encodeToString(historico)
+        val peJson = Json.encodeToString(pessoa)
+        // 2. Create URI corresponding to route of PaymentDetails
+        // default format is: base_path/arg1/arg2/arg3
+        val uri = "gp://details/$pJson/$hJson/$peJson".toUri()
 
+        // Create an explicit intent for an Activity in your app.
+        val intent = Intent(Intent.ACTION_VIEW, uri, ctx, MainActivity::class.java)
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(
+            ctx, notificationId, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
         val builder = NotificationCompat.Builder(ctx, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_logo_prd_foreground)

@@ -19,6 +19,7 @@ import com.makiyamasoftware.gerenciadordepagamentos.workbackground.UpdatePagamen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
@@ -59,13 +60,26 @@ class MainActivity : AppCompatActivity() {
 //			.setRequiresDeviceIdle(true) // Apenas se o dispositivo estiver idle (nao ativo)
 			.build()
 
+		// Cálculo do delay para executar por volta das 06:00 AM
+		val currentTime = Calendar.getInstance()
+		val dueDate = Calendar.getInstance().apply {
+			set(Calendar.HOUR_OF_DAY, 9)
+			set(Calendar.MINUTE, 0)
+			set(Calendar.SECOND, 0)
+		}
+		if (dueDate.before(currentTime)) {
+			dueDate.add(Calendar.HOUR_OF_DAY, 24)
+		}
+		val initialDelay = dueDate.timeInMillis - currentTime.timeInMillis
+
 		val repeatingRequest = PeriodicWorkRequestBuilder<UpdatePagamentoWork>(1, TimeUnit.DAYS)
+			.setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
 			.setConstraints(constraints)
 			.build()
 
 		WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
-			UpdatePagamentoWork.WORK_NAME,      // agenda o WORK_NAME work
-			ExistingPeriodicWorkPolicy.UPDATE,  // politica do que fazer caso haja mais de um WORK_NAME enqueued,nesse caso, UPDATE o antigo com as especificacoes do novo
+			UpdatePagamentoWork.WORK_NAME,
+			ExistingPeriodicWorkPolicy.KEEP, // KEEP evita resetar o delay toda vez que o app abre
 			repeatingRequest
 		)
 	}

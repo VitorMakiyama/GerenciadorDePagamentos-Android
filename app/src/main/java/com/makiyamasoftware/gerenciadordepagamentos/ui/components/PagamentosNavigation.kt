@@ -13,6 +13,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
 import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
@@ -111,11 +112,15 @@ fun NavGraphBuilder.detalhesPagamentoDestination(
     onNavigateUp: () -> Unit,
     onNavigateToAllHistories: (Pagamento) -> Unit
 ) {
+    val typeMap = mapOf(
+        typeOf<Pagamento>() to PaymentParameterType,
+        typeOf<HistoricoDePagamento>() to HistoryParameterType,
+        typeOf<Pessoa>() to PersonParameterType
+    )
     composable<PaymentDetails>(
-        typeMap = mapOf(
-            typeOf<Pagamento>() to PaymentParameterType,
-            typeOf<HistoricoDePagamento>() to HistoryParameterType,
-            typeOf<Pessoa>() to PersonParameterType
+        typeMap = typeMap,
+        deepLinks = listOf(
+            navDeepLink<PaymentDetails>(basePath = "gp://details", typeMap = typeMap)
         )
     ) { backStackEntry ->
         val details: PaymentDetails = backStackEntry.toRoute()

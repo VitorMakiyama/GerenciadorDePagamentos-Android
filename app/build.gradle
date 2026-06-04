@@ -5,7 +5,7 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.compose'
     id 'com.google.devtools.ksp'
     // Kotlin serialization plugin for type safe routes, navigation arguments and Retrofit responses
-    id 'org.jetbrains.kotlin.plugin.serialization' version '2.3.21'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '2.4.0'
     // Plugin to get secrets from local.properties
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
 }
@@ -16,7 +16,7 @@ android {
         minSdkVersion 26
         targetSdkVersion 37
         versionCode 1
-        versionName "1.5.2"
+        versionName "1.5.3"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 

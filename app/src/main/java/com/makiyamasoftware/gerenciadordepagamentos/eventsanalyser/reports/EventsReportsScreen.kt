@@ -225,8 +225,10 @@ fun EventsReportsContentPreview() {
         details = BasicReport(
             weekly = "1,0",
             monthly = "4,0",
+            yearly = "10,00",
             sigma = "0,5",
             startDate = "2026-05-16",
+            endDate = "2026-06-03",
             totalOccurrences = "10",
         ),
     )

@@ -44,9 +44,12 @@ sealed class EventsReportsData {
 data class BasicReport(
     val weekly: String,
     val monthly: String,
+    val yearly: String,
     val sigma: String,
     @param:Json(name = "start_date")
     val startDate: String,
+    @param:Json(name = "end_date")
+    val endDate: String,
     @param:Json(name = "total_occurrences")
     val totalOccurrences: String
 )
@@ -65,8 +68,10 @@ fun EventsReportsRenderer(
                     BasicEventReport(
                         basicReportData.details.weekly,
                         basicReportData.details.monthly,
+                        basicReportData.details.yearly,
                         basicReportData.details.sigma,
                         basicReportData.details.startDate,
+                        basicReportData.details.endDate,
                         basicReportData.details.totalOccurrences
                     )
                 }
@@ -85,8 +90,10 @@ fun EventsReportsRenderer(
 fun BasicEventReport(
     weekly: String,
     monthly: String,
+    yearly: String,
     sigma: String,
     startDate: String,
+    endDate: String,
     totalOccurrences: String
 ) {
     val smallPadding = dimensionResource(R.dimen.margin_small)
@@ -98,8 +105,10 @@ fun BasicEventReport(
     ) {
         ReportItem("Semanal", weekly)
         ReportItem("Mensal", monthly)
+        ReportItem("Anual", yearly)
         ReportItem("Desvio Padrão", sigma)
         ReportItem("Data inicial", startDate)
+        ReportItem("Data final", endDate)
         ReportItem("Total de ocorrências", totalOccurrences)
     }
 }
@@ -137,8 +146,10 @@ fun EventsReportsRendererPreview() {
         BasicEventReport(
             "0,43",
             "0,96",
+            "28",
             "0,2",
             "12/05/2026",
+            "03/06/2026",
             "28"
         )
     }
