@@ -114,4 +114,13 @@
 <!--   Settings Screen -->
     <string name="SettingScreen_Settings_Headline">Configurações</string>
     <string name="SettingScreen_baseURL_title">URL Base</string>
+
+<!--   EventsReportsRenderer -->
+    <string name="EventsReportsRenderer_BasicReport_weekly">Semanal</string>"
+    <string name="EventsReportsRenderer_BasicReport_monthly">Mensal</string>"
+    <string name="EventsReportsRenderer_BasicReport_yearly">Anual</string>"
+    <string name="EventsReportsRenderer_BasicReport_sigma">Desvio padrão</string>
+    <string name="EventsReportsRenderer_BasicReport_startDate">Data inicial</string>
+    <string name="EventsReportsRenderer_BasicReport_endDate">Data final</string>
+    <string name="EventsReportsRenderer_BasicReport_totalOccurrences">Total de ocorrências</string>
 </resources>

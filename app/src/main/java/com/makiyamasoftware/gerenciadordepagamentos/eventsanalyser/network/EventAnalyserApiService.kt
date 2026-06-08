@@ -94,10 +94,19 @@ object EventAnalyserApi {
                     EventsReportsData.BasicReportData::class.java,
                     EventsReportType.BASIC.name
                 )
-                .withSubtype(
-                    EventsReportsData.ChartReportData::class.java,
-                    EventsReportType.CHART.name
-                )
+                .let { factory ->
+                    // Register dynamically all enums that starts with "CHART_" to use ChartReportData
+                    var updatedFactory = factory
+                    EventsReportType.entries.forEach { reportType ->
+                        if (reportType.name.startsWith("CHART_")) {
+                            updatedFactory = updatedFactory.withSubtype(
+                                EventsReportsData.ChartReportData::class.java,
+                                reportType.name
+                            )
+                        }
+                    }
+                    updatedFactory
+                }
         )
         .addLast(KotlinJsonAdapterFactory())
         .build()

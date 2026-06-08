@@ -157,10 +157,7 @@ fun EventsReportsContent(
                         onClickChip = { newReportType -> onChangeReportType(newReportType) },
                         selected = selectedReport
                     )
-                    reportData?.let {
-                        // If reportData is not null, there is data, so show it!
-                        EventsReportsRenderer(selectedReport, reportData, isReportDataRetrieveError)
-                    }
+                    EventsReportsRenderer(selectedReport, reportData, isReportDataRetrieveError)
                 }
             }
         }
@@ -214,7 +211,7 @@ fun SubjectSelectionDropdown(
 fun EventsReportsContentPreview() {
     val reportOptions = listOf(
         EventsReportType.BASIC.name,
-        EventsReportType.CHART.name,
+        EventsReportType.CHART_DAILY.name,
         "Teste 3",
         "Teste 4",
         "Teste 5",

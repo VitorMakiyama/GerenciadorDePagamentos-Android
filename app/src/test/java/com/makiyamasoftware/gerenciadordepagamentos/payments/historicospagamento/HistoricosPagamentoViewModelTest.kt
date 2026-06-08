@@ -88,7 +88,11 @@ class HistoricosPagamentoViewModelTest {
         pagamentosRepository.inserirHistoricoDePagamento(historico2)
         pagamentosRepository.inserirHistoricoDePagamento(historico3)
 
-        historicosPagamentoViewModel = HistoricosPagamentoViewModel(pagamentosRepository,pagamento)
+        historicosPagamentoViewModel = HistoricosPagamentoViewModel(
+            dataSource = pagamentosRepository,
+            pagamentoSelecionado = pagamento,
+            ioDispatcher = mainCoroutineRule.testDispatcher,
+        )
     }
 
     @Test
@@ -113,27 +117,40 @@ class HistoricosPagamentoViewModelTest {
         historicosPagamentoViewModel.onClickStatus(histories[2])
 
         // Then the eventUpdateStatus is set to SINGULAR
-        assertEquals(StatusChangeType.SINGULAR, historicosPagamentoViewModel.uiState.value.statusChangeType)
+        assertEquals(
+            StatusChangeType.SINGULAR,
+            historicosPagamentoViewModel.uiState.value.statusChangeType
+        )
     }
 
     @Test
     fun onClickStatus_isMultipleStatusChange() {
+        // Comes ordered, so latest is first
         val histories = pagamentosRepository.getHistoricosDePagamento(1)
         // When click to change history status that HAS updatable previous histories
-        historicosPagamentoViewModel.onClickStatus(histories[0])
+        historicosPagamentoViewModel.onClickStatus(histories[1])
 
         // Then the eventUpdateStatus is set to MULTIPLE
-        assertEquals(StatusChangeType.MULTIPLE, historicosPagamentoViewModel.uiState.value.statusChangeType)
+        assertEquals(
+            StatusChangeType.MULTIPLE,
+            historicosPagamentoViewModel.uiState.value.statusChangeType
+        )
     }
 
     @Test
-    fun onClickStatus_isMultipleStatusChange_whenAtLeastOnePreviousHistoryIsUnpaid() {
+    fun onClickStatus_isMultipleStatusChange_whenAtLeastOnePreviousHistoryIsPaid() {
+        // Changes second history status to paid, so if h = histories => h[1]->unpaid h[2]->paid h[3]->unpaid
+        pagamentosRepository.historicosData[1]?.toogleStatus()
         // When click to change history status that HAS updatable previous histories
-        pagamentosRepository.historicosData[2]?.estaPago = true
-        historicosPagamentoViewModel.onClickStatus(pagamentosRepository.historicosData[2]!!)
+        historicosPagamentoViewModel.onClickStatus(
+            pagamentosRepository.historicosData[3] ?: throw Exception("History not found")
+        )
 
         // Then the eventUpdateStatus is set to MULTIPLE
-        assertEquals(StatusChangeType.MULTIPLE, historicosPagamentoViewModel.uiState.value.statusChangeType)
+        assertEquals(
+            StatusChangeType.MULTIPLE,
+            historicosPagamentoViewModel.uiState.value.statusChangeType
+        )
     }
 
     @Test
@@ -144,7 +161,10 @@ class HistoricosPagamentoViewModelTest {
         historicosPagamentoViewModel.onClickStatus(histories[0])
 
         // Then the eventUpdateStatus is set to SINGULAR
-        assertEquals(StatusChangeType.SINGULAR, historicosPagamentoViewModel.uiState.value.statusChangeType)
+        assertEquals(
+            StatusChangeType.SINGULAR,
+            historicosPagamentoViewModel.uiState.value.statusChangeType
+        )
     }
 
     @Test

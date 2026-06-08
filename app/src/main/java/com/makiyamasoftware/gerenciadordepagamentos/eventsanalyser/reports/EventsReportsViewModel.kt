@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network.EventAnalyserApiService
 import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network.EventsReportsApiService
 import com.makiyamasoftware.gerenciadordepagamentos.eventsanalyser.network.SubjectResponse
+import com.squareup.moshi.JsonDataException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
@@ -104,6 +105,11 @@ class EventsReportsViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             uiState = try {
                 val result = eventsReportsService.getReportData(reportType, subjectID)
+                val error = uiState as? EventsReportsUIState.Error
+                if (error != null) {
+                    Log.d(TAG, "Recovering from error: $error")
+                    getReportsTypesAndSubjectIDs()
+                }
                 val success = uiState as EventsReportsUIState.Success
 
                 Log.i(TAG, "Got this report from server: $result")
@@ -118,7 +124,7 @@ class EventsReportsViewModel(
                         )
                     }
 
-                    EventsReportType.CHART.name -> {
+                    EventsReportType.CHART_DAILY.name, EventsReportType.CHART_WEEKLY.name, EventsReportType.CHART_MONTHLY.name, EventsReportType.CHART_YEARLY.name -> {
                         EventsReportsUIState.Success(
                             showSnackbar = false,
                             snackbarMessage = "",
@@ -155,6 +161,15 @@ class EventsReportsViewModel(
                     snackbarMessage = "Error getting report data: ${e.message}.",
                     connectionError = isConnectionError,
                     reportDataRetrieveError = !isConnectionError
+                )
+            } catch (e: JsonDataException) {
+                val errorMessage = "Error parsing report data: ${e.message}."
+                Log.e(TAG, "$errorMessage $e")
+                EventsReportsUIState.Error(
+                    showSnackbar = true,
+                    snackbarMessage = errorMessage,
+                    connectionError = false,
+                    reportDataRetrieveError = true
                 )
             }
         }

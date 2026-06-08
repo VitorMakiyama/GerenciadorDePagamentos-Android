@@ -7,6 +7,7 @@ import com.makiyamasoftware.gerenciadordepagamentos.database.HistoricoDePagament
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pagamento
 import com.makiyamasoftware.gerenciadordepagamentos.database.PagamentosDatabaseDao
 import com.makiyamasoftware.gerenciadordepagamentos.database.Pessoa
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,7 +27,8 @@ data class PaymentHistoriesUIState(
 
 class HistoricosPagamentoViewModel(
     private val dataSource: PagamentosDatabaseDao,
-    val pagamentoSelecionado: Pagamento
+    val pagamentoSelecionado: Pagamento,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO, // Dispatcher Injection for unit testing
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(PaymentHistoriesUIState(listOf(),listOf()))
     val uiState: StateFlow<PaymentHistoriesUIState> = _uiState.asStateFlow()
@@ -38,7 +40,7 @@ class HistoricosPagamentoViewModel(
     }
 
     fun updateDataFromDB() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(ioDispatcher) {
             val histories = dataSource.getHistoricosDePagamento(pagamentoSelecionado.id)
             val people = dataSource.getPessoasDoPagamento(pagamentoSelecionado.id)
             _uiState.update { currentState ->
