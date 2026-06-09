@@ -57,11 +57,11 @@ class EventsReportsViewModel(
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            getReportsTypesAndSubjectIDs()
+            getInitialReportsTypesAndSubjectIDs()
         }
     }
 
-    suspend fun getReportsTypesAndSubjectIDs() {
+    suspend fun getInitialReportsTypesAndSubjectIDs() {
         uiState = try {
             val types = eventsReportsService.getReportTypes()
             val subjects = eventAnalyserService.getAllSubjects()
@@ -105,12 +105,6 @@ class EventsReportsViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             uiState = try {
                 val result = eventsReportsService.getReportData(reportType, subjectID)
-                val error = uiState as? EventsReportsUIState.Error
-                if (error != null) {
-                    Log.d(TAG, "Recovering from error: $error")
-                    getReportsTypesAndSubjectIDs()
-                }
-                val success = uiState as EventsReportsUIState.Success
 
                 Log.i(TAG, "Got this report from server: $result")
                 when (reportType) {
@@ -118,8 +112,8 @@ class EventsReportsViewModel(
                         EventsReportsUIState.Success(
                             showSnackbar = false,
                             snackbarMessage = "",
-                            reportTypes = success.reportTypes,
-                            subjectIDs = success.subjectIDs,
+                            reportTypes = reportsTypes,
+                            subjectIDs = subjectsIDs,
                             reportsData = (result as EventsReportsData.BasicReportData)
                         )
                     }
@@ -128,8 +122,8 @@ class EventsReportsViewModel(
                         EventsReportsUIState.Success(
                             showSnackbar = false,
                             snackbarMessage = "",
-                            reportTypes = success.reportTypes,
-                            subjectIDs = success.subjectIDs,
+                            reportTypes = reportsTypes,
+                            subjectIDs = subjectsIDs,
                             reportsData = (result as EventsReportsData.ChartReportData)
                         )
                     }
@@ -190,7 +184,7 @@ class EventsReportsViewModel(
             try {
                 val pong = eventAnalyserService.ping()
                 Log.d(TAG, pong)
-                getReportsTypesAndSubjectIDs()
+                getInitialReportsTypesAndSubjectIDs()
             } catch (e: IOException) {
                 Log.e(TAG, "Error: ${e.message}. $e")
                 uiState = EventsReportsUIState.Error(
