@@ -16,7 +16,7 @@ android {
         minSdkVersion 26
         targetSdkVersion 37
         versionCode 1
-        versionName "1.6.1"
+        versionName "1.6.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -148,7 +148,7 @@ dependencies {
     androidTestImplementation "androidx.work:work-testing:$workVersion"
 
     // Test Retrofit and API
-    testImplementation "com.squareup.okhttp3:mockwebserver:5.3.2"
+    testImplementation "com.squareup.okhttp3:mockwebserver:5.4.0"
     // For complex assertions
     testImplementation "com.google.truth:truth:1.4.5"
     kspTest "com.squareup.moshi:moshi-kotlin-codegen:1.15.2"

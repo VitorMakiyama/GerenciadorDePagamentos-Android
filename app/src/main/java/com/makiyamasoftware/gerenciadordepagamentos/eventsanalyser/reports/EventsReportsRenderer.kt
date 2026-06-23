@@ -186,7 +186,7 @@ fun ChartEventsReport(
     xLabels: List<String>
 ) {
     val modelProducer = remember { CartesianChartModelProducer() }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(data) {
         modelProducer.runTransaction {
             columnModel {
                 series(*data.toTypedArray())
